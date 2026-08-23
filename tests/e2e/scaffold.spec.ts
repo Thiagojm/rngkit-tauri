@@ -33,6 +33,10 @@ test('renders the four-destination shell without hardware or mock-scenario contr
     page.getByRole('navigation', { name: copy.primaryNav }),
   ).toBeVisible();
   await expect(page.getByText(copy.statsWarning)).toBeVisible();
+  await expect(page.getByText(copy.chart.empty)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.chart.resetView }),
+  ).toBeDisabled();
   await expect(page.getByText(`${copy.status}: Idle`)).toBeVisible();
   await expect(
     page.getByRole('button', { name: copy.refreshSources }),

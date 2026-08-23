@@ -59,6 +59,11 @@ describe('CollectPage', () => {
       false,
     );
     expect(screen.getByText('+0.72')).toBeTruthy();
+    expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
+    expect(screen.getByText(copy.chart.refPlus)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.chart.resetView }),
+    ).toHaveProperty('disabled', false);
   });
 
   it('explains that stop is already in progress while stopping', () => {

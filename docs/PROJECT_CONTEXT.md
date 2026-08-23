@@ -19,9 +19,11 @@ reconstructs `SourceConfig` in Rust, opens the selected source on one worker
 thread, and records a native BIN/CSV/manifest bundle until cooperative Stop.
 Frontend events carry sequenced metrics only; session/sequence reconciliation
 preserves terminal events across concurrent command responses. Open session
-folder accepts a backend-known directory, not a frontend path. Debug builds expose
-`apply_dev_scenario`; release builds omit that command. The live chart and
-window-close interception are not connected yet.
+folder accepts a backend-known directory, not a frontend path. Debug builds
+expose `apply_dev_scenario`; release builds omit that command. The live uPlot chart
+retains every committed `(sample_index, cumulative_z)` point with coalesced
+redraws, zoom and theme-change viewport persistence, Reset view, and Return to
+live. Window-close interception is not connected yet.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which
@@ -80,8 +82,11 @@ entropy-free PseudoRNG discovery.
 - Frontend capabilities are `core:default` and `dialog:default` only.
 - One source per session; no live XOR, fallback, reconnect, resume, or silent
   first-device selection.
-- Retain every chart point for the active session and measure 100,000 and
-  1,000,000 points before claiming long-session performance.
+- Retain every chart point for the active session. The 2026-08-23 Windows
+  data-only harness retained 100,001 points after append (0.29 ms replace,
+  0.445 ms append, 7.8 MiB heap delta) and 1,000,001 points (1.90 ms replace,
+  7.528 ms append, 31.1 MiB delta). Native canvas render and interaction at
+  those sizes remain unverified.
 - Diagnostics and preferences must exclude entropy, seeds, selectors, serials,
   device paths, and absolute legacy input paths. Frontend error messages are
   canonical safe strings; raw failure detail is redacted before retention.

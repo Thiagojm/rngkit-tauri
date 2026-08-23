@@ -78,6 +78,7 @@ pub enum CollectionEventDto {
         sample_count: u64,
         elapsed_label: String,
         ones_proportion_label: String,
+        cumulative_z: f64,
         cumulative_z_label: String,
     },
     TimingOverrun {
@@ -246,12 +247,15 @@ mod tests {
             sample_count: 1,
             elapsed_label: "00:00:01".into(),
             ones_proportion_label: "0.5000".into(),
-            cumulative_z_label: "+0.00".into(),
+            cumulative_z: 0.5,
+            cumulative_z_label: "+0.50".into(),
         };
         let value = serde_json::to_value(&event).expect("json");
         assert_eq!(value["kind"], "sampleCommitted");
         assert_eq!(value["sessionId"], "s1");
         assert_eq!(value["sampleIndex"], 1);
+        assert_eq!(value["cumulativeZ"], 0.5);
+        assert_eq!(value["cumulativeZLabel"], "+0.50");
         let dump = value.to_string().to_ascii_lowercase();
         assert!(!dump.contains("entropy"));
         assert!(!dump.contains("seed"));

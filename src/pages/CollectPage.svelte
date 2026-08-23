@@ -1,4 +1,5 @@
 <script lang="ts">
+  import LiveZChart from '../components/collect/LiveZChart.svelte';
   import SessionConfiguration from '../components/collect/SessionConfiguration.svelte';
   import SessionSummary from '../components/collect/SessionSummary.svelte';
   import MetricCard from '../components/ui/MetricCard.svelte';
@@ -43,13 +44,7 @@
             value={String(collection.overrunCount)}
           />
         </div>
-        <div
-          class="flex min-h-48 items-center rounded-md border border-dashed border-border px-4 py-8 text-sm text-text-muted"
-          role="img"
-          aria-label="Cumulative Z chart"
-        >
-          {copy.chartPlaceholder}
-        </div>
+        <LiveZChart />
         <p
           class="rounded-md border border-border bg-surface-muted px-4 py-3 text-sm text-text-muted"
         >

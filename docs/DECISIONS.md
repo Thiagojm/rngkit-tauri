@@ -4,14 +4,13 @@ All decisions are accepted. Material changes return to design review.
 
 ## Product, platform, and shell (2026-08-22)
 
-- RngKit v1 is an English Windows 10/11 x64 desktop app. One resizable Tauri 2
-  window contains persistent Collect, Reports, Combine, and Help destinations.
-- The client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses locked stable,
-  mutually compatible dependencies, uPlot, and no extra UI framework.
-- The scaffold combines the official Tauri 2 Rust/config/icons with the Vite
-  `svelte-ts` SPA because `create-tauri-app`'s Svelte template is SvelteKit.
-- Theme is `data-theme` on `html`. Tailwind `@theme` owns light defaults;
-  plain CSS media overrides preserve system dark unless light is forced.
+- RngKit v1 is an English Windows 10/11 x64 desktop app with one resizable Tauri
+  2 window containing persistent Collect, Reports, Combine, and Help destinations.
+- The client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses locked stable dependencies, uPlot, and no extra UI framework.
+- The scaffold combines official Tauri 2 Rust/config/icons with the Vite
+  `svelte-ts` SPA; the official Svelte Tauri template is SvelteKit.
+- Theme is `data-theme` on `html`; Tailwind owns light defaults and plain CSS
+  preserves system dark unless light is forced.
 - The top bar exposes product, operation status, and light/dark/system theme.
   Collect stacks through a container query at the 800px minimum window. Start
   and Stop never share one surface; disabled controls explain why.
@@ -35,18 +34,20 @@ All decisions are accepted. Material changes return to design review.
 - Per-session channels carry ordered metric DTOs only. Frontend command-response
   generations do not invalidate terminal channel events; session and sequence
   checks prevent older responses or stale events from replacing newer state.
-- Svelte retains every committed `(sample_index, cumulative_z)` point but never
-  receives entropy or calculates authoritative statistics.
+- Sample-committed events include numeric `cumulativeZ` plus the display label.
+  Svelte retains every accepted `(sample_index, cumulative_z)` point in aligned
+  arrays and never receives entropy or calculates authoritative statistics.
+  uPlot draws zero and dashed ±1.96 references without extra point arrays and
+  coalesces redraws to one animation frame. Appends and theme redraws preserve
+  user zoom and the mounted plot; Reset fits once and Return to live resumes fit.
 - Production IPC is `get_app_state`, `refresh_sources`, `select_source`,
   `set_sample_bits`, `set_interval_seconds`, `set_fold`, `set_theme`,
   `choose_output_folder`, `start_collection`, `stop_collection`,
-  `start_another_session`, and `open_session_folder`. `apply_dev_scenario` is
-  debug-only; non-Tauri browser tests use mock snapshots.
-- Open session folder is a Rust operation against the backend-known completed
-  directory. The frontend cannot supply a path or use an opener capability.
+  `start_another_session`, and `open_session_folder` against a backend-known
+  directory only. `apply_dev_scenario` is debug-only; non-Tauri browser tests
+  use mock snapshots.
 - Why/impact: preserve engine durability, deterministic authority, responsive
-  UI, and an entropy-free frontend. Checkpoint 9 may add uPlot; close
-  interception remains later work.
+  UI, and an entropy-free frontend. Close interception remains later work.
 
 ## Discovery, draft, and preferences (2026-08-23)
 
@@ -108,8 +109,7 @@ All decisions are accepted. Material changes return to design review.
 - Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm
   `>=10`, Rust edition 2024/MSRV 1.85. Dependency upgrades require separate
   validation; prereleases are excluded.
-- `rngkit-*` crates use reachable git revision
-  `183f3c7811f5593b3b42c2558ac726552b86687d`, never local paths.
+- `rngkit-*` crates use reachable revision `183f3c7811f5593b3b42c2558ac726552b86687d`, never local paths.
 - Work follows the approved checkpoint plan. Each checkpoint reports changed
   files, observed validation, manual tests, unrun evidence, limitations, and an
   approval request. Later checkpoints are not implicitly authorized.

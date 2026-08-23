@@ -33,6 +33,7 @@ describe('SessionSummary', () => {
       sampleCount: 99,
       elapsedLabel: '01:00:00',
       onesProportionLabel: '0.9999',
+      cumulativeZ: 9.99,
       cumulativeZLabel: '+9.99',
     });
 

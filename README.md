@@ -15,8 +15,8 @@ discovery and fake sources. Safe settings survive restart. Start opens the
 selected source, collects until cooperative Stop, and records a native
 BIN/CSV/manifest bundle. Open session folder uses a backend-known path.
 Debug builds include a scenario switch that calls `apply_dev_scenario`;
-production omits that command and the switch. The live chart is not connected
-yet.
+production omits that command and the switch. The live chart retains every
+committed descriptive cumulative Z point.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is

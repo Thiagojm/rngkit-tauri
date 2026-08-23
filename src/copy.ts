@@ -43,8 +43,26 @@ export const copy = {
   createDerived: 'Create derived bundle',
   generateXlsx: 'Generate XLSX',
   openFolder: 'Open folder',
-  chartPlaceholder:
-    'Live cumulative Z chart attaches in a later checkpoint. Every committed point will be retained.',
+  chart: {
+    title: 'Descriptive cumulative Z',
+    xAxis: 'Sample index',
+    yAxis: 'Descriptive cumulative Z',
+    series: 'Descriptive cumulative Z',
+    zero: 'Zero',
+    refPlus: 'Reference +1.96',
+    refMinus: 'Reference -1.96',
+    resetView: 'Reset view',
+    returnToLive: 'Return to live',
+    empty:
+      'No committed samples yet. Every committed point is retained for this session.',
+    caption:
+      'Sample index versus descriptive cumulative Z. The zero line and ±1.96 lines are visual guides only.',
+    retainedPoints: 'Retained points',
+    live: 'Following new samples',
+    paused: 'View paused; new samples still append',
+    needsPoints: 'Available after the first committed sample.',
+    alreadyLive: 'The chart already follows new samples.',
+  },
   noSources:
     'No sources discovered yet. Refresh to look for currently attached devices. Nothing is selected automatically.',
   noReportInput: 'No report input selected.',

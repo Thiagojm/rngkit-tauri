@@ -52,6 +52,7 @@ pub enum CollectionUpdate {
         sample_count: u64,
         elapsed_label: String,
         ones_proportion_label: String,
+        cumulative_z: f64,
         cumulative_z_label: String,
     },
     TimingOverrun,
@@ -691,6 +692,7 @@ impl AppCoordinator {
                 sample_count,
                 elapsed_label,
                 ones_proportion_label,
+                cumulative_z,
                 cumulative_z_label,
             } => {
                 self.sample_count = sample_count;
@@ -704,6 +706,7 @@ impl AppCoordinator {
                     sample_count,
                     elapsed_label,
                     ones_proportion_label,
+                    cumulative_z,
                     cumulative_z_label,
                 })
             }

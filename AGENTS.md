@@ -39,8 +39,8 @@ git diff --check
 Run the native window with `npm run tauri dev`. That command was not part of
 the Checkpoint 3 automated suite.
 
-Do not claim hardware, CI, installer, or long-session chart evidence until the
-applicable later checkpoint verifies those commands.
+Do not claim hardware, CI, installer, or native long-session chart
+render/interaction evidence until a later checkpoint verifies those commands.
 
 ## Repository conventions
 
@@ -65,7 +65,7 @@ applicable later checkpoint verifies those commands.
   `open_session_folder`. Default start does not enumerate hardware. Default
   tests inject fake discovery and fake sources and do not call
   `rngkit_sources::discover()` or open hardware. Open session folder uses a
-  backend-known path only. Do not add uPlot or intercept window close.
+  backend-known path only. Do not intercept window close.
 - Never persist or expose entropy, seeds, serials, OS device paths, or arbitrary
   diagnostic chains.
 - Keep statistical Z and `+/-1.96` explicitly descriptive, never inferential.

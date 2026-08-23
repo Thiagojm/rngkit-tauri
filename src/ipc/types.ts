@@ -53,6 +53,7 @@ export type CollectionEvent =
       sampleCount: number;
       elapsedLabel: string;
       onesProportionLabel: string;
+      cumulativeZ: number;
       cumulativeZLabel: string;
     }
   | {

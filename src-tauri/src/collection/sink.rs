@@ -58,6 +58,7 @@ fn map_event(event: &EngineEvent, output_root: &Path) -> CollectionUpdate {
             sample_count: snapshot.sample_count,
             elapsed_label: elapsed_label(record.elapsed),
             ones_proportion_label: format!("{:.4}", snapshot.proportion),
+            cumulative_z: snapshot.z,
             cumulative_z_label: format!("{:+.2}", snapshot.z),
         },
         EngineEvent::TimingOverrun { .. } => CollectionUpdate::TimingOverrun,

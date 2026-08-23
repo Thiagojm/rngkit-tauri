@@ -15,6 +15,8 @@ import {
   startCollection,
   stopCollection,
 } from '../ipc/client';
+import { ChartSeries } from '../chart/chart-data';
+import { syntheticCumulativeZ } from '../chart/synthetic';
 import { deriveControls } from './controls';
 import {
   DEFAULT_SCENARIO,
@@ -24,6 +26,7 @@ import {
 import type {
   AppSnapshot,
   CollectionEvent,
+  CollectionSnapshot,
   Destination,
   ThemePreference,
 } from './types';
@@ -43,6 +46,8 @@ export class AppViewState {
   backendSnapshot = $state<AppSnapshot>(cloneSnapshot(DEFAULT_SCENARIO));
   loadGeneration = 0;
   collectionChannelGeneration = 0;
+  chartSeries = new ChartSeries();
+  chartVersion = $state(0);
 
   snapshot = $derived({
     ...this.backendSnapshot,
@@ -108,10 +113,12 @@ export class AppViewState {
     this.scenarioId = id;
     this.replaceDialogOpen = false;
     this.reconcile(cloneSnapshot(id));
+    this.syncMockChart(this.backendSnapshot.collection);
     if (import.meta.env.DEV && isTauri()) {
       void applyDevScenario(id).then((snapshot) => {
         if (generation === this.loadGeneration && this.scenarioId === id) {
           this.reconcile(snapshot);
+          this.syncMockChart(snapshot.collection);
         }
       });
     }
@@ -303,12 +310,16 @@ export class AppViewState {
     switch (event.kind) {
       case 'sessionStarted':
         next.sessionStem = event.stem;
+        this.chartSeries.clear();
+        this.chartVersion += 1;
         break;
       case 'sampleCommitted':
         next.sampleCount = event.sampleCount;
         next.elapsedLabel = event.elapsedLabel;
         next.onesProportionLabel = event.onesProportionLabel;
         next.cumulativeZLabel = event.cumulativeZLabel;
+        this.chartSeries.append(event.sampleIndex, event.cumulativeZ);
+        this.chartVersion += 1;
         break;
       case 'timingOverrun':
         next.overrunCount = event.overrunCount;
@@ -336,6 +347,8 @@ export class AppViewState {
       const generation = ++this.loadGeneration;
       const channelGeneration = ++this.collectionChannelGeneration;
       const fallback = $state.snapshot(this.snapshot);
+      this.chartSeries.clear();
+      this.chartVersion += 1;
       this.reconcile({
         ...fallback,
         collection: {
@@ -372,6 +385,8 @@ export class AppViewState {
     if (this.snapshot.collection.state !== 'ready') {
       return;
     }
+    this.chartSeries.clear();
+    this.chartVersion += 1;
     this.reconcile({
       ...this.snapshot,
       collection: {
@@ -442,6 +457,8 @@ export class AppViewState {
         .then((snapshot) => {
           if (generation === this.loadGeneration) {
             this.reconcile(snapshot);
+            this.chartSeries.clear();
+            this.chartVersion += 1;
           }
         })
         .catch((error: unknown) =>
@@ -456,6 +473,8 @@ export class AppViewState {
       return;
     }
     const ready = Boolean(this.snapshot.collection.outputRootLabel);
+    this.chartSeries.clear();
+    this.chartVersion += 1;
     this.reconcile({
       ...this.snapshot,
       collection: {
@@ -525,6 +544,24 @@ export class AppViewState {
     this.scenarioId = DEFAULT_SCENARIO;
     this.replaceDialogOpen = false;
     this.reconcile(cloneSnapshot(DEFAULT_SCENARIO));
+    this.chartSeries.clear();
+    this.chartVersion += 1;
+  }
+
+  private syncMockChart(collection: CollectionSnapshot): void {
+    if (
+      collection.sampleCount > 0 &&
+      (collection.state === 'collecting' ||
+        collection.state === 'stopping' ||
+        collection.state === 'completed' ||
+        collection.state === 'failed')
+    ) {
+      const seeded = syntheticCumulativeZ(collection.sampleCount);
+      this.chartSeries.replaceAll(seeded.sampleIndex, seeded.cumulativeZ);
+    } else {
+      this.chartSeries.clear();
+    }
+    this.chartVersion += 1;
   }
 }
 

@@ -135,6 +135,11 @@ fn fake_session_writes_native_bundle_and_finalizes() {
             .count(),
         3
     );
+    for event in &events {
+        if let CollectionEventDto::SampleCommitted { cumulative_z, .. } = event {
+            assert!(cumulative_z.is_finite());
+        }
+    }
     assert!(
         events
             .iter()
