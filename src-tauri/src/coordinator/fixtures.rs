@@ -2,8 +2,8 @@
 
 use crate::dto::{
     AppStateDto, CollectionSnapshot, CollectionState, CombineInputRow, CombineResult,
-    CombineSnapshot, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot, SourceCandidateDto,
-    ThemePreference,
+    CombineSnapshot, DiagnosticRecord, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot,
+    SourceCandidateDto, ThemePreference,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -109,12 +109,21 @@ pub fn scenario_snapshot(scenario: DevScenario) -> AppStateDto {
             let mut collection = live_collection(CollectionState::Failed, "Failed");
             collection.error_code = Some(ErrorCode::SourceUnavailable);
             collection.error_message = Some("The selected source became unavailable.".into());
-            snapshot(
+            collection.error_recovery = Some("Select another source and try again.".into());
+            let mut dto = snapshot(
                 collection,
                 FileJobState::Idle,
                 empty_reports(),
                 empty_combine(),
-            )
+            );
+            dto.diagnostics = vec![DiagnosticRecord {
+                app_version: env!("CARGO_PKG_VERSION").into(),
+                library_revision: crate::RNGKIT_CORE_REVISION.into(),
+                operation_id: "op-1".into(),
+                code: ErrorCode::SourceUnavailable,
+                detail: "The selected source became unavailable.".into(),
+            }];
+            dto
         }
         DevScenario::ReportsPreview => snapshot(
             idle_collection(),
@@ -182,6 +191,7 @@ fn snapshot(
         combine,
         theme: ThemePreference::System,
         preferences_warning: None,
+        diagnostics: Vec::new(),
     }
 }
 
@@ -218,6 +228,7 @@ fn collection(state: CollectionState, status_label: &str) -> CollectionSnapshot 
         last_event_sequence: 0,
         error_code: None,
         error_message: None,
+        error_recovery: None,
     }
 }
 

@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::ErrorCode;
+use super::{DiagnosticRecord, ErrorCode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -97,6 +97,8 @@ pub enum CollectionEventDto {
         sequence: u64,
         code: ErrorCode,
         message: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        recovery: Option<String>,
     },
 }
 
@@ -146,6 +148,7 @@ pub struct CollectionSnapshot {
     pub last_event_sequence: u64,
     pub error_code: Option<ErrorCode>,
     pub error_message: Option<String>,
+    pub error_recovery: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -210,6 +213,7 @@ pub struct AppStateDto {
     pub combine: CombineSnapshot,
     pub theme: ThemePreference,
     pub preferences_warning: Option<String>,
+    pub diagnostics: Vec<DiagnosticRecord>,
 }
 
 impl ReportsSnapshot {
@@ -284,12 +288,14 @@ mod tests {
                 last_event_sequence: 0,
                 error_code: None,
                 error_message: None,
+                error_recovery: None,
             },
             file_job: FileJobState::GeneratingReport,
             reports: ReportsSnapshot::empty(),
             combine: CombineSnapshot::empty(),
             theme: ThemePreference::System,
             preferences_warning: None,
+            diagnostics: Vec::new(),
         };
         let value = serde_json::to_value(&dto).expect("json");
         assert!(value.get("fileJob").is_some());
@@ -297,6 +303,8 @@ mod tests {
         assert_eq!(value["fileJob"], "generatingReport");
         assert_eq!(value["collection"]["statusLabel"], "Idle");
         assert!(value["collection"].get("selectedToken").is_some());
+        assert!(value.get("diagnostics").is_some());
+        assert!(value["diagnostics"].as_array().is_some_and(Vec::is_empty));
         assert!(value["collection"].get("lastEventSequence").is_some());
         assert_eq!(value["theme"], "system");
         assert!(value.get("preferencesWarning").is_some());

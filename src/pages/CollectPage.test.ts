@@ -78,6 +78,19 @@ describe('CollectPage', () => {
     expect(screen.queryByRole('button', { name: copy.start })).toBeNull();
   });
 
+  it('shows a recoverable error panel after failure', () => {
+    appState.applyScenario('failed');
+    render(CollectPage);
+
+    expect(screen.getByTestId('error-panel')).toBeTruthy();
+    expect(
+      screen.getByText('Select another source and try again.'),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.errors.copyDiagnostics }),
+    ).toHaveProperty('disabled', false);
+  });
+
   it('shows terminal actions after completion', () => {
     appState.applyScenario('completed');
     render(CollectPage);

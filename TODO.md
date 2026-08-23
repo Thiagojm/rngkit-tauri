@@ -20,19 +20,25 @@
 - Checkpoints 8–9: collection worker, sequenced metric DTOs with numeric
   cumulative Z, Start/Stop, native PseudoRNG recording, backend-known session
   folder opening, and a live uPlot chart that retains every committed point.
-  Close interception is not connected.
+- Checkpoint 10: close interception, Stop and exit after worker finalization,
+  idempotent close while stopping, safe error recovery, and redacted Copy
+  diagnostics. Channel loss and active reloads reconcile to queryable terminal
+  state. Automated frontend/Rust/MSRV suites and rendered browser recovery/copy
+  checks pass. Native Tauri fixture validation covered Keep collecting and Stop
+  and exit; real-worker close finalization and native clipboard remain unverified.
 
 ## In progress
 
-- None. No implementation checkpoint is currently authorized.
+- Checkpoint 10 user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Authorize Checkpoint 10: graceful close, terminal recovery, and diagnostics; no physical validation or reports.
+1. Approve Checkpoint 10, then authorize Checkpoint 11A (BitBabbler app
+   integration) only if a device is available; otherwise record unverified.
 
 ## Backlog
 
-- Checkpoints 10-18: lifecycle, physical validation, reports, Combine,
+- Checkpoints 11-18: physical validation, reports, Combine,
   hardening, CI, installer, and final audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.

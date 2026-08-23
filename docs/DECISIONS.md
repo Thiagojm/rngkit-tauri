@@ -40,14 +40,21 @@ All decisions are accepted. Material changes return to design review.
   uPlot draws zero and dashed ±1.96 references without extra point arrays and
   coalesces redraws to one animation frame. Appends and theme redraws preserve
   user zoom and the mounted plot; Reset fits once and Return to live resumes fit.
+- Close while collecting is intercepted: Keep collecting cancels the close;
+  Stop and exit cooperatively stops and waits for the worker before destroy.
+  The close policy is captured while coordinator state is locked. Close while
+  stopping is idempotent and shows finalization; v1 has no force quit. Channel
+  loss is terminal and queryable; an active frontend reload polls
+  `get_app_state` until terminal reconciliation. Copied diagnostics are redacted
+  in-memory records.
 - Production IPC is `get_app_state`, `refresh_sources`, `select_source`,
   `set_sample_bits`, `set_interval_seconds`, `set_fold`, `set_theme`,
   `choose_output_folder`, `start_collection`, `stop_collection`,
-  `start_another_session`, and `open_session_folder` against a backend-known
-  directory only. `apply_dev_scenario` is debug-only; non-Tauri browser tests
-  use mock snapshots.
+  `start_another_session`, `open_session_folder`, `copy_diagnostics`, and
+  `stop_and_exit` against a backend-known directory only. `apply_dev_scenario`
+  is debug-only; non-Tauri browser tests use mock snapshots.
 - Why/impact: preserve engine durability, deterministic authority, responsive
-  UI, and an entropy-free frontend. Close interception remains later work.
+  UI, and an entropy-free frontend.
 
 ## Discovery, draft, and preferences (2026-08-23)
 

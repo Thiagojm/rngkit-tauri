@@ -64,6 +64,8 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   expect(js).toContain('start_collection');
   expect(js).toContain('stop_collection');
   expect(js).toContain('open_session_folder');
+  expect(js).toContain('copy_diagnostics');
+  expect(js).toContain('stop_and_exit');
   expect(js).not.toContain('apply_dev_scenario');
   await expect.poll(() => bodyBackground(page)).toBe(LIGHT_SURFACE);
 

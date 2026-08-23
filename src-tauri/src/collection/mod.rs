@@ -157,6 +157,7 @@ impl CollectionHandle {
                     &worker_cancel,
                     plan,
                 );
+                crate::lifecycle::on_worker_finished(&app);
             })
             .map_err(|_| SafeError::unexpected_failure())?;
         let mut slot = self
@@ -436,6 +437,7 @@ pub(crate) fn map_engine_error(error: &EngineError) -> SafeError {
         EngineError::Config(_) => {
             SafeError::invalid_configuration("The session configuration is not valid.")
         }
+        EngineError::Sink(_) => SafeError::channel_lost(),
         _ => SafeError::unexpected_failure(),
     }
 }
@@ -444,6 +446,7 @@ pub(crate) fn map_engine_kind(kind: &str) -> SafeError {
     match kind {
         "source" => SafeError::source_unavailable(),
         "config" => SafeError::invalid_configuration("The session configuration is not valid."),
+        "sink" => SafeError::channel_lost(),
         _ => SafeError::unexpected_failure(),
     }
 }

@@ -12,6 +12,7 @@
   import CollectPage from '../../pages/CollectPage.svelte';
   import HelpPage from '../../pages/HelpPage.svelte';
   import ReportsPage from '../../pages/ReportsPage.svelte';
+  import CloseCollectionDialog from './CloseCollectionDialog.svelte';
   import Navigation from './Navigation.svelte';
   import ThemeControl from './ThemeControl.svelte';
 
@@ -80,3 +81,4 @@
     </main>
   </div>
 </div>
+<CloseCollectionDialog />

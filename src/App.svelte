@@ -5,6 +5,19 @@
 
   onMount(() => {
     void appState.hydrate();
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+    void appState.listenForClose().then((stop) => {
+      if (disposed) {
+        stop();
+      } else {
+        unlisten = stop;
+      }
+    });
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
   });
 </script>
 

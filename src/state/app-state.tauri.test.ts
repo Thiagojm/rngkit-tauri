@@ -3,6 +3,7 @@ import type { AppSnapshot, CollectionEvent } from '../ipc/types';
 import { MOCK_SCENARIOS } from './mock-scenarios';
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.doUnmock('@tauri-apps/api/core');
   vi.doUnmock('../ipc/client');
   vi.resetModules();
@@ -50,6 +51,9 @@ describe('AppViewState native collection channel', () => {
       setSampleBits: vi.fn(),
       setTheme: vi.fn(),
       startAnotherSession: vi.fn(),
+      copyDiagnostics: vi.fn(),
+      listenCloseRequested: vi.fn(async () => () => undefined),
+      stopAndExit: vi.fn(),
       startCollection: vi.fn(
         async (handler: (event: CollectionEvent) => void) => {
           onEvent = handler;
@@ -84,5 +88,49 @@ describe('AppViewState native collection channel', () => {
 
     expect(state.snapshot.collection.sampleCount).toBe(3);
     expect(state.snapshot.collection.lastEventSequence).toBe(1);
+  });
+
+  it('keeps reconciling a reloaded active session until it becomes terminal', async () => {
+    vi.useFakeTimers();
+    const collecting = structuredClone(MOCK_SCENARIOS.collecting);
+    const failed = structuredClone(MOCK_SCENARIOS.failed);
+    const getAppState = vi
+      .fn<() => Promise<AppSnapshot>>()
+      .mockResolvedValueOnce(collecting)
+      .mockResolvedValue(failed);
+
+    vi.resetModules();
+    vi.doMock('@tauri-apps/api/core', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('@tauri-apps/api/core')>()),
+      isTauri: () => true,
+    }));
+    vi.doMock('../ipc/client', () => ({
+      applyDevScenario: vi.fn(),
+      chooseOutputFolder: vi.fn(),
+      copyDiagnostics: vi.fn(),
+      getAppState,
+      listenCloseRequested: vi.fn(async () => () => undefined),
+      openSessionFolder: vi.fn(),
+      refreshSources: vi.fn(),
+      safeErrorMessage: () => 'safe error',
+      selectSource: vi.fn(),
+      setFold: vi.fn(),
+      setIntervalSeconds: vi.fn(),
+      setSampleBits: vi.fn(),
+      setTheme: vi.fn(),
+      startAnotherSession: vi.fn(),
+      startCollection: vi.fn(),
+      stopAndExit: vi.fn(),
+      stopCollection: vi.fn(),
+    }));
+    const { AppViewState } = await import('./app-state.svelte');
+    const state = new AppViewState();
+
+    await state.hydrate();
+    expect(state.snapshot.collection.state).toBe('collecting');
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(getAppState).toHaveBeenCalledTimes(2);
+    expect(state.snapshot.collection.state).toBe('failed');
   });
 });

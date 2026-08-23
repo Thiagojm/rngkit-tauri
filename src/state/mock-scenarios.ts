@@ -1,3 +1,4 @@
+import { RNGKIT_CORE_REVISION } from '../library-revision';
 import type { AppSnapshot, CollectionSnapshot, ThemePreference } from './types';
 
 export const SCENARIO_IDS = [
@@ -58,7 +59,10 @@ const emptyCombine = {
 function snapshot(
   collection: CollectionSnapshot,
   extras: Partial<
-    Pick<AppSnapshot, 'fileJob' | 'reports' | 'combine' | 'theme'>
+    Pick<
+      AppSnapshot,
+      'fileJob' | 'reports' | 'combine' | 'theme' | 'diagnostics'
+    >
   > = {},
 ): AppSnapshot {
   return {
@@ -68,6 +72,7 @@ function snapshot(
     combine: extras.combine ?? emptyCombine,
     theme: extras.theme ?? ('system' satisfies ThemePreference),
     preferencesWarning: null,
+    diagnostics: extras.diagnostics ?? [],
   };
 }
 
@@ -93,6 +98,7 @@ function collection(
     lastEventSequence: 0,
     errorCode: null,
     errorMessage: null,
+    errorRecovery: null,
     ...partial,
   };
 }
@@ -205,7 +211,19 @@ export const MOCK_SCENARIOS: Record<ScenarioId, AppSnapshot> = {
       ...live,
       errorCode: 'source_unavailable',
       errorMessage: 'The selected source became unavailable.',
+      errorRecovery: 'Select another source and try again.',
     }),
+    {
+      diagnostics: [
+        {
+          appVersion: '0.1.0',
+          libraryRevision: RNGKIT_CORE_REVISION,
+          operationId: 'op-1',
+          code: 'source_unavailable',
+          detail: 'The selected source became unavailable.',
+        },
+      ],
+    },
   ),
   reportsPreview: snapshot(
     collection({

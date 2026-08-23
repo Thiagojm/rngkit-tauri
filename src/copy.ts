@@ -63,6 +63,22 @@ export const copy = {
     needsPoints: 'Available after the first committed sample.',
     alreadyLive: 'The chart already follows new samples.',
   },
+  close: {
+    title: 'Stop collection before closing?',
+    body: 'The session is still collecting. Stop and exit waits for the recording to finish, then closes the window. Keep collecting cancels the close.',
+    keep: 'Keep collecting',
+    stopAndExit: 'Stop and exit',
+    finalizingTitle: 'Finishing the session',
+    finalizingBody:
+      'The session is stopping. The window will close after the recording is finalized. Closing again does not force quit.',
+    finalizingReason: 'The window will close after finalization.',
+  },
+  errors: {
+    copyDiagnostics: 'Copy diagnostics',
+    copied: 'Diagnostics copied',
+    copyFailed: 'Diagnostics could not be copied.',
+    empty: 'No diagnostics are available.',
+  },
   noSources:
     'No sources discovered yet. Refresh to look for currently attached devices. Nothing is selected automatically.',
   noReportInput: 'No report input selected.',

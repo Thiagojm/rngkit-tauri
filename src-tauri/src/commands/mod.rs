@@ -3,6 +3,7 @@
 pub mod collection;
 pub mod dialogs;
 pub mod discovery;
+pub mod lifecycle;
 pub mod preferences;
 pub mod state;
 

@@ -8,6 +8,7 @@ import {
 import {
   ERROR_CODES,
   type AppSnapshot,
+  type ClosePromptMode,
   type CollectionEvent,
   type SafeErrorDto,
   type ThemePreference,
@@ -127,6 +128,7 @@ export async function startCollection(
       lastEventSequence: 0,
       errorCode: null,
       errorMessage: null,
+      errorRecovery: null,
     },
   };
 }
@@ -179,6 +181,7 @@ export async function startAnotherSession(): Promise<AppSnapshot> {
       lastEventSequence: 0,
       errorCode: null,
       errorMessage: null,
+      errorRecovery: null,
     },
   };
 }
@@ -188,6 +191,56 @@ export async function openSessionFolder(): Promise<AppSnapshot> {
     return invoke<AppSnapshot>('open_session_folder');
   }
   return getAppState();
+}
+
+function formatMockDiagnostics(snapshot: AppSnapshot): string {
+  if (snapshot.diagnostics.length === 0) {
+    return 'RngKit diagnostics\nNo diagnostic records.';
+  }
+  const first = snapshot.diagnostics[0];
+  const lines = [
+    `RngKit ${first.appVersion}`,
+    `library ${first.libraryRevision}`,
+    '',
+  ];
+  for (const record of snapshot.diagnostics) {
+    lines.push(`${record.operationId} ${record.code}`, record.detail, '');
+  }
+  return lines.join('\n');
+}
+
+export async function copyDiagnostics(snapshot?: AppSnapshot): Promise<string> {
+  if (isTauri()) {
+    return invoke<string>('copy_diagnostics');
+  }
+  return formatMockDiagnostics(snapshot ?? (await getAppState()));
+}
+
+export async function stopAndExit(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('stop_and_exit');
+  }
+  return stopCollection();
+}
+
+export async function listenCloseRequested(
+  onPrompt: (mode: ClosePromptMode) => void,
+): Promise<() => void> {
+  if (!isTauri()) {
+    return () => undefined;
+  }
+  const { listen } = await import('@tauri-apps/api/event');
+  return listen<{ mode: ClosePromptMode }>(
+    'rngkit-close-requested',
+    (event) => {
+      if (
+        event.payload.mode === 'confirm' ||
+        event.payload.mode === 'finalizing'
+      ) {
+        onPrompt(event.payload.mode);
+      }
+    },
+  );
 }
 
 export async function applyDevScenario(id: ScenarioId): Promise<AppSnapshot> {

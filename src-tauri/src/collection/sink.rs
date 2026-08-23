@@ -43,7 +43,12 @@ impl EventSink for CoordinatorSink<'_> {
                 .ingest_collection_update(&self.session_id, update)
                 .map_err(|error| EngineError::Sink(error.message().to_owned()))?
         };
-        self.sender.send_event(dto)
+        if let Err(error) = self.sender.send_event(dto) {
+            let _ = lock(self.coordinator)
+                .finish_worker_failure(&self.session_id, SafeError::channel_lost());
+            return Err(error);
+        }
+        Ok(())
     }
 }
 

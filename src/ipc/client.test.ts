@@ -12,7 +12,9 @@ import {
   setSampleBits,
   setTheme,
   startCollection,
+  stopAndExit,
   stopCollection,
+  copyDiagnostics,
 } from './client';
 
 function setTauri(enabled: boolean): void {
@@ -129,6 +131,21 @@ describe('ipc client', () => {
     await expect(openSessionFolder()).resolves.toEqual(
       MOCK_SCENARIOS.completed,
     );
+  });
+
+  it('invokes copy_diagnostics and stop_and_exit inside Tauri', async () => {
+    setTauri(true);
+    mockIPC((cmd) => {
+      if (cmd === 'copy_diagnostics') {
+        return 'RngKit 0.1.0\nlibrary test\n';
+      }
+      if (cmd === 'stop_and_exit') {
+        return MOCK_SCENARIOS.stopping;
+      }
+      throw new Error(`unexpected command ${cmd}`);
+    });
+    await expect(copyDiagnostics()).resolves.toContain('RngKit');
+    await expect(stopAndExit()).resolves.toEqual(MOCK_SCENARIOS.stopping);
   });
 
   it('uses only structured safe IPC errors in the UI', () => {

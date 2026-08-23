@@ -2,6 +2,7 @@
   import LiveZChart from '../components/collect/LiveZChart.svelte';
   import SessionConfiguration from '../components/collect/SessionConfiguration.svelte';
   import SessionSummary from '../components/collect/SessionSummary.svelte';
+  import ErrorPanel from '../components/ui/ErrorPanel.svelte';
   import MetricCard from '../components/ui/MetricCard.svelte';
   import StatusBanner from '../components/ui/StatusBanner.svelte';
   import { copy } from '../copy';
@@ -28,6 +29,7 @@
           label={collection.statusLabel}
           detail={collection.errorMessage}
         />
+        <ErrorPanel />
         <div class="grid grid-cols-2 gap-3 @min-[28rem]:grid-cols-3">
           <MetricCard label="Samples" value={String(collection.sampleCount)} />
           <MetricCard label="Elapsed" value={collection.elapsedLabel} />

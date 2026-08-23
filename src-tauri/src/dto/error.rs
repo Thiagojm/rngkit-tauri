@@ -59,6 +59,7 @@ impl SafeError {
             ErrorCode::ExpiredSelection,
             "That source is no longer valid. Refresh sources and select again.",
         )
+        .with_recovery("Refresh sources and select again.")
     }
 
     #[must_use]
@@ -72,11 +73,13 @@ impl SafeError {
             ErrorCode::SourceUnavailable,
             "The selected source became unavailable.",
         )
+        .with_recovery("Select another source and try again.")
     }
 
     #[must_use]
     pub fn source_busy() -> Self {
         Self::new(ErrorCode::SourceBusy, "The selected source is busy.")
+            .with_recovery("Wait, then try again.")
     }
 
     #[must_use]
@@ -85,11 +88,13 @@ impl SafeError {
             ErrorCode::SourceDisconnected,
             "The selected source disconnected.",
         )
+        .with_recovery("Reconnect the device, refresh sources, and select it again.")
     }
 
     #[must_use]
     pub fn source_timed_out() -> Self {
         Self::new(ErrorCode::SourceTimedOut, "The selected source timed out.")
+            .with_recovery("Refresh sources and try again.")
     }
 
     #[must_use]
@@ -106,6 +111,16 @@ impl SafeError {
             ErrorCode::UnexpectedFailure,
             "The operation failed unexpectedly.",
         )
+        .with_recovery("Copy diagnostics if you need to report this.")
+    }
+
+    #[must_use]
+    pub fn channel_lost() -> Self {
+        Self::new(
+            ErrorCode::UnexpectedFailure,
+            "The live session connection was lost. The session was stopped.",
+        )
+        .with_recovery("Start another session if you want to collect again.")
     }
 
     #[must_use]
@@ -138,6 +153,11 @@ impl SafeError {
     #[must_use]
     pub fn message(&self) -> &str {
         &self.message
+    }
+
+    #[must_use]
+    pub fn recovery(&self) -> Option<&str> {
+        self.recovery.as_deref()
     }
 
     pub(crate) fn into_message(self) -> String {

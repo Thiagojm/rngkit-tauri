@@ -23,7 +23,10 @@ folder accepts a backend-known directory, not a frontend path. Debug builds
 expose `apply_dev_scenario`; release builds omit that command. The live uPlot chart
 retains every committed `(sample_index, cumulative_z)` point with coalesced
 redraws, zoom and theme-change viewport persistence, Reset view, and Return to
-live. Window-close interception is not connected yet.
+live. Close while collecting confirms Keep collecting or Stop and exit; close
+while stopping waits for cooperative finalization. Active sessions reloaded in
+the frontend poll authoritative state until terminal reconciliation. Copy
+diagnostics returns a redacted in-memory history.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which

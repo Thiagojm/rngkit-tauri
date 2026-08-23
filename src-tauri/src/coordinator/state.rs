@@ -7,13 +7,14 @@ use std::path::{Path, PathBuf};
 use rngkit_core::{Fold, IntervalSeconds, SampleBits};
 use rngkit_sources::SourceConfig;
 
+use crate::diagnostics::redact_detail;
 use crate::discovery::{DiscoveryOutcome, MappedCandidate};
 use crate::dto::{
     AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineSnapshot,
     DiagnosticRecord, ErrorCode, FileJobState, ReportsSnapshot, SourceCandidateDto,
     ThemePreference,
 };
-use crate::errors::{SafeError, redact_detail};
+use crate::errors::SafeError;
 use crate::preferences::{self, Preferences, SessionDraft};
 
 use super::fixtures::{self, DevScenario};
@@ -111,6 +112,7 @@ pub struct AppCoordinator {
     next_event_sequence: u64,
     error_code: Option<ErrorCode>,
     error_message: Option<String>,
+    error_recovery: Option<String>,
     reports: ReportsSnapshot,
     combine: CombineSnapshot,
     diagnostics: VecDeque<DiagnosticRecord>,
@@ -176,6 +178,7 @@ impl AppCoordinator {
             next_event_sequence: 0,
             error_code: None,
             error_message: None,
+            error_recovery: None,
             reports: ReportsSnapshot::empty(),
             combine: CombineSnapshot::empty(),
             diagnostics: VecDeque::new(),
@@ -211,12 +214,14 @@ impl AppCoordinator {
                 last_event_sequence: self.last_event_sequence,
                 error_code: self.error_code,
                 error_message: self.error_message.clone(),
+                error_recovery: self.error_recovery.clone(),
             },
             file_job: self.file_job,
             reports: self.reports.clone(),
             combine: self.combine.clone(),
             theme: self.theme,
             preferences_warning: self.preferences_warning.clone(),
+            diagnostics: self.diagnostics.iter().cloned().collect(),
         }
     }
 
@@ -362,7 +367,7 @@ impl AppCoordinator {
         Ok(self.snapshot())
     }
 
-    /// Record a redacted diagnostic. Production copy-diagnostics IPC is later.
+    /// Record a redacted diagnostic. Copy diagnostics formats this history.
     pub fn record_diagnostic(&mut self, code: ErrorCode, raw_detail: &str) -> DiagnosticRecord {
         self.next_operation_seq += 1;
         let record = DiagnosticRecord {
@@ -570,6 +575,7 @@ impl AppCoordinator {
         self.reset_live_metrics();
         self.error_code = None;
         self.error_message = None;
+        self.error_recovery = None;
         self.session_stem = None;
         self.session_directory = None;
         self.collection = CollectionState::Collecting;
@@ -739,9 +745,9 @@ impl AppCoordinator {
                     sequence,
                     code: error.code,
                     message: error.message().to_owned(),
+                    recovery: error.recovery().map(str::to_owned),
                 };
-                self.error_code = Some(error.code);
-                self.error_message = Some(error.into_message());
+                self.apply_failed_error(error);
                 self.collection = CollectionState::Failed;
                 Ok(dto)
             }
@@ -765,6 +771,7 @@ impl AppCoordinator {
         self.require_active_session()?;
         self.error_code = None;
         self.error_message = None;
+        self.error_recovery = None;
         self.collection = CollectionState::Completed;
         Ok(())
     }
@@ -772,8 +779,7 @@ impl AppCoordinator {
     pub fn finish_failed(&mut self, error: SafeError) -> Result<(), SafeError> {
         self.require_active_session()?;
         self.record_diagnostic(error.code, error.message());
-        self.error_code = Some(error.code);
-        self.error_message = Some(error.into_message());
+        self.apply_failed_error(error);
         self.collection = CollectionState::Failed;
         Ok(())
     }
@@ -802,8 +808,7 @@ impl AppCoordinator {
             ));
         }
         self.record_diagnostic(error.code, error.message());
-        self.error_code = Some(error.code);
-        self.error_message = Some(error.into_message());
+        self.apply_failed_error(error);
         self.collection = CollectionState::Failed;
         Ok(())
     }
@@ -897,11 +902,12 @@ impl AppCoordinator {
         };
         self.error_code = collection.error_code;
         self.error_message = collection.error_message;
+        self.error_recovery = collection.error_recovery;
         self.reports = snapshot.reports;
         self.combine = snapshot.combine;
         self.theme = snapshot.theme;
         self.preferences_warning = snapshot.preferences_warning;
-        self.diagnostics.clear();
+        self.diagnostics = snapshot.diagnostics.into();
     }
 
     pub(crate) fn ensure_configurable(&self) -> Result<(), SafeError> {
@@ -1010,6 +1016,13 @@ impl AppCoordinator {
         self.session_directory = None;
         self.error_code = None;
         self.error_message = None;
+        self.error_recovery = None;
+    }
+
+    fn apply_failed_error(&mut self, error: SafeError) {
+        self.error_code = Some(error.code);
+        self.error_recovery = error.recovery().map(str::to_owned);
+        self.error_message = Some(error.into_message());
     }
 
     fn reset_live_metrics(&mut self) {

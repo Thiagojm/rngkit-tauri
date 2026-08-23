@@ -75,6 +75,7 @@ export type CollectionEvent =
       sequence: number;
       code: ErrorCode;
       message: string;
+      recovery?: string;
     };
 
 export interface DiagnosticRecord {
@@ -114,6 +115,7 @@ export interface CollectionSnapshot {
   lastEventSequence: number;
   errorCode: ErrorCode | null;
   errorMessage: string | null;
+  errorRecovery: string | null;
 }
 
 export interface ReportPreview {
@@ -159,6 +161,8 @@ export interface CombineSnapshot {
   result: CombineResult | null;
 }
 
+export type ClosePromptMode = 'confirm' | 'finalizing';
+
 export const THEME_PREFERENCES = ['system', 'light', 'dark'] as const;
 
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
@@ -170,4 +174,5 @@ export interface AppSnapshot {
   combine: CombineSnapshot;
   theme: ThemePreference;
   preferencesWarning: string | null;
+  diagnostics: DiagnosticRecord[];
 }

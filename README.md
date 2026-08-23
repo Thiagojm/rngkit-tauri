@@ -14,9 +14,10 @@ Refresh runs real discovery in the native window; default tests inject fake
 discovery and fake sources. Safe settings survive restart. Start opens the
 selected source, collects until cooperative Stop, and records a native
 BIN/CSV/manifest bundle. Open session folder uses a backend-known path.
-Debug builds include a scenario switch that calls `apply_dev_scenario`;
-production omits that command and the switch. The live chart retains every
-committed descriptive cumulative Z point.
+Closing while collecting confirms Keep collecting or Stop and exit. Debug
+builds include a scenario switch that calls `apply_dev_scenario`; production
+omits that command and the switch. The live chart retains every committed
+descriptive cumulative Z point. Copied diagnostics are bounded and redacted.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is

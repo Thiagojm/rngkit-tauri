@@ -3,9 +3,11 @@
 pub mod collection;
 pub mod commands;
 pub mod coordinator;
+pub mod diagnostics;
 pub mod discovery;
 pub mod dto;
 pub mod errors;
+pub mod lifecycle;
 pub mod preferences;
 
 use std::sync::Mutex;
@@ -27,6 +29,7 @@ pub fn run() {
         .manage(Mutex::new(AppCoordinator::new()))
         .manage(DiscoveryHandle::live())
         .manage(CollectionHandle::live())
+        .manage(lifecycle::LifecycleHandle::new())
         .setup(|app| {
             let prefs_path = app
                 .path()
@@ -66,8 +69,25 @@ pub fn run() {
                 tauri::WindowEvent::Resized(size) => {
                     prefs.update_size(size.width, size.height);
                 }
-                tauri::WindowEvent::CloseRequested { .. } => {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
                     let _ = prefs.persist();
+                    let policy = window
+                        .try_state::<Mutex<AppCoordinator>>()
+                        .map(|coordinator| {
+                            let coordinator = coordinator
+                                .lock()
+                                .unwrap_or_else(std::sync::PoisonError::into_inner);
+                            let policy =
+                                lifecycle::close_policy(coordinator.snapshot().collection.state);
+                            if policy != lifecycle::ClosePolicy::Allow {
+                                api.prevent_close();
+                            }
+                            policy
+                        })
+                        .unwrap_or(lifecycle::ClosePolicy::Allow);
+                    if policy != lifecycle::ClosePolicy::Allow {
+                        lifecycle::on_close_requested(window, policy);
+                    }
                 }
                 _ => {}
             }
@@ -87,6 +107,8 @@ pub fn run() {
         commands::collection::stop_collection,
         commands::collection::start_another_session,
         commands::collection::open_session_folder,
+        commands::lifecycle::copy_diagnostics,
+        commands::lifecycle::stop_and_exit,
         commands::dev::apply_dev_scenario,
     ]);
 
@@ -104,6 +126,8 @@ pub fn run() {
         commands::collection::stop_collection,
         commands::collection::start_another_session,
         commands::collection::open_session_folder,
+        commands::lifecycle::copy_diagnostics,
+        commands::lifecycle::stop_and_exit,
     ]);
 
     builder

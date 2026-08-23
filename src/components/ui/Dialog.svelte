@@ -4,12 +4,14 @@
   let {
     title,
     open = false,
+    dismissible = true,
     onClose,
     children,
     actions,
   }: {
     title: string;
     open?: boolean;
+    dismissible?: boolean;
     onClose: () => void;
     children: Snippet;
     actions: Snippet;
@@ -45,7 +47,16 @@
   bind:this={dialog}
   class="m-auto w-[calc(100%_-_2rem)] max-w-lg rounded-md border border-border bg-surface p-6 text-text shadow-lg backdrop:bg-surface-inverse/40"
   aria-labelledby={titleId}
-  onclose={onClose}
+  oncancel={(event) => {
+    if (!dismissible) {
+      event.preventDefault();
+    }
+  }}
+  onclose={() => {
+    if (dismissible) {
+      onClose();
+    }
+  }}
 >
   <h2 id={titleId} class="text-lg font-semibold">{title}</h2>
   <div class="mt-3 text-sm text-text-muted">

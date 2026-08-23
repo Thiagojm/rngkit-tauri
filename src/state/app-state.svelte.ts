@@ -2,7 +2,9 @@ import { isTauri } from '@tauri-apps/api/core';
 import {
   applyDevScenario,
   chooseOutputFolder,
+  copyDiagnostics as requestCopyDiagnostics,
   getAppState,
+  listenCloseRequested,
   openSessionFolder,
   refreshSources,
   safeErrorMessage,
@@ -13,6 +15,7 @@ import {
   setTheme,
   startAnotherSession,
   startCollection,
+  stopAndExit as requestStopAndExit,
   stopCollection,
 } from '../ipc/client';
 import { ChartSeries } from '../chart/chart-data';
@@ -23,8 +26,10 @@ import {
   MOCK_SCENARIOS,
   type ScenarioId,
 } from './mock-scenarios';
+import type { ClosePromptMode } from '../ipc/types';
 import type {
   AppSnapshot,
+  ClosePrompt,
   CollectionEvent,
   CollectionSnapshot,
   Destination,
@@ -35,6 +40,15 @@ function cloneSnapshot(id: ScenarioId): AppSnapshot {
   return structuredClone(MOCK_SCENARIOS[id]);
 }
 
+const ACTIVE_RECONCILE_MS = 250;
+
+function isActiveCollection(snapshot: AppSnapshot): boolean {
+  return (
+    snapshot.collection.state === 'collecting' ||
+    snapshot.collection.state === 'stopping'
+  );
+}
+
 export class AppViewState {
   destination = $state<Destination>('collect');
   theme = $state<ThemePreference>('system');
@@ -43,6 +57,8 @@ export class AppViewState {
     MOCK_SCENARIOS[DEFAULT_SCENARIO].collection.selectedToken,
   );
   replaceDialogOpen = $state(false);
+  closePrompt = $state<ClosePrompt>('none');
+  diagnosticsCopied = $state(false);
   backendSnapshot = $state<AppSnapshot>(cloneSnapshot(DEFAULT_SCENARIO));
   loadGeneration = 0;
   collectionChannelGeneration = 0;
@@ -106,12 +122,115 @@ export class AppViewState {
       return;
     }
     this.reconcile(snapshot);
+    if (isActiveCollection(snapshot)) {
+      void this.reconcileReloadedSession(generation);
+    }
+  }
+
+  private async reconcileReloadedSession(generation: number): Promise<void> {
+    while (
+      generation === this.loadGeneration &&
+      isActiveCollection(this.backendSnapshot)
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, ACTIVE_RECONCILE_MS));
+      if (generation !== this.loadGeneration) {
+        return;
+      }
+      try {
+        const latest = await getAppState();
+        if (generation === this.loadGeneration) {
+          this.reconcile(latest);
+        }
+      } catch {
+        return;
+      }
+    }
+  }
+
+  async listenForClose(): Promise<() => void> {
+    return listenCloseRequested((mode) => this.onCloseRequested(mode));
+  }
+
+  onCloseRequested(mode: ClosePromptMode): void {
+    this.closePrompt = mode;
+  }
+
+  keepCollecting(): void {
+    if (this.closePrompt === 'finalizing') {
+      return;
+    }
+    this.closePrompt = 'none';
+  }
+
+  stopAndExit(): void {
+    this.closePrompt = 'finalizing';
+    if (isTauri()) {
+      const generation = ++this.loadGeneration;
+      const fallback = $state.snapshot(this.snapshot);
+      this.reconcile({
+        ...fallback,
+        collection: {
+          ...fallback.collection,
+          state:
+            fallback.collection.state === 'collecting'
+              ? 'stopping'
+              : fallback.collection.state,
+          statusLabel:
+            fallback.collection.state === 'collecting'
+              ? 'Stopping'
+              : fallback.collection.statusLabel,
+        },
+      });
+      void requestStopAndExit()
+        .then((snapshot) => {
+          if (generation !== this.loadGeneration) {
+            return;
+          }
+          const current = this.backendSnapshot.collection;
+          if (
+            snapshot.collection.sessionId === current.sessionId &&
+            snapshot.collection.lastEventSequence < current.lastEventSequence
+          ) {
+            return;
+          }
+          this.reconcile(snapshot);
+        })
+        .catch((error: unknown) =>
+          this.reconcileCommandFailure(generation, fallback, error),
+        );
+      return;
+    }
+    this.stopCollection();
+    if (
+      this.snapshot.collection.state === 'completed' ||
+      this.snapshot.collection.state === 'failed'
+    ) {
+      this.closePrompt = 'none';
+    }
+  }
+
+  async copyDiagnostics(): Promise<boolean> {
+    try {
+      const text = await requestCopyDiagnostics(this.backendSnapshot);
+      if (!navigator.clipboard?.writeText) {
+        this.diagnosticsCopied = false;
+        return false;
+      }
+      await navigator.clipboard.writeText(text);
+      this.diagnosticsCopied = true;
+      return true;
+    } catch {
+      this.diagnosticsCopied = false;
+      return false;
+    }
   }
 
   applyScenario(id: ScenarioId): void {
     const generation = ++this.loadGeneration;
     this.scenarioId = id;
     this.replaceDialogOpen = false;
+    this.closePrompt = 'none';
+    this.diagnosticsCopied = false;
     this.reconcile(cloneSnapshot(id));
     this.syncMockChart(this.backendSnapshot.collection);
     if (import.meta.env.DEV && isTauri()) {
@@ -291,6 +410,9 @@ export class AppViewState {
 
   acceptCollectionEvent(event: CollectionEvent): void {
     const collection = this.backendSnapshot.collection;
+    if (collection.state !== 'collecting' && collection.state !== 'stopping') {
+      return;
+    }
     if (event.sessionId !== collection.sessionId) {
       if (
         collection.sessionId !== null ||
@@ -331,12 +453,14 @@ export class AppViewState {
         next.overrunCount = event.overrunCount;
         next.errorCode = null;
         next.errorMessage = null;
+        next.errorRecovery = null;
         break;
       case 'terminalFailure':
         next.state = 'failed';
         next.statusLabel = 'Failed';
         next.errorCode = event.code;
         next.errorMessage = event.message;
+        next.errorRecovery = event.recovery ?? null;
         break;
     }
     this.reconcile({ ...this.backendSnapshot, collection: next });
@@ -357,6 +481,7 @@ export class AppViewState {
           statusLabel: 'Collecting',
           errorCode: null,
           errorMessage: null,
+          errorRecovery: null,
         },
       });
       void startCollection((event) => {
@@ -397,6 +522,7 @@ export class AppViewState {
         lastEventSequence: 0,
         errorCode: null,
         errorMessage: null,
+        errorRecovery: null,
       },
     });
   }
@@ -491,6 +617,7 @@ export class AppViewState {
         lastEventSequence: 0,
         errorCode: null,
         errorMessage: null,
+        errorRecovery: null,
       },
     });
   }
@@ -543,6 +670,8 @@ export class AppViewState {
     this.theme = 'system';
     this.scenarioId = DEFAULT_SCENARIO;
     this.replaceDialogOpen = false;
+    this.closePrompt = 'none';
+    this.diagnosticsCopied = false;
     this.reconcile(cloneSnapshot(DEFAULT_SCENARIO));
     this.chartSeries.clear();
     this.chartVersion += 1;

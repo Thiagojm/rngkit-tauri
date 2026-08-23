@@ -13,9 +13,8 @@ Read these files before changing the project:
 
 ## Verified commands (Windows host, through 2026-08-23)
 
-From the repository root. Scaffold used Node.js 24.18.0 / npm 11.16.0; floors
-are Node `^20.19.0 || >=22.12.0` and npm `>=10`. Stable Rust is 1.97.1; MSRV
-toolchain `1.85.0` is installed. Do not install a missing toolchain silently.
+From the repository root. Scaffold used Node.js 24.18.0 / npm 11.16.0; Node floor is `^20.19.0 || >=22.12.0`.
+npm floor is `>=10`; stable Rust is 1.97.1 and MSRV `1.85.0` is installed. Do not install a toolchain silently.
 
 ```text
 npm ci
@@ -36,16 +35,14 @@ git status --short --branch
 git diff --check
 ```
 
-Run the native window with `npm run tauri dev`. That command was not part of
-the Checkpoint 3 automated suite.
-
-Do not claim hardware, CI, installer, or native long-session chart
-render/interaction evidence until a later checkpoint verifies those commands.
+Run the native window with `npm run tauri dev`. Do not claim hardware, CI,
+installer, or native long-session chart render/interaction evidence until a
+later checkpoint verifies those commands.
 
 ## Repository conventions
 
 - Follow the approved plan one checkpoint at a time; stop for user testing and
-  approval before the next. Material contract changes require renewed design approval.
+  approval before the next. Material contract changes require design approval.
 - Preserve the approved design and plan; update their current-state references
   only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`.
@@ -61,11 +58,14 @@ render/interaction evidence until a later checkpoint verifies those commands.
   Never grant general filesystem, shell, opener, or logging access. Production
   IPC is `get_app_state`, `refresh_sources`, `select_source`, `set_sample_bits`,
   `set_interval_seconds`, `set_fold`, `set_theme`, `choose_output_folder`,
-  `start_collection`, `stop_collection`, `start_another_session`, and
-  `open_session_folder`. Default start does not enumerate hardware. Default
-  tests inject fake discovery and fake sources and do not call
-  `rngkit_sources::discover()` or open hardware. Open session folder uses a
-  backend-known path only. Do not intercept window close.
+  `start_collection`, `stop_collection`, `start_another_session`,
+  `open_session_folder`, `copy_diagnostics`, and `stop_and_exit`. Default start
+  does not enumerate hardware. Default tests inject fake discovery and fake
+  sources and do not call `rngkit_sources::discover()` or open hardware. Open
+  session folder uses a backend-known path only. Close policy is captured while
+  coordinator state is locked. Active reloads poll until terminal reconciliation.
+  Close while collecting confirms Keep collecting or Stop and exit; close while
+  stopping waits for finalization.
 - Never persist or expose entropy, seeds, serials, OS device paths, or arbitrary
   diagnostic chains.
 - Keep statistical Z and `+/-1.96` explicitly descriptive, never inferential.

@@ -8,12 +8,15 @@ export {
   type CombineInputRow,
   type CombineResult,
   type CombineSnapshot,
+  type DiagnosticRecord,
   type FileJobState,
   type ReportPreview,
   type ReportsSnapshot,
   type SourceCandidateView,
   type ThemePreference,
 } from '../ipc/types';
+
+export type ClosePrompt = 'none' | 'confirm' | 'finalizing';
 
 export const DESTINATIONS = ['collect', 'reports', 'combine', 'help'] as const;
 
