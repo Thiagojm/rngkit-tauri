@@ -57,6 +57,34 @@
 - Statistical Z and `+/-1.96` remain descriptive visual references with no
   p-values, certification, or pass/fail randomness conclusion.
 
+## Scaffold stack (2026-08-22)
+
+- Status: accepted
+- The official `create-tauri-app` `svelte-ts` template is SvelteKit. The
+  approved product is a client-only Svelte 5 + Vite SPA, so the scaffold uses
+  that template's Tauri 2 Rust/config/icons and the official Vite `svelte-ts`
+  frontend layout (`index.html`, `src/main.ts`, `src/App.svelte`).
+- Locked at scaffolding: Tauri 2.11.5, `tauri-build` 2.6.3 (latest crates.io
+  `tauri-build` cargo resolved), `@tauri-apps/cli` 2.11.4, `@tauri-apps/api`
+  2.11.1, Svelte 5.56.10, Vite 8.2.2, TypeScript 6.0.3 (Vite's compatible 6.x
+  line, not TypeScript 7), Tailwind CSS 4.3.3 + `@tailwindcss/vite`, uPlot
+  1.6.32, Playwright 1.62.1, `tauri-plugin-dialog` 2.7.2.
+- Tailwind `@theme` registers the light-default token namespace. System-dark
+  values use a plain CSS media override so the condition survives compilation.
+- Validation scripts use the approved `format:check`, `test:unit`, and
+  `test:e2e` names; browser tests exercise production assets without real IPC
+  or hardware and use installed Edge on Windows.
+- Frontend capabilities are `core:default` and `dialog:default`. Opener,
+  filesystem, shell, and logging permissions are not granted. The official
+  template's `tauri-plugin-opener` was not kept.
+- `rngkit-*` crates pin git `3f327e9e88679c26683323f116cd6d7b3ea64fff`.
+- Node floor is `^20.19.0 || >=22.12.0` (Vite 8); npm `>=10`. Verified on
+  Node 24.18.0 / npm 11.16.0.
+- Why: match the approved client-only SPA, lock stable versions, and keep the
+  frontend from reaching general filesystem or hardware APIs.
+- Impact: later checkpoints add pages and IPC on this foundation; dependency
+  upgrades need their own validation.
+
 ## Delivery and execution contract (2026-08-22)
 
 - Status: accepted

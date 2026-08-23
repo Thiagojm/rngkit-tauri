@@ -2,21 +2,21 @@
 
 ## Purpose and current state
 
-RngKit is a planned Windows-first desktop application for collecting fixed-size
+RngKit is a Windows-first desktop application for collecting fixed-size
 entropy samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or
 PseudoRNG source, monitoring descriptive cumulative statistics, recording
 native sessions, generating XLSX reports, and safely combining compatible
 RngKitPSG v3 CSV files.
 
-This repository currently contains an approved design, an approved staged
-implementation plan, and repository context only. It has no application
-scaffold, executable, package manifests, lockfiles, or verified build commands.
+This repository now has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
+Vite + Tailwind CSS 4 scaffold. The window is a minimal RngKit shell with CSS
+theme tokens. It does not yet implement Collect, Reports, Combine, Help, IPC
+product commands, or hardware discovery. Default start does not enumerate
+devices or open native dialogs.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
-Commit `954125cc9a664d372c4ed4a39656b790d21ba333` completed and validated
-Checkpoint 1 (derived naming, manifest contracts, and legacy CSV inspection).
-Checkpoint 2 (bundle creation, reading, and derived XLSX) is still required
-before the app can pin the final library revision and begin scaffolding.
+The app pins git revision `3f327e9e88679c26683323f116cd6d7b3ea64fff`, which
+contains derived concatenation inspect/create/`open_concatenation`/XLSX.
 
 ## Main product flows
 
@@ -56,16 +56,20 @@ before the app can pin the final library revision and begin scaffolding.
 
 - Windows 10/11 x64 is the v1 desktop target; Ubuntu CI is not Linux desktop
   support.
-- Planned stack: Tauri 2, Svelte 5, TypeScript, Vite, Tailwind CSS 4, and uPlot;
-  select the latest mutually compatible stable versions at scaffolding time and
-  lock them exactly.
-- Rust edition 2024 and MSRV 1.85 must match the library workspace.
+- Locked stack: Tauri 2.11.5, Svelte 5.56.10, TypeScript 6.0.3, Vite 8.2.2,
+  Tailwind CSS 4.3.3, uPlot 1.6.32. Prereleases and extra UI frameworks are
+  excluded. Playwright 1.62.1 provides browser-level tests against production
+  assets. Node floor is `^20.19.0 || >=22.12.0`; npm `>=10`.
+- CSS-first Tailwind tokens retain light defaults; plain CSS media overrides
+  apply the system dark palette without collapsing it into the global theme.
+- Rust edition 2024 and MSRV 1.85 match the library workspace.
+- `rngkit-*` crates use git revision `3f327e9e88679c26683323f116cd6d7b3ea64fff`,
+  never a local path.
+- Frontend capabilities are `core:default` and `dialog:default` only.
 - One source per session; no live XOR, fallback, reconnect, resume, or silent
   first-device selection.
 - Retain every chart point for the active session and measure 100,000 and
   1,000,000 points before claiming long-session performance.
-- Frontend capabilities stay minimal: no general filesystem, shell, opener, or
-  logging access.
 - Diagnostics and preferences must exclude entropy, seeds, selectors, serials,
   device paths, and absolute legacy input paths.
 - v1 packaging is an unsigned per-user English NSIS installer with offline
