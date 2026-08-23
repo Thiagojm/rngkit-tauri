@@ -2,11 +2,10 @@
 
 ## Purpose and current state
 
-RngKit is a Windows-first desktop application for collecting fixed-size
-entropy samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or
-PseudoRNG source, monitoring descriptive cumulative statistics, recording
-native sessions, generating XLSX reports, and safely combining compatible
-RngKitPSG v3 CSV files.
+RngKit is a Windows-first desktop application that collects fixed-size entropy
+samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG;
+monitors descriptive statistics; records native sessions; generates XLSX; and
+safely combines compatible RngKitPSG v3 CSV files.
 
 This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
 Vite + Tailwind CSS 4 app with the four-destination shell, a Rust-authoritative
@@ -26,7 +25,8 @@ redraws, zoom and theme-change viewport persistence, Reset view, and Return to
 live. Close while collecting confirms Keep collecting or Stop and exit; close
 while stopping waits for cooperative finalization. Active sessions reloaded in
 the frontend poll authoritative state until terminal reconciliation. Copy
-diagnostics returns a redacted in-memory history.
+diagnostics returns a redacted in-memory history. The ignored `hardware.rs` smoke requires explicit BitBabbler tokens and a fold-0 bundle;
+this Windows host passed one White ordinal 1 (3 samples, fake clock).
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which
@@ -96,4 +96,5 @@ entropy-free PseudoRNG discovery.
 - v1 packaging is an unsigned per-user English NSIS installer with offline
   WebView2. Signing, release, updater, and deployment remain separate work.
 - Validation claims must distinguish deterministic, CI, native Windows,
-  physical hardware, chart stress, and installer evidence.
+  physical hardware, chart stress, and installer evidence. Physical results
+  name device variant, ordinal, fold, and OS; absence is unverified, not passed.

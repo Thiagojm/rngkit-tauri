@@ -35,9 +35,10 @@ git status --short --branch
 git diff --check
 ```
 
-Run the native window with `npm run tauri dev`. Do not claim hardware, CI,
-installer, or native long-session chart render/interaction evidence until a
-later checkpoint verifies those commands.
+Run the native window with `npm run tauri dev`. Opt-in serial BitBabbler smoke:
+`cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`.
+Do not claim CI, installer, other physical families, or native long-session
+chart render/interaction evidence until a later checkpoint verifies them.
 
 ## Repository conventions
 
@@ -74,7 +75,6 @@ later checkpoint verifies those commands.
 
 ## Context maintenance
 
-Update `TODO.md` after relevant work, `docs/DECISIONS.md` when a durable
-contract changes, and `docs/PROJECT_CONTEXT.md` when current product facts or
-evidence change. Keep these files dense and within the soft budgets defined by
-the `tjm-memoria` skill.
+Update `TODO.md` after relevant work, `docs/DECISIONS.md` for durable contracts,
+and `docs/PROJECT_CONTEXT.md` when product facts or evidence change. Keep them
+dense and within the `tjm-memoria` soft budgets.

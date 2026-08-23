@@ -4,21 +4,13 @@ All decisions are accepted. Material changes return to design review.
 
 ## Product, platform, and shell (2026-08-22)
 
-- RngKit v1 is an English Windows 10/11 x64 desktop app with one resizable Tauri
-  2 window containing persistent Collect, Reports, Combine, and Help destinations.
+- RngKit v1 is an English Windows 10/11 x64 Tauri 2 desktop app with one resizable window and persistent Collect, Reports, Combine, and Help destinations.
 - The client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses locked stable dependencies, uPlot, and no extra UI framework.
-- The scaffold combines official Tauri 2 Rust/config/icons with the Vite
-  `svelte-ts` SPA; the official Svelte Tauri template is SvelteKit.
-- Theme is `data-theme` on `html`; Tailwind owns light defaults and plain CSS
-  preserves system dark unless light is forced.
-- The top bar exposes product, operation status, and light/dark/system theme.
-  Collect stacks through a container query at the 800px minimum window. Start
-  and Stop never share one surface; disabled controls explain why.
-- Browser tests use production assets through installed Edge without Tauri IPC
-  or hardware. Mock snapshots remain browser-only; scenario switching is
-  debug-only.
-- Why/impact: modernize the familiar workflows in one testable SPA while
-  keeping desktop authority and permissions out of the frontend.
+- The scaffold combines official Tauri 2 Rust/config/icons with the Vite `svelte-ts` SPA; the official Svelte Tauri template is SvelteKit.
+- Theme is `data-theme` on `html`; Tailwind owns light defaults and plain CSS preserves system dark unless light is forced.
+- The top bar exposes product, operation status, and light/dark/system theme. Collect stacks at the 800px minimum; Start and Stop remain separate and disabled controls explain why.
+- Browser tests use production assets through Edge without Tauri IPC or hardware. Mock snapshots are browser-only; scenario switching is debug-only.
+- Why/impact: modernize familiar workflows while keeping desktop authority and permissions out of the frontend.
 
 ## Authority, collection, and IPC (2026-08-22 through 2026-08-23)
 
@@ -59,14 +51,13 @@ All decisions are accepted. Material changes return to design review.
 ## Discovery, draft, and preferences (2026-08-23)
 
 - `refresh_sources` runs `rngkit_sources::discover()` in blocking Tauri work.
-  Candidates live in a backend-only generation registry behind random opaque
-  tokens. DTOs contain token, source id, safe label, variant, ordinal, and fold
-  requirement only; refresh invalidates prior tokens and selection.
+  A backend-only generation registry holds candidates behind random opaque tokens;
+  DTOs expose token, source id, safe label, variant, ordinal, and fold requirement only.
+  Refresh invalidates prior tokens and selection.
 - Multiple devices remain separate. Partial family failures are safe warnings.
   Discovery never opens a source; compiled PseudoRNG is capability only, and OS
   entropy availability is authoritative at explicit `open()`.
-- Rejected refresh/selection reconciles through `get_app_state`, restores usable
-  controls, and exposes only structured safe errors.
+- Rejected refresh/selection reconciles through `get_app_state`, restores usable controls, and exposes only structured safe errors.
 - Preferences schema 1 contains output root, sample bits, interval, fold, theme,
   and physical window geometry. It never stores selection, tokens, families,
   serials, device paths, entropy, or seeds.
@@ -77,9 +68,8 @@ All decisions are accepted. Material changes return to design review.
   revalidated; missing roots are dropped. Physical geometry is clamped to a
   visible monitor in one mixed-DPI-safe coordinate space.
 - Ready requires valid bits, interval, fold, output root, and explicit selection.
-- Default tests inject fake discovery/sources and never enumerate or open
-  hardware. One deterministic test opens real PseudoRNG, uses a fake clock, and
-  cancels after three samples.
+- Default tests inject fake discovery/sources and never enumerate or open hardware.
+  One deterministic test opens real PseudoRNG with a fake clock and three samples.
 - Why/impact: allow explicit multi-device selection and restart-safe drafts
   without leaking selectors or making collection implicit.
 
@@ -121,7 +111,9 @@ All decisions are accepted. Material changes return to design review.
   files, observed validation, manual tests, unrun evidence, limitations, and an
   approval request. Later checkpoints are not implicitly authorized.
 - Default tests are deterministic and hardware-free. Physical checks are
-  ignored, opt-in, serial, and reported per device and OS.
+  ignored, opt-in, serial, family-scoped, reported per device and OS, and live in
+  `src-tauri/tests/hardware.rs`. Absence is unverified, not passed; permission,
+  busy, protocol, timeout, and USB failures fail the smoke.
 - v1 delivery is an unsigned per-user English NSIS installer with bundled
   offline WebView2. Signing, binary publication, updater, release, and
   deployment require separate approval. Source is public under MIT.

@@ -84,6 +84,17 @@ impl CollectionHandle {
         )
     }
 
+    /// Live `rngkit_sources::open` with a fake clock. Cancels after `max_samples`.
+    /// Opt-in hardware tests only; default tests must not call this.
+    #[must_use]
+    pub fn live_for_tests(max_samples: u32) -> Self {
+        Self::new(
+            Arc::new(LimitedLiveOpener { max_samples }),
+            Arc::new(RecordingFolderOpener),
+            true,
+        )
+    }
+
     #[must_use]
     pub fn failing_open(kind: SourceErrorKind) -> Self {
         Self::new(
@@ -235,16 +246,18 @@ impl SourceOpener for LiveSourceOpener {
         config: &SourceConfig,
         _cancel: &CancelToken,
     ) -> Result<Box<dyn EntropySource>, SafeError> {
-        match config {
-            SourceConfig::Bitb { serial: None, .. } | SourceConfig::Trng { path: None } => {
-                return Err(SafeError::source_unavailable());
-            }
-            _ => {}
-        }
-        rngkit_sources::open(config.clone())
-            .map(|source| Box::new(source) as Box<dyn EntropySource>)
-            .map_err(|error| map_source_kind(error.kind()))
+        open_live(config).map(|source| Box::new(source) as Box<dyn EntropySource>)
     }
+}
+
+fn open_live(config: &SourceConfig) -> Result<OpenedSource, SafeError> {
+    match config {
+        SourceConfig::Bitb { serial: None, .. } | SourceConfig::Trng { path: None } => {
+            return Err(SafeError::source_unavailable());
+        }
+        _ => {}
+    }
+    rngkit_sources::open(config.clone()).map_err(|error| map_source_kind(error.kind()))
 }
 
 struct LiveFolderOpener;
@@ -361,13 +374,32 @@ impl SourceOpener for PseudoTestOpener {
     }
 }
 
-struct CancelAfter {
-    inner: OpenedSource,
+struct LimitedLiveOpener {
+    max_samples: u32,
+}
+
+impl SourceOpener for LimitedLiveOpener {
+    fn open(
+        &self,
+        config: &SourceConfig,
+        cancel: &CancelToken,
+    ) -> Result<Box<dyn EntropySource>, SafeError> {
+        let opened = open_live(config)?;
+        Ok(Box::new(CancelAfter {
+            inner: opened,
+            remaining: self.max_samples,
+            cancel: cancel.clone(),
+        }))
+    }
+}
+
+struct CancelAfter<S> {
+    inner: S,
     remaining: u32,
     cancel: CancelToken,
 }
 
-impl EntropySource for CancelAfter {
+impl<S: EntropySource> EntropySource for CancelAfter<S> {
     fn descriptor(&self) -> &SourceDescriptor {
         self.inner.descriptor()
     }
