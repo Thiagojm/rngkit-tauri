@@ -7,10 +7,11 @@ and safely combining compatible RngKitPSG v3 CSV files.
 
 ## Status
 
-The four-destination shell (Collect, Reports, Combine, Help) is in place with
-mocked product states for layout and keyboard review. Product IPC, discovery,
-and collection are not connected yet. Default startup does not enumerate
-hardware. Development builds include a scenario switch that production omits.
+The four-destination shell is connected to a Rust coordinator through
+`get_app_state`. Default startup is idle and does not enumerate hardware.
+Discovery and collection are not connected yet. Debug builds include a
+scenario switch that calls `apply_dev_scenario`; production omits that
+command and the switch.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is

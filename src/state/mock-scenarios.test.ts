@@ -35,4 +35,10 @@ describe('mock scenarios', () => {
       expect(row.basename).not.toMatch(/[/\\]/);
     }
   });
+
+  it('tracks session identity only on live snapshots', () => {
+    expect(MOCK_SCENARIOS.idle.collection.sessionId).toBeNull();
+    expect(MOCK_SCENARIOS.collecting.collection.sessionId).toBe('s1');
+    expect(MOCK_SCENARIOS.collecting.collection.lastEventSequence).toBe(12);
+  });
 });

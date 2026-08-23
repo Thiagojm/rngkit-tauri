@@ -9,11 +9,11 @@ native sessions, generating XLSX reports, and safely combining compatible
 RngKitPSG v3 CSV files.
 
 This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
-Vite + Tailwind CSS 4 app with the four-destination shell (Collect, Reports,
-Combine, Help), semantic controls, light/dark/system theme, and mocked
-collection/report/combine snapshots. It does not yet call product IPC or
-discover hardware. Default start stays on the idle snapshot. The development
-scenario switch is omitted from production builds.
+Vite + Tailwind CSS 4 app with the four-destination shell, a Rust-authoritative
+coordinator, camel-case DTOs, and `get_app_state`. Default start is idle and
+does not enumerate hardware. Debug builds expose `apply_dev_scenario` for the
+development scenario switch; release builds omit that command. Discovery,
+collection, and session files are not connected yet.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `3f327e9e88679c26683323f116cd6d7b3ea64fff`, which
@@ -72,7 +72,8 @@ contains derived concatenation inspect/create/`open_concatenation`/XLSX.
 - Retain every chart point for the active session and measure 100,000 and
   1,000,000 points before claiming long-session performance.
 - Diagnostics and preferences must exclude entropy, seeds, selectors, serials,
-  device paths, and absolute legacy input paths.
+  device paths, and absolute legacy input paths. Frontend error messages are
+  canonical safe strings; raw failure detail is redacted before retention.
 - v1 packaging is an unsigned per-user English NSIS installer with offline
   WebView2. Signing, release, updater, and deployment remain separate work.
 - Validation claims must distinguish deterministic, CI, native Windows,

@@ -11,7 +11,7 @@ Read these files before changing the project:
 5. `docs/plans/2026-08-22-rngkit-tauri-plan.md`
 6. `README.md` and the relevant implementation area
 
-## Verified commands (Windows host, through 2026-08-22)
+## Verified commands (Windows host, through 2026-08-23)
 
 From the repository root. Node.js 24.18.0 / npm 11.16.0 were used at scaffold
 time. The floor is Node `^20.19.0 || >=22.12.0` and npm `>=10`. Stable Rust is
@@ -61,7 +61,8 @@ applicable later checkpoint verifies those commands.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.
-  Never grant general filesystem, shell, opener, or logging access.
+  Never grant general filesystem, shell, opener, or logging access. Production
+  IPC is `get_app_state` until a later checkpoint; do not call `discover()`.
 - Never persist or expose entropy, seeds, serials, OS device paths, or arbitrary
   diagnostic chains.
 - Keep statistical Z and `+/-1.96` explicitly descriptive, never inferential.
@@ -73,4 +74,4 @@ applicable later checkpoint verifies those commands.
 Update `TODO.md` after relevant work, `docs/DECISIONS.md` when a durable
 contract changes, and `docs/PROJECT_CONTEXT.md` when current product facts or
 evidence change. Keep these files dense and within the soft budgets defined by
-the `maintain-project-context` skill.
+the `tjm-memoria` skill.

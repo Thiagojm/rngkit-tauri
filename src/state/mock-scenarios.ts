@@ -71,6 +71,8 @@ function collection(
     cumulativeZLabel: '—',
     overrunCount: 0,
     sessionStem: null,
+    sessionId: null,
+    lastEventSequence: 0,
     errorCode: null,
     errorMessage: null,
     ...partial,
@@ -93,6 +95,8 @@ const live: Partial<CollectionSnapshot> = {
   cumulativeZLabel: '+0.72',
   overrunCount: 0,
   sessionStem: '20260822T101500_bitb_s8_i1_f0',
+  sessionId: 's1',
+  lastEventSequence: 12,
 };
 
 const nativePreview = {

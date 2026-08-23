@@ -4,12 +4,9 @@
 
 - Status: accepted
 - Product name is RngKit; v1 is an English Windows 10/11 x64 desktop app.
-- Primary destinations are Collect, Reports, Combine, and Help in one resizable
-  window. Collection and live monitoring share one workflow.
-- Planned frontend is client-only Svelte 5 with TypeScript, Vite, Tailwind CSS
-  4, and uPlot. Tauri 2 provides the native shell.
-- Stable mutually compatible dependencies are selected and locked at scaffold
-  time; prereleases and an additional component framework are excluded.
+- Collect, Reports, Combine, and Help share one resizable Tauri 2 window. The
+  client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses uPlot; stable mutually
+  compatible dependencies are locked, with no prereleases or extra UI framework.
 - Why: modernize the familiar RngKitPSG workflows without retaining duplicated
   screens or legacy widget architecture.
 
@@ -60,48 +57,51 @@
 ## Scaffold stack (2026-08-22)
 
 - Status: accepted
-- The official `create-tauri-app` `svelte-ts` template is SvelteKit. The
-  approved product is a client-only Svelte 5 + Vite SPA, so the scaffold uses
-  that template's Tauri 2 Rust/config/icons and the official Vite `svelte-ts`
-  frontend layout (`index.html`, `src/main.ts`, `src/App.svelte`).
-- Locked at scaffolding: Tauri 2.11.5, `tauri-build` 2.6.3 (latest crates.io
-  `tauri-build` cargo resolved), `@tauri-apps/cli` 2.11.4, `@tauri-apps/api`
-  2.11.1, Svelte 5.56.10, Vite 8.2.2, TypeScript 6.0.3 (Vite's compatible 6.x
-  line, not TypeScript 7), Tailwind CSS 4.3.3 + `@tailwindcss/vite`, uPlot
-  1.6.32, Playwright 1.62.1, `tauri-plugin-dialog` 2.7.2.
+- Because `create-tauri-app`'s `svelte-ts` template is SvelteKit, the client-only
+  product combines its Tauri 2 Rust/config/icons with the official Vite
+  `svelte-ts` SPA layout. Exact versions remain in the lockfiles and context.
 - Tailwind `@theme` registers the light-default token namespace. System-dark
   values use a plain CSS media override so the condition survives compilation.
-- Validation scripts use the approved `format:check`, `test:unit`, and
-  `test:e2e` names; browser tests exercise production assets without real IPC
-  or hardware and use installed Edge on Windows.
+- Browser tests exercise production assets through installed Edge without real
+  IPC or hardware; scripts retain the approved names in `AGENTS.md`.
 - Frontend capabilities are `core:default` and `dialog:default`. Opener,
   filesystem, shell, and logging permissions are not granted. The official
   template's `tauri-plugin-opener` was not kept.
 - `rngkit-*` crates pin git `3f327e9e88679c26683323f116cd6d7b3ea64fff`.
-- Node floor is `^20.19.0 || >=22.12.0` (Vite 8); npm `>=10`. Verified on
-  Node 24.18.0 / npm 11.16.0.
-- Why: match the approved client-only SPA, lock stable versions, and keep the
-  frontend from reaching general filesystem or hardware APIs.
-- Impact: later checkpoints add pages and IPC on this foundation; dependency
-  upgrades need their own validation.
+- Node floor is `^20.19.0 || >=22.12.0`; npm `>=10` (verified on Node 24.18.0 /
+  npm 11.16.0). Dependency upgrades require separate validation.
+- Why/impact: match the approved SPA and keep the frontend away from general
+  filesystem or hardware APIs while later checkpoints add product IPC.
 
 ## Application shell (2026-08-22)
 
 - Status: accepted
-- One window exposes Collect, Reports, Combine, and Help through a persistent
-  rail, with product name, operation status, and a light/dark/system theme
-  control in the top bar.
+- A persistent rail exposes the four destinations; the top bar shows product,
+  operation status, and a light/dark/system theme control.
 - Theme is `data-theme` on `html`. `@theme` keeps light defaults; dark CSS
   variables apply for `data-theme="dark"` and for system dark unless light is
   forced. Collect stacks via a container query so the 800px minimum window does
   not use a side-by-side configuration column.
-- Collection states are mocked frontend snapshots. Start and Stop never share
-  one surface. Disabled controls show a visible reason. The development
-  scenario switch is compiled only under `import.meta.env.DEV`.
-- Why: Checkpoint 4 must be layout-, keyboard-, and theme-testable without IPC
-  or hardware.
-- Impact: Checkpoint 5 replaces snapshots with `get_app_state` and keeps this
-  shell.
+- Start and Stop never share one surface; disabled controls show a reason. Mock
+  snapshots remain for browser tests, and the scenario switch compiles only in
+  development. The shell and these rules remain when discovery is wired.
+
+## Coordinator and IPC seam (2026-08-23)
+
+- Status: accepted
+- Rust owns collection and file-job transitions. Prohibited transitions return
+  stable `SafeError` DTOs. Session IDs and event sequences are coordinator
+  state. Tagged camel-case DTOs are independent of `rngkit-*` types.
+- Production IPC is `get_app_state` only. `apply_dev_scenario` is compiled
+  only under `debug_assertions`. Browser tests keep mock snapshots when Tauri
+  is absent.
+- Diagnostics are redacted, bounded, in-memory records. They never serialize
+  entropy, seeds, selectors, serials, OS paths, or arbitrary error chains.
+  Safe-error construction exposes only static canonical messages and generated
+  operation IDs. Fold is accepted only for a selected BitBabbler candidate.
+- Why: authority and the safe frontend contract must exist before discovery.
+- Impact: Checkpoint 6 may call `discover()` through this coordinator. Do not
+  add filesystem, opener, or logging capabilities.
 
 ## Delivery and execution contract (2026-08-22)
 

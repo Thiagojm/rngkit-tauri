@@ -9,7 +9,10 @@
   with pinned library git revision, conditional system-theme tokens, browser
   smoke coverage, and minimal capabilities.
 - Checkpoint 4: four-destination shell, semantic controls, theme control, and
-  development-only mocked product states. No product IPC.
+  development-only mocked product states.
+- Checkpoint 5: Rust coordinator, camel-case DTOs, canonical safe errors,
+  bounded redacted diagnostics, source-aware fold validation, and
+  `get_app_state`. Production has no arbitrary transition command.
 
 ## In progress
 
@@ -17,12 +20,12 @@
 
 ## Next steps
 
-1. Authorize and implement Checkpoint 5: Rust coordinator, DTOs, safe errors,
-   and the IPC seam. Do not call `discover()`.
+1. Authorize and implement Checkpoint 6: real discovery and explicit transient
+   selection. Do not open a source or collect entropy.
 
 ## Backlog
 
-- Checkpoints 5-18: coordinator, discovery, collection, chart, lifecycle,
+- Checkpoints 6-18: discovery, collection, chart, lifecycle,
   physical validation, reports, Combine, hardening, CI, installer, and final
   audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and

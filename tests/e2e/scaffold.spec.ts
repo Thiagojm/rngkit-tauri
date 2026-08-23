@@ -33,8 +33,10 @@ test('renders the four-destination shell without hardware or mock-scenario contr
     page.getByRole('navigation', { name: copy.primaryNav }),
   ).toBeVisible();
   await expect(page.getByText(copy.statsWarning)).toBeVisible();
+  await expect(page.getByText(`${copy.status}: Idle`)).toBeVisible();
   await expect(page.getByTestId('dev-scenario-switch')).toHaveCount(0);
   await expect(page.getByText('Development scenario')).toHaveCount(0);
+  expect(await page.content()).not.toContain('apply_dev_scenario');
   await expect.poll(() => bodyBackground(page)).toBe(LIGHT_SURFACE);
 
   await page.getByRole('button', { name: copy.destinations.reports }).click();
