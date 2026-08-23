@@ -54,7 +54,8 @@ applicable later checkpoint verifies those commands.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`.
   Do not float dependencies. Prereleases are excluded.
 - Browser tests use Playwright with production assets and no real Tauri IPC or
-  hardware. On Windows they use the installed Edge channel.
+  hardware. On Windows they use the installed Edge channel. Vitest component
+  tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.
 - Final `rngkit-*` dependencies must use the exact reachable Git revision
   `3f327e9e88679c26683323f116cd6d7b3ea64fff`. Never a local path.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,

@@ -8,11 +8,12 @@ PseudoRNG source, monitoring descriptive cumulative statistics, recording
 native sessions, generating XLSX reports, and safely combining compatible
 RngKitPSG v3 CSV files.
 
-This repository now has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
-Vite + Tailwind CSS 4 scaffold. The window is a minimal RngKit shell with CSS
-theme tokens. It does not yet implement Collect, Reports, Combine, Help, IPC
-product commands, or hardware discovery. Default start does not enumerate
-devices or open native dialogs.
+This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
+Vite + Tailwind CSS 4 app with the four-destination shell (Collect, Reports,
+Combine, Help), semantic controls, light/dark/system theme, and mocked
+collection/report/combine snapshots. It does not yet call product IPC or
+discover hardware. Default start stays on the idle snapshot. The development
+scenario switch is omitted from production builds.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `3f327e9e88679c26683323f116cd6d7b3ea64fff`, which

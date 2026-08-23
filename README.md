@@ -7,9 +7,10 @@ and safely combining compatible RngKitPSG v3 CSV files.
 
 ## Status
 
-The locked Tauri 2 + Svelte 5 + Vite + Tailwind CSS 4 foundation is in place.
-Collect, Reports, Combine, and Help pages are not implemented yet. Default
-startup does not enumerate hardware.
+The four-destination shell (Collect, Reports, Combine, Help) is in place with
+mocked product states for layout and keyboard review. Product IPC, discovery,
+and collection are not connected yet. Default startup does not enumerate
+hardware. Development builds include a scenario switch that production omits.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is

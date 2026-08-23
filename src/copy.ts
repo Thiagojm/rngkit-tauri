@@ -1,0 +1,61 @@
+export const copy = {
+  product: 'RngKit',
+  skipToMain: 'Skip to main content',
+  destinations: {
+    collect: 'Collect',
+    reports: 'Reports',
+    combine: 'Combine',
+    help: 'Help',
+  },
+  primaryNav: 'Primary',
+  theme: {
+    legend: 'Theme',
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
+  },
+  statsWarning:
+    'Cumulative Z and the chart lines at ±1.96 are descriptive visual references only. They are not a significance, pass/fail, or certification result.',
+  fold: {
+    label: 'Fold',
+    raw: '0 - Raw',
+  },
+  sampleBits: 'Sample size (bits)',
+  sampleInterval: 'Sample interval (seconds)',
+  outputRoot: 'Output folder',
+  entropySource: 'Entropy source',
+  refreshSources: 'Refresh sources',
+  chooseFolder: 'Choose folder',
+  start: 'Start',
+  stop: 'Stop',
+  startAnother: 'Start another session',
+  openSessionFolder: 'Open session folder',
+  chooseReportInput: 'Choose input',
+  generateReport: 'Generate report',
+  openReport: 'Open report',
+  openContainingFolder: 'Open containing folder',
+  replaceTitle: 'Replace existing report?',
+  replaceBody:
+    'An XLSX file already exists for this input. Cancel keeps it. Replace is an explicit second request.',
+  cancel: 'Cancel',
+  replace: 'Replace',
+  chooseCsvInputs: 'Choose CSV files',
+  createDerived: 'Create derived bundle',
+  generateXlsx: 'Generate XLSX',
+  openFolder: 'Open folder',
+  chartPlaceholder:
+    'Live cumulative Z chart attaches in a later checkpoint. Every committed point will be retained.',
+  noSources:
+    'No sources discovered yet. Refresh to look for currently attached devices. Nothing is selected automatically.',
+  noReportInput: 'No report input selected.',
+  noCombineInputs: 'No legacy v3 CSV files selected.',
+  status: 'Status',
+} as const;
+
+export const FOLD_OPTIONS = [
+  { value: 0, label: copy.fold.raw },
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4' },
+] as const;

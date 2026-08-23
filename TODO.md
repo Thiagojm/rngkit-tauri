@@ -8,6 +8,8 @@
 - Checkpoint 3: locked Tauri 2 / Svelte 5 / Vite / Tailwind CSS 4 foundation
   with pinned library git revision, conditional system-theme tokens, browser
   smoke coverage, and minimal capabilities.
+- Checkpoint 4: four-destination shell, semantic controls, theme control, and
+  development-only mocked product states. No product IPC.
 
 ## In progress
 
@@ -15,8 +17,8 @@
 
 ## Next steps
 
-1. Authorize and implement Checkpoint 4: responsive shell and mocked product
-   states for Collect, Reports, Combine, and Help. No real IPC yet.
+1. Authorize and implement Checkpoint 5: Rust coordinator, DTOs, safe errors,
+   and the IPC seam. Do not call `discover()`.
 
 ## Backlog
 

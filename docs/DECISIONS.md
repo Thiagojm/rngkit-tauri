@@ -85,6 +85,24 @@
 - Impact: later checkpoints add pages and IPC on this foundation; dependency
   upgrades need their own validation.
 
+## Application shell (2026-08-22)
+
+- Status: accepted
+- One window exposes Collect, Reports, Combine, and Help through a persistent
+  rail, with product name, operation status, and a light/dark/system theme
+  control in the top bar.
+- Theme is `data-theme` on `html`. `@theme` keeps light defaults; dark CSS
+  variables apply for `data-theme="dark"` and for system dark unless light is
+  forced. Collect stacks via a container query so the 800px minimum window does
+  not use a side-by-side configuration column.
+- Collection states are mocked frontend snapshots. Start and Stop never share
+  one surface. Disabled controls show a visible reason. The development
+  scenario switch is compiled only under `import.meta.env.DEV`.
+- Why: Checkpoint 4 must be layout-, keyboard-, and theme-testable without IPC
+  or hardware.
+- Impact: Checkpoint 5 replaces snapshots with `get_app_state` and keeps this
+  shell.
+
 ## Delivery and execution contract (2026-08-22)
 
 - Status: accepted
