@@ -67,7 +67,7 @@
 - Frontend capabilities are `core:default` and `dialog:default`. Opener,
   filesystem, shell, and logging permissions are not granted. The official
   template's `tauri-plugin-opener` was not kept.
-- `rngkit-*` crates pin git `3f327e9e88679c26683323f116cd6d7b3ea64fff`.
+- `rngkit-*` crates pin git `183f3c7811f5593b3b42c2558ac726552b86687d`.
 - Node floor is `^20.19.0 || >=22.12.0`; npm `>=10` (verified on Node 24.18.0 /
   npm 11.16.0). Dependency upgrades require separate validation.
 - Why/impact: match the approved SPA and keep the frontend away from general
@@ -92,16 +92,37 @@
 - Rust owns collection and file-job transitions. Prohibited transitions return
   stable `SafeError` DTOs. Session IDs and event sequences are coordinator
   state. Tagged camel-case DTOs are independent of `rngkit-*` types.
-- Production IPC is `get_app_state` only. `apply_dev_scenario` is compiled
-  only under `debug_assertions`. Browser tests keep mock snapshots when Tauri
-  is absent.
+- Production IPC is `get_app_state`, `refresh_sources`, and `select_source`.
+  `apply_dev_scenario` is compiled only under `debug_assertions`. Browser tests
+  keep mock snapshots when Tauri is absent.
 - Diagnostics are redacted, bounded, in-memory records. They never serialize
   entropy, seeds, selectors, serials, OS paths, or arbitrary error chains.
   Safe-error construction exposes only static canonical messages and generated
   operation IDs. Fold is accepted only for a selected BitBabbler candidate.
 - Why: authority and the safe frontend contract must exist before discovery.
-- Impact: Checkpoint 6 may call `discover()` through this coordinator. Do not
-  add filesystem, opener, or logging capabilities.
+- Impact: Discovery calls `discover()` through this coordinator. Do not add
+  filesystem, opener, or logging capabilities.
+
+## Discovery and selection (2026-08-23)
+
+- Status: accepted
+- `refresh_sources` runs `rngkit_sources::discover()` in Tauri's blocking
+  context. Candidates are stored behind random opaque tokens for one
+  generation. Frontend DTOs carry token, source id, safe label, variant,
+  ordinal, and fold requirement only.
+- Default tests inject `FakeDiscovery` and never enumerate or open hardware.
+  Refresh invalidates previous tokens and the previous selection. Partial
+  family failures become nonblocking safe warnings. Serials and OS paths do
+  not cross IPC.
+- Discovery never constructs a source or acquires entropy. With PseudoRNG
+  compiled in, the candidate represents capability; OS entropy availability is
+  authoritative only at explicit `open()` in Checkpoint 8.
+- Rejected refresh and selection commands reconcile through `get_app_state`,
+  restore usable controls, and surface only structured safe IPC messages.
+- Why: explicit multi-device selection without leaking selectors.
+- Impact: Checkpoint 7 may persist output root and other safe preferences.
+  Do not open a source or collect entropy until Checkpoint 8. The app pins the
+  reachable entropy-free discovery revision `183f3c7`.
 
 ## Delivery and execution contract (2026-08-22)
 

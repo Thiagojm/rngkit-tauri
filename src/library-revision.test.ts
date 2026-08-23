@@ -4,7 +4,7 @@ import { RNGKIT_CORE_REVISION } from './library-revision';
 describe('library revision pin', () => {
   it('is the Gate A rngkit-core commit', () => {
     expect(RNGKIT_CORE_REVISION).toBe(
-      '3f327e9e88679c26683323f116cd6d7b3ea64fff',
+      '183f3c7811f5593b3b42c2558ac726552b86687d',
     );
   });
 });

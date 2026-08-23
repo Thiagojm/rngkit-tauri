@@ -41,4 +41,10 @@ describe('mock scenarios', () => {
     expect(MOCK_SCENARIOS.collecting.collection.sessionId).toBe('s1');
     expect(MOCK_SCENARIOS.collecting.collection.lastEventSequence).toBe(12);
   });
+
+  it('labels mock candidates with a stable source id', () => {
+    const [bitb, pseudo] = MOCK_SCENARIOS.ready.collection.candidates;
+    expect(bitb.sourceId).toBe('bitb');
+    expect(pseudo.sourceId).toBe('pseudo');
+  });
 });

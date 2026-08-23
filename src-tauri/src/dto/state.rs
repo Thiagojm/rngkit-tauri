@@ -29,6 +29,7 @@ pub enum FileJobState {
 #[serde(rename_all = "camelCase")]
 pub struct SourceCandidateDto {
     pub token: String,
+    pub source_id: String,
     pub family_label: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variant: Option<String>,

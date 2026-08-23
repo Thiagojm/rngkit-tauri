@@ -57,12 +57,14 @@ applicable later checkpoint verifies those commands.
   hardware. On Windows they use the installed Edge channel. Vitest component
   tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.
 - Final `rngkit-*` dependencies must use the exact reachable Git revision
-  `3f327e9e88679c26683323f116cd6d7b3ea64fff`. Never a local path.
+  `183f3c7811f5593b3b42c2558ac726552b86687d`. Never a local path.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.
   Never grant general filesystem, shell, opener, or logging access. Production
-  IPC is `get_app_state` until a later checkpoint; do not call `discover()`.
+  IPC is `get_app_state`, `refresh_sources`, and `select_source`. Default start
+  does not enumerate hardware. Default tests inject a fake discovery service
+  and do not call `rngkit_sources::discover()`. Do not open a source.
 - Never persist or expose entropy, seeds, serials, OS device paths, or arbitrary
   diagnostic chains.
 - Keep statistical Z and `+/-1.96` explicitly descriptive, never inferential.

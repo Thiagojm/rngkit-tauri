@@ -45,6 +45,7 @@ impl DevScenario {
 pub fn bitb_candidate() -> SourceCandidateDto {
     SourceCandidateDto {
         token: "mock-bitb-1".into(),
+        source_id: "bitb".into(),
         family_label: "BitBabbler".into(),
         variant: Some("White".into()),
         ordinal: 1,
@@ -56,6 +57,7 @@ pub fn bitb_candidate() -> SourceCandidateDto {
 pub fn pseudo_candidate() -> SourceCandidateDto {
     SourceCandidateDto {
         token: "mock-pseudo-1".into(),
+        source_id: "pseudo".into(),
         family_label: "PseudoRNG".into(),
         variant: None,
         ordinal: 1,

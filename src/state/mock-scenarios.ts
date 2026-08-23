@@ -32,6 +32,7 @@ export const SCENARIO_LABELS: Record<ScenarioId, string> = {
 
 const BITB: CollectionSnapshot['candidates'][number] = {
   token: 'mock-bitb-1',
+  sourceId: 'bitb',
   familyLabel: 'BitBabbler',
   variant: 'White',
   ordinal: 1,
@@ -40,6 +41,7 @@ const BITB: CollectionSnapshot['candidates'][number] = {
 
 const PSEUDO: CollectionSnapshot['candidates'][number] = {
   token: 'mock-pseudo-1',
+  sourceId: 'pseudo',
   familyLabel: 'PseudoRNG',
   ordinal: 1,
   requiresFold: false,
@@ -271,3 +273,18 @@ export const MOCK_SCENARIOS: Record<ScenarioId, AppSnapshot> = {
 };
 
 export const DEFAULT_SCENARIO: ScenarioId = 'idle';
+
+/** Browser/dev discovery result. Nothing is selected automatically. */
+export function browserDiscoverySnapshot(): AppSnapshot {
+  return {
+    collection: collection({
+      state: 'idle',
+      statusLabel: 'Idle',
+      candidates: [BITB, PSEUDO],
+      selectedToken: null,
+    }),
+    fileJob: 'idle',
+    reports: emptyReports,
+    combine: emptyCombine,
+  };
+}

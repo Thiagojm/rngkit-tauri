@@ -13,20 +13,23 @@ export type CollectionState = (typeof COLLECTION_STATES)[number];
 export type FileJobState =
   'idle' | 'inspecting' | 'generatingReport' | 'combining';
 
-export type ErrorCode =
-  | 'invalid_configuration'
-  | 'invalid_transition'
-  | 'expired_selection'
-  | 'source_unavailable'
-  | 'source_busy'
-  | 'source_disconnected'
-  | 'source_timed_out'
-  | 'permission_denied'
-  | 'output_exists'
-  | 'corrupt_input'
-  | 'unsupported_input'
-  | 'operation_conflict'
-  | 'unexpected_failure';
+export const ERROR_CODES = [
+  'invalid_configuration',
+  'invalid_transition',
+  'expired_selection',
+  'source_unavailable',
+  'source_busy',
+  'source_disconnected',
+  'source_timed_out',
+  'permission_denied',
+  'output_exists',
+  'corrupt_input',
+  'unsupported_input',
+  'operation_conflict',
+  'unexpected_failure',
+] as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[number];
 
 export interface SafeErrorDto {
   code: ErrorCode;
@@ -45,6 +48,7 @@ export interface DiagnosticRecord {
 
 export interface SourceCandidateView {
   token: string;
+  sourceId: string;
   familyLabel: string;
   variant?: string;
   ordinal: number;

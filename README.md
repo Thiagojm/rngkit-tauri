@@ -8,15 +8,16 @@ and safely combining compatible RngKitPSG v3 CSV files.
 ## Status
 
 The four-destination shell is connected to a Rust coordinator through
-`get_app_state`. Default startup is idle and does not enumerate hardware.
-Discovery and collection are not connected yet. Debug builds include a
-scenario switch that calls `apply_dev_scenario`; production omits that
-command and the switch.
+`get_app_state`, `refresh_sources`, and `select_source`. Default startup is
+idle and does not enumerate hardware. Refresh runs real discovery in the
+native window; default tests inject a fake discovery service. Collection is
+not connected yet. Debug builds include a scenario switch that calls
+`apply_dev_scenario`; production omits that command and the switch.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
-`3f327e9e88679c26683323f116cd6d7b3ea64fff`.
+`183f3c7811f5593b3b42c2558ac726552b86687d`.
 
 ## Sources of truth
 

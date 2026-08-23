@@ -224,11 +224,16 @@ choices through distinct tokens and ordinals. Discovery issues map to stable
 application codes and safe per-family warnings; one issue never hides another
 family's candidates.
 
+Discovery never constructs a source or acquires entropy. When PseudoRNG is
+compiled in, its candidate represents capability only; OS entropy availability
+is checked later by the explicit source `open()`.
+
 The selected token is valid only for its generation and process lifetime. It
 is never written to preferences. Start reconstructs an explicit
 `SourceConfig`. BitBabbler includes the selected fold. RDSEED and PseudoRNG use
-the library defaults in v1. Device disappearance between discovery and open is
-a safe source error, not an automatic refresh, fallback, or reconnect.
+the library defaults in v1. Device disappearance or OS-entropy unavailability
+between discovery and open is a safe source error, not an automatic refresh,
+fallback, or reconnect.
 
 ## 8. Collection workflow and events
 

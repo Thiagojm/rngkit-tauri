@@ -1,4 +1,4 @@
-//! Application coordinator. Discovery and session files are later checkpoints.
+//! Application coordinator. Session files are a later checkpoint.
 
 mod fixtures;
 mod state;

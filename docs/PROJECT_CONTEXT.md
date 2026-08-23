@@ -10,14 +10,16 @@ RngKitPSG v3 CSV files.
 
 This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
 Vite + Tailwind CSS 4 app with the four-destination shell, a Rust-authoritative
-coordinator, camel-case DTOs, and `get_app_state`. Default start is idle and
-does not enumerate hardware. Debug builds expose `apply_dev_scenario` for the
-development scenario switch; release builds omit that command. Discovery,
-collection, and session files are not connected yet.
+coordinator, camel-case DTOs, `get_app_state`, `refresh_sources`, and
+`select_source`. Default start is idle and does not enumerate hardware.
+Refresh discovers currently attached families behind opaque tokens; nothing is
+selected automatically. Debug builds expose `apply_dev_scenario`; release
+builds omit that command. Collection and session files are not connected yet.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
-The app pins git revision `3f327e9e88679c26683323f116cd6d7b3ea64fff`, which
-contains derived concatenation inspect/create/`open_concatenation`/XLSX.
+The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which
+contains derived concatenation inspect/create/`open_concatenation`/XLSX and
+entropy-free PseudoRNG discovery.
 
 ## Main product flows
 
@@ -64,8 +66,9 @@ contains derived concatenation inspect/create/`open_concatenation`/XLSX.
 - CSS-first Tailwind tokens retain light defaults; plain CSS media overrides
   apply the system dark palette without collapsing it into the global theme.
 - Rust edition 2024 and MSRV 1.85 match the library workspace.
-- `rngkit-*` crates use git revision `3f327e9e88679c26683323f116cd6d7b3ea64fff`,
-  never a local path.
+- `rngkit-*` crates use git revision `183f3c7811f5593b3b42c2558ac726552b86687d`,
+  never a local path. Discovery advertises compiled PseudoRNG capability and
+  defers OS entropy acquisition to explicit source opening.
 - Frontend capabilities are `core:default` and `dialog:default` only.
 - One source per session; no live XOR, fallback, reconnect, resume, or silent
   first-device selection.

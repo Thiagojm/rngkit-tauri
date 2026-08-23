@@ -34,6 +34,13 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   ).toBeVisible();
   await expect(page.getByText(copy.statsWarning)).toBeVisible();
   await expect(page.getByText(`${copy.status}: Idle`)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.refreshSources }),
+  ).toBeVisible();
+  await expect(page.getByText(copy.noSources)).toBeVisible();
+  await page.getByRole('button', { name: copy.refreshSources }).click();
+  await expect(page.getByText(copy.noSources)).toBeVisible();
+  await expect(page.getByRole('radio')).toHaveCount(0);
   await expect(page.getByTestId('dev-scenario-switch')).toHaveCount(0);
   await expect(page.getByText('Development scenario')).toHaveCount(0);
   expect(await page.content()).not.toContain('apply_dev_scenario');

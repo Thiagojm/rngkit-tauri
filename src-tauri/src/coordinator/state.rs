@@ -1,7 +1,9 @@
 //! Authoritative collection and file-job state machine.
 
 use std::collections::VecDeque;
+use std::fmt;
 
+use crate::discovery::{DiscoveryOutcome, MappedCandidate};
 use crate::dto::{
     AppStateDto, CollectionSnapshot, CollectionState, CombineSnapshot, DiagnosticRecord, ErrorCode,
     FileJobState, ReportsSnapshot, SourceCandidateDto,
@@ -12,10 +14,20 @@ use super::fixtures::{self, DevScenario};
 
 const MAX_DIAGNOSTICS: usize = 32;
 
-#[derive(Debug, Clone)]
 struct CandidateEntry {
     view: SourceCandidateDto,
     generation: u64,
+    source: Option<rngkit_sources::SourceCandidate>,
+}
+
+impl fmt::Debug for CandidateEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CandidateEntry")
+            .field("token", &self.view.token)
+            .field("source_id", &self.view.source_id)
+            .field("generation", &self.generation)
+            .finish_non_exhaustive()
+    }
 }
 
 /// Rust-owned coordinator. Frontend snapshots are derived from this state.
@@ -143,6 +155,26 @@ impl AppCoordinator {
         self.next_event_sequence
     }
 
+    #[must_use]
+    pub fn selected_library_source(&self) -> Option<&rngkit_sources::SourceCandidate> {
+        let token = self.selected_token.as_deref()?;
+        self.candidates.iter().find_map(|candidate| {
+            (candidate.generation == self.discovery_generation && candidate.view.token == token)
+                .then_some(candidate.source.as_ref())
+                .flatten()
+        })
+    }
+
+    pub fn refresh_with(
+        &mut self,
+        discovery: &dyn crate::discovery::DiscoveryService,
+    ) -> Result<AppStateDto, SafeError> {
+        let generation = self.begin_discover()?;
+        let outcome = discovery.discover();
+        self.apply_discovery(generation, outcome)?;
+        Ok(self.snapshot())
+    }
+
     /// Record a redacted diagnostic. Production copy-diagnostics IPC is later.
     pub fn record_diagnostic(&mut self, code: ErrorCode, raw_detail: &str) -> DiagnosticRecord {
         self.next_operation_seq += 1;
@@ -205,12 +237,44 @@ impl AppCoordinator {
                 "Stale discovery results were ignored.",
             ));
         }
-        self.candidates = candidates
-            .into_iter()
-            .map(|view| CandidateEntry { view, generation })
-            .collect();
+        self.finish_discover(
+            generation,
+            candidates
+                .into_iter()
+                .map(|view| MappedCandidate { view, source: None })
+                .collect(),
+            None,
+            &[],
+        )
+    }
+
+    pub fn apply_discovery(
+        &mut self,
+        generation: u64,
+        outcome: DiscoveryOutcome,
+    ) -> Result<(), SafeError> {
+        let warning = outcome.family_warning();
+        self.finish_discover(
+            generation,
+            outcome.candidates,
+            warning,
+            &outcome.diagnostics,
+        )
+    }
+
+    pub fn fail_discover(&mut self, generation: u64) -> Result<(), SafeError> {
+        if generation != self.discovery_generation {
+            return Ok(());
+        }
+        if self.collection != CollectionState::Discovering {
+            return Ok(());
+        }
+        self.candidates.clear();
         self.selected_token = None;
         self.fold = None;
+        self.family_warning =
+            Some("Source discovery failed unexpectedly. Refresh to try again.".into());
+        self.record_diagnostic(ErrorCode::UnexpectedFailure, "discovery task failed");
         self.collection = CollectionState::Idle;
         Ok(())
     }
@@ -416,6 +480,7 @@ impl AppCoordinator {
                 .map(|view| CandidateEntry {
                     generation: 1,
                     view,
+                    source: None,
                 })
                 .collect();
         }
@@ -468,6 +533,42 @@ impl AppCoordinator {
                 "A session can finish only while collecting or stopping.",
             ))
         }
+    }
+
+    fn finish_discover(
+        &mut self,
+        generation: u64,
+        candidates: Vec<MappedCandidate>,
+        family_warning: Option<String>,
+        diagnostics: &[(ErrorCode, String)],
+    ) -> Result<(), SafeError> {
+        if self.collection != CollectionState::Discovering {
+            return Err(SafeError::invalid_transition(
+                "Discovery results are accepted only while discovering.",
+            ));
+        }
+        if generation != self.discovery_generation {
+            return Err(SafeError::invalid_transition(
+                "Stale discovery results were ignored.",
+            ));
+        }
+        self.candidates = candidates
+            .into_iter()
+            .map(|mapped| CandidateEntry {
+                view: mapped.view,
+                source: mapped.source,
+                generation,
+            })
+            .collect();
+        self.selected_token = None;
+        self.fold = None;
+        self.family_warning = family_warning;
+        for (code, detail) in diagnostics {
+            self.record_diagnostic(*code, detail);
+        }
+        self.collection = CollectionState::Idle;
+        self.sync_ready_state();
+        Ok(())
     }
 
     fn current_candidate(&self, token: &str) -> Option<&SourceCandidateDto> {

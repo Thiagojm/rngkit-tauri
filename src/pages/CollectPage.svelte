@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SourceDiscovery from '../components/collect/SourceDiscovery.svelte';
   import Button from '../components/ui/Button.svelte';
   import Field from '../components/ui/Field.svelte';
   import MetricCard from '../components/ui/MetricCard.svelte';
@@ -27,38 +28,7 @@
         aria-labelledby="collect-config"
       >
         <h2 id="collect-config" class="text-lg font-medium">Session</h2>
-        <Button
-          disabled={!controls.refresh.enabled}
-          disabledReason={controls.refresh.reason}>{copy.refreshSources}</Button
-        >
-        <fieldset
-          class="flex flex-col gap-2"
-          disabled={!controls.configure.enabled}
-        >
-          <legend class="text-sm font-medium">{copy.entropySource}</legend>
-          {#if collection.candidates.length === 0}
-            <p class="text-sm text-text-muted">{copy.noSources}</p>
-          {:else}
-            {#each collection.candidates as candidate (candidate.token)}
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="entropy-source"
-                  value={candidate.token}
-                  checked={collection.selectedToken === candidate.token}
-                  disabled={!controls.configure.enabled}
-                  onchange={() => appState.selectSource(candidate.token)}
-                />
-                {candidateLabel(candidate)}
-              </label>
-            {/each}
-          {/if}
-        </fieldset>
-        {#if collection.familyWarning}
-          <p class="text-sm text-text-muted" role="note">
-            {collection.familyWarning}
-          </p>
-        {/if}
+        <SourceDiscovery />
         <Field id="sample-bits" label={copy.sampleBits}>
           <input
             id="sample-bits"
