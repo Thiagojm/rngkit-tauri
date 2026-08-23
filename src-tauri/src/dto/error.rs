@@ -75,11 +75,52 @@ impl SafeError {
     }
 
     #[must_use]
+    pub fn source_busy() -> Self {
+        Self::new(ErrorCode::SourceBusy, "The selected source is busy.")
+    }
+
+    #[must_use]
+    pub fn source_disconnected() -> Self {
+        Self::new(
+            ErrorCode::SourceDisconnected,
+            "The selected source disconnected.",
+        )
+    }
+
+    #[must_use]
+    pub fn source_timed_out() -> Self {
+        Self::new(ErrorCode::SourceTimedOut, "The selected source timed out.")
+    }
+
+    #[must_use]
+    pub fn output_exists() -> Self {
+        Self::new(
+            ErrorCode::OutputExists,
+            "A session with that name already exists.",
+        )
+    }
+
+    #[must_use]
     pub fn unexpected_failure() -> Self {
         Self::new(
             ErrorCode::UnexpectedFailure,
             "The operation failed unexpectedly.",
         )
+    }
+
+    #[must_use]
+    pub fn permission_denied(message: &'static str) -> Self {
+        Self::new(ErrorCode::PermissionDenied, message)
+    }
+
+    #[must_use]
+    pub fn corrupt_input(message: &'static str) -> Self {
+        Self::new(ErrorCode::CorruptInput, message)
+    }
+
+    #[must_use]
+    pub fn unsupported_input(message: &'static str) -> Self {
+        Self::new(ErrorCode::UnsupportedInput, message)
     }
 
     #[must_use]

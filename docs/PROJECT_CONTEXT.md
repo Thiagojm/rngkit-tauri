@@ -10,11 +10,18 @@ RngKitPSG v3 CSV files.
 
 This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
 Vite + Tailwind CSS 4 app with the four-destination shell, a Rust-authoritative
-coordinator, camel-case DTOs, `get_app_state`, `refresh_sources`, and
-`select_source`. Default start is idle and does not enumerate hardware.
-Refresh discovers currently attached families behind opaque tokens; nothing is
-selected automatically. Debug builds expose `apply_dev_scenario`; release
-builds omit that command. Collection and session files are not connected yet.
+coordinator, camel-case DTOs, discovery/selection, a validated session draft,
+and a PseudoRNG collection vertical slice. Preferences persist only output
+root, sample bits, interval, fold, theme, and physical window geometry.
+Default start is idle and does not enumerate hardware or restore a source.
+Refresh discovers currently attached families behind opaque tokens; Start
+reconstructs `SourceConfig` in Rust, opens the selected source on one worker
+thread, and records a native BIN/CSV/manifest bundle until cooperative Stop.
+Frontend events carry sequenced metrics only; session/sequence reconciliation
+preserves terminal events across concurrent command responses. Open session
+folder accepts a backend-known directory, not a frontend path. Debug builds expose
+`apply_dev_scenario`; release builds omit that command. The live chart and
+window-close interception are not connected yet.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which
@@ -42,7 +49,8 @@ entropy-free PseudoRNG discovery.
 - Svelte consumes typed application DTOs and never becomes authoritative for
   collection state, filesystem safety, or statistical calculations.
 - Collection uses one application-owned worker and a per-session ordered
-  channel with session and sequence filtering.
+  channel with session and sequence filtering; worker startup, source open,
+  engine, and terminal delivery failures reconcile to backend `failed` state.
 
 ## Domain terms
 

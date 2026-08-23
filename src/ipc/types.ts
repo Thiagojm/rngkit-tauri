@@ -38,6 +38,44 @@ export interface SafeErrorDto {
   recovery?: string;
 }
 
+export type CollectionEvent =
+  | {
+      kind: 'sessionStarted';
+      sessionId: string;
+      sequence: number;
+      stem: string;
+    }
+  | {
+      kind: 'sampleCommitted';
+      sessionId: string;
+      sequence: number;
+      sampleIndex: number;
+      sampleCount: number;
+      elapsedLabel: string;
+      onesProportionLabel: string;
+      cumulativeZLabel: string;
+    }
+  | {
+      kind: 'timingOverrun';
+      sessionId: string;
+      sequence: number;
+      overrunCount: number;
+    }
+  | {
+      kind: 'cleanStop';
+      sessionId: string;
+      sequence: number;
+      sampleCount: number;
+      overrunCount: number;
+    }
+  | {
+      kind: 'terminalFailure';
+      sessionId: string;
+      sequence: number;
+      code: ErrorCode;
+      message: string;
+    };
+
 export interface DiagnosticRecord {
   appVersion: string;
   libraryRevision: string;
@@ -120,9 +158,15 @@ export interface CombineSnapshot {
   result: CombineResult | null;
 }
 
+export const THEME_PREFERENCES = ['system', 'light', 'dark'] as const;
+
+export type ThemePreference = (typeof THEME_PREFERENCES)[number];
+
 export interface AppSnapshot {
   collection: CollectionSnapshot;
   fileJob: FileJobState;
   reports: ReportsSnapshot;
   combine: CombineSnapshot;
+  theme: ThemePreference;
+  preferencesWarning: string | null;
 }

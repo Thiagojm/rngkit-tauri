@@ -1,6 +1,8 @@
 export {
   COLLECTION_STATES,
+  THEME_PREFERENCES,
   type AppSnapshot,
+  type CollectionEvent,
   type CollectionSnapshot,
   type CollectionState,
   type CombineInputRow,
@@ -10,15 +12,12 @@ export {
   type ReportPreview,
   type ReportsSnapshot,
   type SourceCandidateView,
+  type ThemePreference,
 } from '../ipc/types';
 
 export const DESTINATIONS = ['collect', 'reports', 'combine', 'help'] as const;
 
 export type Destination = (typeof DESTINATIONS)[number];
-
-export const THEME_PREFERENCES = ['system', 'light', 'dark'] as const;
-
-export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
 export interface Control {
   enabled: boolean;

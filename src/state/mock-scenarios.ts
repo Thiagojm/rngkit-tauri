@@ -1,4 +1,4 @@
-import type { AppSnapshot, CollectionSnapshot } from './types';
+import type { AppSnapshot, CollectionSnapshot, ThemePreference } from './types';
 
 export const SCENARIO_IDS = [
   'idle',
@@ -54,6 +54,22 @@ const emptyCombine = {
   incompatibility: null,
   result: null,
 };
+
+function snapshot(
+  collection: CollectionSnapshot,
+  extras: Partial<
+    Pick<AppSnapshot, 'fileJob' | 'reports' | 'combine' | 'theme'>
+  > = {},
+): AppSnapshot {
+  return {
+    collection,
+    fileJob: extras.fileJob ?? 'idle',
+    reports: extras.reports ?? emptyReports,
+    combine: extras.combine ?? emptyCombine,
+    theme: extras.theme ?? ('system' satisfies ThemePreference),
+    preferencesWarning: null,
+  };
+}
 
 function collection(
   partial: Partial<CollectionSnapshot> &
@@ -142,149 +158,121 @@ const compatibleInputs = [
 ];
 
 export const MOCK_SCENARIOS: Record<ScenarioId, AppSnapshot> = {
-  idle: {
-    collection: collection({
+  idle: snapshot(
+    collection({
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  discovering: {
-    collection: collection({
+  ),
+  discovering: snapshot(
+    collection({
       state: 'discovering',
       statusLabel: 'Discovering sources',
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  ready: {
-    collection: collection({
+  ),
+  ready: snapshot(
+    collection({
       state: 'ready',
       statusLabel: 'Ready',
       ...configured,
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  collecting: {
-    collection: collection({
+  ),
+  collecting: snapshot(
+    collection({
       state: 'collecting',
       statusLabel: 'Collecting',
       ...live,
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  stopping: {
-    collection: collection({
+  ),
+  stopping: snapshot(
+    collection({
       state: 'stopping',
       statusLabel: 'Stopping',
       ...live,
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  completed: {
-    collection: collection({
+  ),
+  completed: snapshot(
+    collection({
       state: 'completed',
       statusLabel: 'Completed',
       ...live,
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  failed: {
-    collection: collection({
+  ),
+  failed: snapshot(
+    collection({
       state: 'failed',
       statusLabel: 'Failed',
       ...live,
       errorCode: 'source_unavailable',
       errorMessage: 'The selected source became unavailable.',
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  },
-  reportsPreview: {
-    collection: collection({
+  ),
+  reportsPreview: snapshot(
+    collection({
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    fileJob: 'idle',
-    reports: { preview: nativePreview },
-    combine: emptyCombine,
-  },
-  reportsConflict: {
-    collection: collection({
+    { reports: { preview: nativePreview } },
+  ),
+  reportsConflict: snapshot(
+    collection({
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    fileJob: 'idle',
-    reports: { preview: { ...nativePreview, conflict: true } },
-    combine: emptyCombine,
-  },
-  combineCompatible: {
-    collection: collection({
+    { reports: { preview: { ...nativePreview, conflict: true } } },
+  ),
+  combineCompatible: snapshot(
+    collection({
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: {
-      inputs: compatibleInputs,
-      compatible: true,
-      incompatibility: null,
-      result: {
-        stem: '20260822T120000_concat_bitb_s8_i1_f0',
-        inputCount: 2,
-        totalRows: 18,
+    {
+      combine: {
+        inputs: compatibleInputs,
+        compatible: true,
+        incompatibility: null,
+        result: {
+          stem: '20260822T120000_concat_bitb_s8_i1_f0',
+          inputCount: 2,
+          totalRows: 18,
+        },
       },
     },
-  },
-  combineIncompatible: {
-    collection: collection({
+  ),
+  combineIncompatible: snapshot(
+    collection({
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: {
-      inputs: [
-        compatibleInputs[0],
-        {
-          ...compatibleInputs[1],
-          valid: false,
-          error: 'Timestamp range overlaps the previous input.',
-        },
-      ],
-      compatible: false,
-      incompatibility:
-        'Overlapping timestamp ranges are rejected, including equal boundaries.',
-      result: null,
+    {
+      combine: {
+        inputs: [
+          compatibleInputs[0],
+          {
+            ...compatibleInputs[1],
+            valid: false,
+            error: 'Timestamp range overlaps the previous input.',
+          },
+        ],
+        compatible: false,
+        incompatibility:
+          'Overlapping timestamp ranges are rejected, including equal boundaries.',
+        result: null,
+      },
     },
-  },
+  ),
 };
 
 export const DEFAULT_SCENARIO: ScenarioId = 'idle';
 
 /** Browser/dev discovery result. Nothing is selected automatically. */
 export function browserDiscoverySnapshot(): AppSnapshot {
-  return {
-    collection: collection({
+  return snapshot(
+    collection({
       state: 'idle',
       statusLabel: 'Idle',
       candidates: [BITB, PSEUDO],
       selectedToken: null,
     }),
-    fileJob: 'idle',
-    reports: emptyReports,
-    combine: emptyCombine,
-  };
+  );
 }

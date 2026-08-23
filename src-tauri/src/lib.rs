@@ -1,15 +1,21 @@
 //! RngKit desktop application backend.
 
+pub mod collection;
 pub mod commands;
 pub mod coordinator;
 pub mod discovery;
 pub mod dto;
 pub mod errors;
+pub mod preferences;
 
 use std::sync::Mutex;
 
+use collection::CollectionHandle;
+use commands::dialogs::DialogHandle;
 use coordinator::AppCoordinator;
 use discovery::DiscoveryHandle;
+use preferences::{MonitorRect, PreferencesHandle, clamp_geometry};
+use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
 pub const RNGKIT_CORE_REVISION: &str = "183f3c7811f5593b3b42c2558ac726552b86687d";
@@ -19,13 +25,68 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(Mutex::new(AppCoordinator::new()))
-        .manage(DiscoveryHandle::live());
+        .manage(DiscoveryHandle::live())
+        .manage(CollectionHandle::live())
+        .setup(|app| {
+            let prefs_path = app
+                .path()
+                .app_config_dir()
+                .map(|dir| dir.join(preferences::PREFERENCES_FILE_NAME))
+                .expect("app config directory");
+            let prefs = PreferencesHandle::load(prefs_path);
+            {
+                let coordinator = app.state::<Mutex<AppCoordinator>>();
+                let mut coordinator = coordinator
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                coordinator.apply_persisted_draft(&prefs.current());
+                if let Some(warning) = prefs.warning() {
+                    coordinator.set_preferences_warning(Some(warning));
+                    coordinator.record_diagnostic(
+                        dto::ErrorCode::UnsupportedInput,
+                        "preferences were reset or incomplete",
+                    );
+                }
+            }
+            if let Some(window) = app.get_webview_window("main") {
+                restore_window_geometry(&window, &prefs);
+            }
+            app.manage(DialogHandle::live(app.handle().clone()));
+            app.manage(prefs);
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            let Some(prefs) = window.try_state::<PreferencesHandle>() else {
+                return;
+            };
+            match event {
+                tauri::WindowEvent::Moved(position) => {
+                    prefs.update_position(position.x, position.y);
+                }
+                tauri::WindowEvent::Resized(size) => {
+                    prefs.update_size(size.width, size.height);
+                }
+                tauri::WindowEvent::CloseRequested { .. } => {
+                    let _ = prefs.persist();
+                }
+                _ => {}
+            }
+        });
 
     #[cfg(debug_assertions)]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::state::get_app_state,
         commands::discovery::refresh_sources,
         commands::discovery::select_source,
+        commands::preferences::set_sample_bits,
+        commands::preferences::set_interval_seconds,
+        commands::preferences::set_fold,
+        commands::preferences::set_theme,
+        commands::dialogs::choose_output_folder,
+        commands::collection::start_collection,
+        commands::collection::stop_collection,
+        commands::collection::start_another_session,
+        commands::collection::open_session_folder,
         commands::dev::apply_dev_scenario,
     ]);
 
@@ -34,11 +95,48 @@ pub fn run() {
         commands::state::get_app_state,
         commands::discovery::refresh_sources,
         commands::discovery::select_source,
+        commands::preferences::set_sample_bits,
+        commands::preferences::set_interval_seconds,
+        commands::preferences::set_fold,
+        commands::preferences::set_theme,
+        commands::dialogs::choose_output_folder,
+        commands::collection::start_collection,
+        commands::collection::stop_collection,
+        commands::collection::start_another_session,
+        commands::collection::open_session_folder,
     ]);
 
     builder
         .run(tauri::generate_context!())
         .expect("error while running RngKit");
+}
+
+fn restore_window_geometry<R: tauri::Runtime>(
+    window: &tauri::WebviewWindow<R>,
+    prefs: &PreferencesHandle,
+) {
+    let Some(saved) = prefs.current().window else {
+        return;
+    };
+    let monitors: Vec<MonitorRect> = window
+        .available_monitors()
+        .unwrap_or_default()
+        .iter()
+        .map(|monitor| {
+            let position = monitor.position();
+            let size = monitor.size();
+            MonitorRect {
+                x: position.x,
+                y: position.y,
+                width: size.width,
+                height: size.height,
+            }
+        })
+        .collect();
+    let clamped = clamp_geometry(saved, &monitors);
+    let _ = window.set_position(PhysicalPosition::new(clamped.x, clamped.y));
+    let _ = window.set_size(PhysicalSize::new(clamped.width, clamped.height));
+    prefs.set_clamped_window(clamped);
 }
 
 #[cfg(test)]

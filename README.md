@@ -8,11 +8,15 @@ and safely combining compatible RngKitPSG v3 CSV files.
 ## Status
 
 The four-destination shell is connected to a Rust coordinator through
-`get_app_state`, `refresh_sources`, and `select_source`. Default startup is
-idle and does not enumerate hardware. Refresh runs real discovery in the
-native window; default tests inject a fake discovery service. Collection is
-not connected yet. Debug builds include a scenario switch that calls
-`apply_dev_scenario`; production omits that command and the switch.
+discovery, selection, session-draft, preference, and collection commands.
+Default startup is idle and does not enumerate hardware or restore a source.
+Refresh runs real discovery in the native window; default tests inject fake
+discovery and fake sources. Safe settings survive restart. Start opens the
+selected source, collects until cooperative Stop, and records a native
+BIN/CSV/manifest bundle. Open session folder uses a backend-known path.
+Debug builds include a scenario switch that calls `apply_dev_scenario`;
+production omits that command and the switch. The live chart is not connected
+yet.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is

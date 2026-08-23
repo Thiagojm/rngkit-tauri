@@ -8,6 +8,9 @@ use crate::coordinator::AppCoordinator;
 use crate::discovery::DiscoveryHandle;
 use crate::dto::AppStateDto;
 use crate::errors::SafeError;
+use crate::preferences::PreferencesHandle;
+
+use super::persist_session_draft;
 
 #[tauri::command]
 pub async fn refresh_sources(
@@ -44,10 +47,12 @@ pub async fn refresh_sources(
 pub fn select_source(
     token: String,
     coordinator: State<'_, Mutex<AppCoordinator>>,
+    prefs: State<'_, PreferencesHandle>,
 ) -> Result<AppStateDto, SafeError> {
     let mut coordinator = coordinator
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     coordinator.select_token(&token)?;
+    persist_session_draft(&prefs, &coordinator)?;
     Ok(coordinator.snapshot())
 }

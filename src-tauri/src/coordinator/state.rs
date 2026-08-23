@@ -2,17 +2,68 @@
 
 use std::collections::VecDeque;
 use std::fmt;
+use std::path::{Path, PathBuf};
+
+use rngkit_core::{Fold, IntervalSeconds, SampleBits};
+use rngkit_sources::SourceConfig;
 
 use crate::discovery::{DiscoveryOutcome, MappedCandidate};
 use crate::dto::{
-    AppStateDto, CollectionSnapshot, CollectionState, CombineSnapshot, DiagnosticRecord, ErrorCode,
-    FileJobState, ReportsSnapshot, SourceCandidateDto,
+    AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineSnapshot,
+    DiagnosticRecord, ErrorCode, FileJobState, ReportsSnapshot, SourceCandidateDto,
+    ThemePreference,
 };
 use crate::errors::{SafeError, redact_detail};
+use crate::preferences::{self, Preferences, SessionDraft};
 
 use super::fixtures::{self, DevScenario};
 
 const MAX_DIAGNOSTICS: usize = 32;
+
+/// Backend-only start payload. Selectors stay off the DTO.
+pub struct CollectionStart {
+    pub session_id: String,
+    pub output_root: PathBuf,
+    pub sample_bits: SampleBits,
+    pub interval: IntervalSeconds,
+    pub source_config: SourceConfig,
+}
+
+impl fmt::Debug for CollectionStart {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CollectionStart")
+            .field("session_id", &self.session_id)
+            .field("has_output_root", &true)
+            .field("sample_bits", &self.sample_bits.get())
+            .field("interval_seconds", &self.interval.get())
+            .field("source_id", &source_id_of(&self.source_config))
+            .finish_non_exhaustive()
+    }
+}
+
+/// Internal collection update applied before the frontend event is sent.
+pub enum CollectionUpdate {
+    SessionStarted {
+        stem: String,
+        directory: PathBuf,
+    },
+    SampleCommitted {
+        sample_index: u64,
+        sample_count: u64,
+        elapsed_label: String,
+        ones_proportion_label: String,
+        cumulative_z_label: String,
+    },
+    TimingOverrun,
+    CleanStop {
+        sample_count: u64,
+        overrun_count: u64,
+    },
+    TerminalFailure {
+        error: SafeError,
+        diagnostic: String,
+    },
+}
 
 struct CandidateEntry {
     view: SourceCandidateDto,
@@ -31,7 +82,6 @@ impl fmt::Debug for CandidateEntry {
 }
 
 /// Rust-owned coordinator. Frontend snapshots are derived from this state.
-#[derive(Debug)]
 pub struct AppCoordinator {
     collection: CollectionState,
     file_job: FileJobState,
@@ -42,13 +92,18 @@ pub struct AppCoordinator {
     sample_bits: u32,
     interval_seconds: u32,
     fold: Option<u32>,
+    preferred_fold: Option<u32>,
+    output_root: Option<PathBuf>,
     output_root_label: Option<String>,
+    theme: ThemePreference,
+    preferences_warning: Option<String>,
     sample_count: u64,
     elapsed_label: String,
     ones_proportion_label: String,
     cumulative_z_label: String,
     overrun_count: u64,
     session_stem: Option<String>,
+    session_directory: Option<PathBuf>,
     session_id: Option<String>,
     next_session_seq: u64,
     last_event_sequence: u64,
@@ -59,6 +114,28 @@ pub struct AppCoordinator {
     combine: CombineSnapshot,
     diagnostics: VecDeque<DiagnosticRecord>,
     next_operation_seq: u64,
+}
+
+impl fmt::Debug for AppCoordinator {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AppCoordinator")
+            .field("collection", &self.collection)
+            .field("file_job", &self.file_job)
+            .field("discovery_generation", &self.discovery_generation)
+            .field("candidates", &self.candidates)
+            .field("selected_token", &self.selected_token)
+            .field("family_warning", &self.family_warning)
+            .field("sample_bits", &self.sample_bits)
+            .field("interval_seconds", &self.interval_seconds)
+            .field("fold", &self.fold)
+            .field("preferred_fold", &self.preferred_fold)
+            .field("has_output_root", &self.output_root.is_some())
+            .field("output_root_label", &self.output_root_label)
+            .field("theme", &self.theme)
+            .field("preferences_warning", &self.preferences_warning)
+            .field("has_session_directory", &self.session_directory.is_some())
+            .finish_non_exhaustive()
+    }
 }
 
 impl Default for AppCoordinator {
@@ -80,13 +157,18 @@ impl AppCoordinator {
             sample_bits: 8,
             interval_seconds: 1,
             fold: None,
+            preferred_fold: None,
+            output_root: None,
             output_root_label: None,
+            theme: ThemePreference::System,
+            preferences_warning: None,
             sample_count: 0,
             elapsed_label: "00:00:00".into(),
             ones_proportion_label: "—".into(),
             cumulative_z_label: "—".into(),
             overrun_count: 0,
             session_stem: None,
+            session_directory: None,
             session_id: None,
             next_session_seq: 0,
             last_event_sequence: 0,
@@ -132,6 +214,8 @@ impl AppCoordinator {
             file_job: self.file_job,
             reports: self.reports.clone(),
             combine: self.combine.clone(),
+            theme: self.theme,
+            preferences_warning: self.preferences_warning.clone(),
         }
     }
 
@@ -153,6 +237,108 @@ impl AppCoordinator {
     #[must_use]
     pub fn next_event_sequence(&self) -> u64 {
         self.next_event_sequence
+    }
+
+    #[must_use]
+    pub fn sample_bits(&self) -> u32 {
+        self.sample_bits
+    }
+
+    #[must_use]
+    pub fn interval_seconds(&self) -> u32 {
+        self.interval_seconds
+    }
+
+    #[must_use]
+    pub fn preferred_fold(&self) -> Option<u32> {
+        self.preferred_fold
+    }
+
+    #[must_use]
+    pub fn output_root(&self) -> Option<&Path> {
+        self.output_root.as_deref()
+    }
+
+    #[must_use]
+    pub fn session_directory(&self) -> Option<&Path> {
+        self.session_directory.as_deref()
+    }
+
+    #[must_use]
+    pub fn theme(&self) -> ThemePreference {
+        self.theme
+    }
+
+    #[must_use]
+    pub fn session_draft(&self) -> SessionDraft {
+        SessionDraft {
+            sample_bits: self.sample_bits,
+            interval_seconds: self.interval_seconds,
+            fold: self.preferred_fold,
+            output_root: self.output_root.clone(),
+            theme: self.theme,
+        }
+    }
+
+    pub fn set_theme(&mut self, theme: ThemePreference) {
+        self.theme = theme;
+    }
+
+    pub(crate) fn restore_session_draft(&mut self, draft: &SessionDraft) {
+        self.sample_bits = draft.sample_bits;
+        self.interval_seconds = draft.interval_seconds;
+        self.preferred_fold = draft.fold;
+        self.output_root = draft.output_root.clone();
+        self.output_root_label = draft
+            .output_root
+            .as_deref()
+            .map(preferences::output_root_label);
+        self.theme = draft.theme;
+        let selected_requires_fold = self
+            .selected_token
+            .as_deref()
+            .and_then(|token| self.current_candidate(token))
+            .is_some_and(|candidate| candidate.requires_fold);
+        self.fold = selected_requires_fold.then(|| draft.fold.unwrap_or(0));
+        self.sync_ready_state();
+    }
+
+    pub fn set_preferences_warning(&mut self, warning: Option<String>) {
+        self.preferences_warning = warning;
+    }
+
+    /// Restore safe draft fields. Never restores a candidate token or family.
+    pub fn apply_persisted_draft(&mut self, preferences: &Preferences) {
+        self.sample_bits = preferences.sample_bits;
+        self.interval_seconds = preferences.interval_seconds;
+        self.preferred_fold = preferences.fold;
+        self.theme = preferences.theme;
+        self.selected_token = None;
+        if let Some(path) = preferences.output_root.as_deref() {
+            match preferences::validate_output_root(path) {
+                Ok(valid) => {
+                    self.output_root_label = Some(preferences::output_root_label(&valid));
+                    self.output_root = Some(valid);
+                }
+                Err(_) => {
+                    self.output_root = None;
+                    self.output_root_label = None;
+                }
+            }
+        } else {
+            self.output_root = None;
+            self.output_root_label = None;
+        }
+        self.sync_ready_state();
+    }
+
+    pub fn set_output_root(&mut self, path: &Path) -> Result<(), SafeError> {
+        self.ensure_configurable()?;
+        let valid = preferences::validate_output_root(path)?;
+        self.output_root_label = Some(preferences::output_root_label(&valid));
+        self.output_root = Some(valid);
+        self.sync_ready_state();
+        Ok(())
     }
 
     #[must_use]
@@ -292,9 +478,7 @@ impl AppCoordinator {
         let requires_fold = candidate.requires_fold;
         self.selected_token = Some(token.to_owned());
         if requires_fold {
-            if self.fold.is_none() {
-                self.fold = Some(0);
-            }
+            self.fold = Some(self.preferred_fold.unwrap_or(0));
         } else {
             self.fold = None;
         }
@@ -310,6 +494,7 @@ impl AppCoordinator {
             ));
         }
         if label.trim().is_empty() {
+            self.output_root = None;
             self.output_root_label = None;
         } else {
             self.output_root_label = Some(label.to_owned());
@@ -360,6 +545,9 @@ impl AppCoordinator {
             ));
         }
         self.fold = fold;
+        if fold.is_some() {
+            self.preferred_fold = fold;
+        }
         self.sync_ready_state();
         Ok(())
     }
@@ -382,8 +570,179 @@ impl AppCoordinator {
         self.error_code = None;
         self.error_message = None;
         self.session_stem = None;
+        self.session_directory = None;
         self.collection = CollectionState::Collecting;
         Ok(session_id)
+    }
+
+    /// Reconstructs `SourceConfig` from the selected token. Hardware selectors
+    /// stay backend-only and are never written to the DTO.
+    pub fn selected_source_config(&self) -> Result<SourceConfig, SafeError> {
+        let token = self
+            .selected_token
+            .as_deref()
+            .ok_or_else(SafeError::expired_selection)?;
+        let view = self
+            .current_candidate(token)
+            .ok_or_else(SafeError::expired_selection)?;
+        match view.source_id.as_str() {
+            "pseudo" => Ok(SourceConfig::Pseudo {
+                max_range_samples: None,
+            }),
+            "rdseed" => Ok(SourceConfig::Rdseed {
+                max_rdseed_attempts_per_word: None,
+                max_range_samples: None,
+            }),
+            "bitb" => {
+                let fold_value = self.fold.ok_or_else(|| {
+                    SafeError::invalid_configuration("Fold is required for BitBabbler.")
+                })?;
+                let fold = u8::try_from(fold_value)
+                    .ok()
+                    .and_then(|value| Fold::new(value).ok())
+                    .ok_or_else(|| {
+                        SafeError::invalid_configuration("Fold must be between 0 and 4.")
+                    })?;
+                let serial = match self.selected_library_source() {
+                    Some(rngkit_sources::SourceCandidate::Bitb { serial, .. }) => {
+                        Some(serial.clone())
+                    }
+                    Some(_) => {
+                        return Err(SafeError::invalid_configuration(
+                            "The selected source does not match the BitBabbler family.",
+                        ));
+                    }
+                    None => None,
+                };
+                Ok(SourceConfig::Bitb { fold, serial })
+            }
+            "trng" => {
+                let path = match self.selected_library_source() {
+                    Some(rngkit_sources::SourceCandidate::Trng { port_name }) => {
+                        Some(port_name.clone())
+                    }
+                    Some(_) => {
+                        return Err(SafeError::invalid_configuration(
+                            "The selected source does not match the TrueRNG family.",
+                        ));
+                    }
+                    None => None,
+                };
+                Ok(SourceConfig::Trng { path })
+            }
+            _ => Err(SafeError::expired_selection()),
+        }
+    }
+
+    pub fn begin_collection(&mut self) -> Result<CollectionStart, SafeError> {
+        let output_root = self.output_root.clone().ok_or_else(|| {
+            SafeError::invalid_configuration("Choose an output folder before starting.")
+        })?;
+        let source_config = self.selected_source_config()?;
+        let sample_bits = SampleBits::new(self.sample_bits).map_err(|_| {
+            SafeError::invalid_configuration("Sample size must be a positive multiple of 8 bits.")
+        })?;
+        let interval = IntervalSeconds::new(self.interval_seconds).map_err(|_| {
+            SafeError::invalid_configuration("Sample interval must be at least one second.")
+        })?;
+        let session_id = self.start()?;
+        Ok(CollectionStart {
+            session_id,
+            output_root,
+            sample_bits,
+            interval,
+            source_config,
+        })
+    }
+
+    pub fn ingest_collection_update(
+        &mut self,
+        session_id: &str,
+        update: CollectionUpdate,
+    ) -> Result<CollectionEventDto, SafeError> {
+        if self.session_id.as_deref() != Some(session_id) {
+            return Err(SafeError::invalid_transition(
+                "Stale collection events were ignored.",
+            ));
+        }
+        if !matches!(
+            self.collection,
+            CollectionState::Collecting | CollectionState::Stopping
+        ) {
+            return Err(SafeError::invalid_transition(
+                "Collection events are accepted only during an active session.",
+            ));
+        }
+        let sequence = self.next_event_sequence;
+        self.next_event_sequence = self.next_event_sequence.saturating_add(1);
+        self.last_event_sequence = sequence;
+        match update {
+            CollectionUpdate::SessionStarted { stem, directory } => {
+                self.session_stem = Some(stem.clone());
+                self.session_directory = Some(directory);
+                Ok(CollectionEventDto::SessionStarted {
+                    session_id: session_id.to_owned(),
+                    sequence,
+                    stem,
+                })
+            }
+            CollectionUpdate::SampleCommitted {
+                sample_index,
+                sample_count,
+                elapsed_label,
+                ones_proportion_label,
+                cumulative_z_label,
+            } => {
+                self.sample_count = sample_count;
+                self.elapsed_label = elapsed_label.clone();
+                self.ones_proportion_label = ones_proportion_label.clone();
+                self.cumulative_z_label = cumulative_z_label.clone();
+                Ok(CollectionEventDto::SampleCommitted {
+                    session_id: session_id.to_owned(),
+                    sequence,
+                    sample_index,
+                    sample_count,
+                    elapsed_label,
+                    ones_proportion_label,
+                    cumulative_z_label,
+                })
+            }
+            CollectionUpdate::TimingOverrun => {
+                self.overrun_count = self.overrun_count.saturating_add(1);
+                Ok(CollectionEventDto::TimingOverrun {
+                    session_id: session_id.to_owned(),
+                    sequence,
+                    overrun_count: self.overrun_count,
+                })
+            }
+            CollectionUpdate::CleanStop {
+                sample_count,
+                overrun_count,
+            } => {
+                self.sample_count = sample_count;
+                self.overrun_count = overrun_count;
+                self.finish_completed()?;
+                Ok(CollectionEventDto::CleanStop {
+                    session_id: session_id.to_owned(),
+                    sequence,
+                    sample_count,
+                    overrun_count,
+                })
+            }
+            CollectionUpdate::TerminalFailure { error, diagnostic } => {
+                self.record_diagnostic(error.code, &diagnostic);
+                let dto = CollectionEventDto::TerminalFailure {
+                    session_id: session_id.to_owned(),
+                    sequence,
+                    code: error.code,
+                    message: error.message().to_owned(),
+                };
+                self.error_code = Some(error.code);
+                self.error_message = Some(error.into_message());
+                self.collection = CollectionState::Failed;
+                Ok(dto)
+            }
+        }
     }
 
     pub fn request_stop(&mut self) -> Result<(), SafeError> {
@@ -409,6 +768,36 @@ impl AppCoordinator {
 
     pub fn finish_failed(&mut self, error: SafeError) -> Result<(), SafeError> {
         self.require_active_session()?;
+        self.record_diagnostic(error.code, error.message());
+        self.error_code = Some(error.code);
+        self.error_message = Some(error.into_message());
+        self.collection = CollectionState::Failed;
+        Ok(())
+    }
+
+    /// Finalize a worker-side failure for the active session. A delivery failure
+    /// after `CleanStop` may replace the provisional completed UI state.
+    pub fn finish_worker_failure(
+        &mut self,
+        session_id: &str,
+        error: SafeError,
+    ) -> Result<(), SafeError> {
+        if self.session_id.as_deref() != Some(session_id) {
+            return Err(SafeError::invalid_transition(
+                "Stale collection events were ignored.",
+            ));
+        }
+        if self.collection == CollectionState::Failed {
+            return Ok(());
+        }
+        if !matches!(
+            self.collection,
+            CollectionState::Collecting | CollectionState::Stopping | CollectionState::Completed
+        ) {
+            return Err(SafeError::invalid_transition(
+                "A worker failure requires an active or just-completed session.",
+            ));
+        }
         self.record_diagnostic(error.code, error.message());
         self.error_code = Some(error.code);
         self.error_message = Some(error.into_message());
@@ -507,10 +896,12 @@ impl AppCoordinator {
         self.error_message = collection.error_message;
         self.reports = snapshot.reports;
         self.combine = snapshot.combine;
+        self.theme = snapshot.theme;
+        self.preferences_warning = snapshot.preferences_warning;
         self.diagnostics.clear();
     }
 
-    fn ensure_configurable(&self) -> Result<(), SafeError> {
+    pub(crate) fn ensure_configurable(&self) -> Result<(), SafeError> {
         if matches!(
             self.collection,
             CollectionState::Collecting | CollectionState::Stopping
@@ -613,6 +1004,7 @@ impl AppCoordinator {
         self.next_event_sequence = 0;
         self.reset_live_metrics();
         self.session_stem = None;
+        self.session_directory = None;
         self.error_code = None;
         self.error_message = None;
     }
@@ -655,6 +1047,16 @@ fn looks_like_path(label: &str) -> bool {
     label.contains(":\\") || label.contains('/') || label.contains('\\') || label.starts_with("COM")
 }
 
+fn source_id_of(config: &SourceConfig) -> &'static str {
+    match config {
+        SourceConfig::Bitb { .. } => "bitb",
+        SourceConfig::Trng { .. } => "trng",
+        SourceConfig::Rdseed { .. } => "rdseed",
+        SourceConfig::Pseudo { .. } => "pseudo",
+        _ => "unknown",
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::AppCoordinator;
@@ -686,6 +1088,9 @@ mod tests {
         assert!(snapshot.collection.candidates.is_empty());
         assert_eq!(snapshot.file_job, FileJobState::Idle);
         assert!(snapshot.collection.session_id.is_none());
+        assert_eq!(snapshot.theme, crate::dto::ThemePreference::System);
+        assert!(snapshot.preferences_warning.is_none());
+        assert!(snapshot.collection.selected_token.is_none());
     }
 
     #[test]
@@ -772,5 +1177,45 @@ mod tests {
             Some(ErrorCode::SourceUnavailable)
         );
         let _ = SafeError::source_unavailable();
+    }
+
+    #[test]
+    fn persisted_draft_never_restores_a_source_selection() {
+        let mut coordinator = ready();
+        let dir = std::env::temp_dir().join(format!(
+            "rngkit-coord-{}-{}",
+            std::process::id(),
+            coordinator.discovery_generation()
+        ));
+        std::fs::create_dir_all(&dir).expect("dir");
+        coordinator.set_output_root(&dir).expect("root");
+        coordinator.set_sample_bits(16).expect("bits");
+        coordinator.set_fold(Some(2)).expect("fold");
+
+        let mut restored = AppCoordinator::new();
+        restored.apply_persisted_draft(&crate::preferences::Preferences {
+            sample_bits: 16,
+            interval_seconds: 1,
+            fold: Some(2),
+            output_root: Some(dir.clone()),
+            theme: crate::dto::ThemePreference::Dark,
+            window: None,
+        });
+        let snapshot = restored.snapshot();
+        assert!(snapshot.collection.selected_token.is_none());
+        assert!(snapshot.collection.candidates.is_empty());
+        assert_eq!(snapshot.collection.state, CollectionState::Idle);
+        assert_eq!(snapshot.collection.sample_bits, 16);
+        assert_eq!(snapshot.theme, crate::dto::ThemePreference::Dark);
+        assert_eq!(
+            snapshot.collection.output_root_label.as_deref(),
+            dir.file_name().and_then(|name| name.to_str())
+        );
+        let dump = format!("{restored:?}");
+        let dir_str = dir.to_string_lossy();
+        if dir_str.contains(":\\") {
+            assert!(!dump.contains(&*dir_str), "{dump}");
+        }
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

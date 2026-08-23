@@ -26,5 +26,8 @@ rngkit-recording = { git = "https://github.com/Thiagojm/rngkit-core", rev = "183
 rngkit-engine = { git = "https://github.com/Thiagojm/rngkit-core", rev = "183f3c7811f5593b3b42c2558ac726552b86687d" }
 rngkit-xlsx = { git = "https://github.com/Thiagojm/rngkit-core", rev = "183f3c7811f5593b3b42c2558ac726552b86687d" }
 
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Storage_FileSystem"] }
+
 [dev-dependencies]
 serde_json = "1"

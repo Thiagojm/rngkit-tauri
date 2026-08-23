@@ -28,6 +28,8 @@ describe('mock scenarios', () => {
     expect(serialized.toLowerCase()).not.toMatch(
       /entropy byte|seed|serial|selector/,
     );
+    expect(serialized).toContain('"theme":"system"');
+    expect(serialized).toContain('"preferencesWarning":null');
   });
 
   it('uses basenames rather than absolute input paths', () => {

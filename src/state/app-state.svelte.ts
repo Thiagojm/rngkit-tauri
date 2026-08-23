@@ -1,10 +1,19 @@
 import { isTauri } from '@tauri-apps/api/core';
 import {
   applyDevScenario,
+  chooseOutputFolder,
   getAppState,
+  openSessionFolder,
   refreshSources,
   safeErrorMessage,
   selectSource,
+  setFold,
+  setIntervalSeconds,
+  setSampleBits,
+  setTheme,
+  startAnotherSession,
+  startCollection,
+  stopCollection,
 } from '../ipc/client';
 import { deriveControls } from './controls';
 import {
@@ -12,13 +21,18 @@ import {
   MOCK_SCENARIOS,
   type ScenarioId,
 } from './mock-scenarios';
-import type { AppSnapshot, Destination, ThemePreference } from './types';
+import type {
+  AppSnapshot,
+  CollectionEvent,
+  Destination,
+  ThemePreference,
+} from './types';
 
 function cloneSnapshot(id: ScenarioId): AppSnapshot {
   return structuredClone(MOCK_SCENARIOS[id]);
 }
 
-class AppViewState {
+export class AppViewState {
   destination = $state<Destination>('collect');
   theme = $state<ThemePreference>('system');
   scenarioId = $state<ScenarioId>(DEFAULT_SCENARIO);
@@ -28,6 +42,7 @@ class AppViewState {
   replaceDialogOpen = $state(false);
   backendSnapshot = $state<AppSnapshot>(cloneSnapshot(DEFAULT_SCENARIO));
   loadGeneration = 0;
+  collectionChannelGeneration = 0;
 
   snapshot = $derived({
     ...this.backendSnapshot,
@@ -41,12 +56,14 @@ class AppViewState {
   reconcile(snapshot: AppSnapshot): void {
     this.backendSnapshot = snapshot;
     this.selectedToken = snapshot.collection.selectedToken;
+    this.theme = snapshot.theme;
   }
 
   async reconcileCommandFailure(
     generation: number,
     fallback: AppSnapshot,
     error: unknown,
+    warningField: 'familyWarning' | 'preferencesWarning' = 'familyWarning',
   ): Promise<void> {
     if (generation !== this.loadGeneration) {
       return;
@@ -60,11 +77,19 @@ class AppViewState {
     if (generation !== this.loadGeneration) {
       return;
     }
+    const message = safeErrorMessage(error);
+    if (warningField === 'preferencesWarning') {
+      this.reconcile({
+        ...snapshot,
+        preferencesWarning: message,
+      });
+      return;
+    }
     this.reconcile({
       ...snapshot,
       collection: {
         ...snapshot.collection,
-        familyWarning: safeErrorMessage(error),
+        familyWarning: message,
       },
     });
   }
@@ -116,6 +141,355 @@ class AppViewState {
       return;
     }
     this.selectedToken = token;
+  }
+
+  async runDraftCommand(
+    action: () => Promise<AppSnapshot>,
+    optimistic: (snapshot: AppSnapshot) => AppSnapshot,
+  ): Promise<void> {
+    const generation = ++this.loadGeneration;
+    const fallback = $state.snapshot(this.snapshot);
+    this.reconcile(optimistic(fallback));
+    try {
+      const snapshot = await action();
+      if (generation !== this.loadGeneration) {
+        return;
+      }
+      this.reconcile(snapshot);
+    } catch (error) {
+      await this.reconcileCommandFailure(
+        generation,
+        fallback,
+        error,
+        'preferencesWarning',
+      );
+    }
+  }
+
+  setSampleBits(bits: number): void {
+    if (!Number.isInteger(bits) || bits <= 0 || bits % 8 !== 0) {
+      this.backendSnapshot = {
+        ...this.backendSnapshot,
+        preferencesWarning:
+          'Sample size must be a positive multiple of 8 bits.',
+      };
+      return;
+    }
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => setSampleBits(bits),
+        (snapshot) => ({
+          ...snapshot,
+          collection: { ...snapshot.collection, sampleBits: bits },
+          preferencesWarning: null,
+        }),
+      );
+      return;
+    }
+    this.backendSnapshot = {
+      ...this.backendSnapshot,
+      collection: { ...this.backendSnapshot.collection, sampleBits: bits },
+      preferencesWarning: null,
+    };
+  }
+
+  setIntervalSeconds(seconds: number): void {
+    if (!Number.isInteger(seconds) || seconds < 1) {
+      this.backendSnapshot = {
+        ...this.backendSnapshot,
+        preferencesWarning: 'Sample interval must be at least one second.',
+      };
+      return;
+    }
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => setIntervalSeconds(seconds),
+        (snapshot) => ({
+          ...snapshot,
+          collection: { ...snapshot.collection, intervalSeconds: seconds },
+          preferencesWarning: null,
+        }),
+      );
+      return;
+    }
+    this.backendSnapshot = {
+      ...this.backendSnapshot,
+      collection: {
+        ...this.backendSnapshot.collection,
+        intervalSeconds: seconds,
+      },
+      preferencesWarning: null,
+    };
+  }
+
+  setFold(fold: number): void {
+    if (!Number.isInteger(fold) || fold < 0 || fold > 4) {
+      this.backendSnapshot = {
+        ...this.backendSnapshot,
+        preferencesWarning: 'Fold must be between 0 and 4.',
+      };
+      return;
+    }
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => setFold(fold),
+        (snapshot) => ({
+          ...snapshot,
+          collection: { ...snapshot.collection, fold },
+          preferencesWarning: null,
+        }),
+      );
+      return;
+    }
+    this.backendSnapshot = {
+      ...this.backendSnapshot,
+      collection: { ...this.backendSnapshot.collection, fold },
+      preferencesWarning: null,
+    };
+  }
+
+  setTheme(theme: ThemePreference): void {
+    this.theme = theme;
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => setTheme(theme),
+        (snapshot) => ({ ...snapshot, theme, preferencesWarning: null }),
+      );
+      return;
+    }
+    this.backendSnapshot = { ...this.backendSnapshot, theme };
+  }
+
+  chooseOutputFolder(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => chooseOutputFolder(),
+        (snapshot) => snapshot,
+      );
+      return;
+    }
+    if (!import.meta.env.DEV) {
+      return;
+    }
+    this.backendSnapshot = {
+      ...this.backendSnapshot,
+      collection: {
+        ...this.backendSnapshot.collection,
+        outputRootLabel:
+          this.backendSnapshot.collection.outputRootLabel ?? 'Chosen folder',
+      },
+      preferencesWarning: null,
+    };
+  }
+
+  acceptCollectionEvent(event: CollectionEvent): void {
+    const collection = this.backendSnapshot.collection;
+    if (event.sessionId !== collection.sessionId) {
+      if (
+        collection.sessionId !== null ||
+        (collection.state !== 'collecting' && collection.state !== 'stopping')
+      ) {
+        return;
+      }
+    }
+    if (event.sequence <= collection.lastEventSequence) {
+      return;
+    }
+    const next = {
+      ...collection,
+      sessionId: event.sessionId,
+      lastEventSequence: event.sequence,
+    };
+    switch (event.kind) {
+      case 'sessionStarted':
+        next.sessionStem = event.stem;
+        break;
+      case 'sampleCommitted':
+        next.sampleCount = event.sampleCount;
+        next.elapsedLabel = event.elapsedLabel;
+        next.onesProportionLabel = event.onesProportionLabel;
+        next.cumulativeZLabel = event.cumulativeZLabel;
+        break;
+      case 'timingOverrun':
+        next.overrunCount = event.overrunCount;
+        break;
+      case 'cleanStop':
+        next.state = 'completed';
+        next.statusLabel = 'Completed';
+        next.sampleCount = event.sampleCount;
+        next.overrunCount = event.overrunCount;
+        next.errorCode = null;
+        next.errorMessage = null;
+        break;
+      case 'terminalFailure':
+        next.state = 'failed';
+        next.statusLabel = 'Failed';
+        next.errorCode = event.code;
+        next.errorMessage = event.message;
+        break;
+    }
+    this.reconcile({ ...this.backendSnapshot, collection: next });
+  }
+
+  startCollection(): void {
+    if (isTauri()) {
+      const generation = ++this.loadGeneration;
+      const channelGeneration = ++this.collectionChannelGeneration;
+      const fallback = $state.snapshot(this.snapshot);
+      this.reconcile({
+        ...fallback,
+        collection: {
+          ...fallback.collection,
+          state: 'collecting',
+          statusLabel: 'Collecting',
+          errorCode: null,
+          errorMessage: null,
+        },
+      });
+      void startCollection((event) => {
+        if (channelGeneration === this.collectionChannelGeneration) {
+          this.acceptCollectionEvent(event);
+        }
+      })
+        .then((snapshot) => {
+          if (generation !== this.loadGeneration) {
+            return;
+          }
+          const current = this.backendSnapshot.collection;
+          if (
+            snapshot.collection.sessionId === current.sessionId &&
+            snapshot.collection.lastEventSequence < current.lastEventSequence
+          ) {
+            return;
+          }
+          this.reconcile(snapshot);
+        })
+        .catch((error: unknown) =>
+          this.reconcileCommandFailure(generation, fallback, error),
+        );
+      return;
+    }
+    if (this.snapshot.collection.state !== 'ready') {
+      return;
+    }
+    this.reconcile({
+      ...this.snapshot,
+      collection: {
+        ...this.snapshot.collection,
+        state: 'collecting',
+        statusLabel: 'Collecting',
+        sessionId: 's1',
+        lastEventSequence: 0,
+        errorCode: null,
+        errorMessage: null,
+      },
+    });
+  }
+
+  stopCollection(): void {
+    if (isTauri()) {
+      const generation = ++this.loadGeneration;
+      const fallback = $state.snapshot(this.snapshot);
+      this.reconcile({
+        ...fallback,
+        collection: {
+          ...fallback.collection,
+          state: 'stopping',
+          statusLabel: 'Stopping',
+        },
+      });
+      void stopCollection()
+        .then((snapshot) => {
+          if (generation !== this.loadGeneration) {
+            return;
+          }
+          const current = this.backendSnapshot.collection;
+          if (
+            snapshot.collection.sessionId === current.sessionId &&
+            snapshot.collection.lastEventSequence < current.lastEventSequence
+          ) {
+            return;
+          }
+          this.reconcile(snapshot);
+        })
+        .catch((error: unknown) =>
+          this.reconcileCommandFailure(generation, fallback, error),
+        );
+      return;
+    }
+    if (
+      this.snapshot.collection.state !== 'collecting' &&
+      this.snapshot.collection.state !== 'stopping'
+    ) {
+      return;
+    }
+    this.reconcile({
+      ...this.snapshot,
+      collection: {
+        ...this.snapshot.collection,
+        state: 'completed',
+        statusLabel: 'Completed',
+      },
+    });
+  }
+
+  startAnotherSession(): void {
+    if (isTauri()) {
+      const generation = ++this.loadGeneration;
+      ++this.collectionChannelGeneration;
+      const fallback = $state.snapshot(this.snapshot);
+      void startAnotherSession()
+        .then((snapshot) => {
+          if (generation === this.loadGeneration) {
+            this.reconcile(snapshot);
+          }
+        })
+        .catch((error: unknown) =>
+          this.reconcileCommandFailure(generation, fallback, error),
+        );
+      return;
+    }
+    if (
+      this.snapshot.collection.state !== 'completed' &&
+      this.snapshot.collection.state !== 'failed'
+    ) {
+      return;
+    }
+    const ready = Boolean(this.snapshot.collection.outputRootLabel);
+    this.reconcile({
+      ...this.snapshot,
+      collection: {
+        ...this.snapshot.collection,
+        state: ready ? 'ready' : 'idle',
+        statusLabel: ready ? 'Ready' : 'Idle',
+        sampleCount: 0,
+        elapsedLabel: '00:00:00',
+        onesProportionLabel: '—',
+        cumulativeZLabel: '—',
+        overrunCount: 0,
+        sessionStem: null,
+        sessionId: null,
+        lastEventSequence: 0,
+        errorCode: null,
+        errorMessage: null,
+      },
+    });
+  }
+
+  openSessionFolder(): void {
+    if (isTauri()) {
+      const generation = ++this.loadGeneration;
+      const fallback = $state.snapshot(this.snapshot);
+      void openSessionFolder()
+        .then((snapshot) => {
+          if (generation === this.loadGeneration) {
+            this.reconcile(snapshot);
+          }
+        })
+        .catch((error: unknown) =>
+          this.reconcileCommandFailure(generation, fallback, error),
+        );
+    }
   }
 
   async refreshSources(): Promise<void> {

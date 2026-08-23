@@ -1,140 +1,120 @@
 # Decisions
 
-## Product and platform contract (2026-08-22)
+All decisions are accepted. Material changes return to design review.
 
-- Status: accepted
-- Product name is RngKit; v1 is an English Windows 10/11 x64 desktop app.
-- Collect, Reports, Combine, and Help share one resizable Tauri 2 window. The
-  client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses uPlot; stable mutually
-  compatible dependencies are locked, with no prereleases or extra UI framework.
-- Why: modernize the familiar RngKitPSG workflows without retaining duplicated
-  screens or legacy widget architecture.
+## Product, platform, and shell (2026-08-22)
 
-## Collection and state contract (2026-08-22)
+- RngKit v1 is an English Windows 10/11 x64 desktop app. One resizable Tauri 2
+  window contains persistent Collect, Reports, Combine, and Help destinations.
+- The client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses locked stable,
+  mutually compatible dependencies, uPlot, and no extra UI framework.
+- The scaffold combines the official Tauri 2 Rust/config/icons with the Vite
+  `svelte-ts` SPA because `create-tauri-app`'s Svelte template is SvelteKit.
+- Theme is `data-theme` on `html`. Tailwind `@theme` owns light defaults;
+  plain CSS media overrides preserve system dark unless light is forced.
+- The top bar exposes product, operation status, and light/dark/system theme.
+  Collect stacks through a container query at the 800px minimum window. Start
+  and Stop never share one surface; disabled controls explain why.
+- Browser tests use production assets through installed Edge without Tauri IPC
+  or hardware. Mock snapshots remain browser-only; scenario switching is
+  debug-only.
+- Why/impact: modernize the familiar workflows in one testable SPA while
+  keeping desktop authority and permissions out of the frontend.
 
-- Status: accepted
-- Exactly one explicitly selected source is used per session. Multiple devices
-  remain separate choices; no candidate is selected silently.
-- Rust owns the coordinator states (`idle`, `discovering`, `ready`,
-  `collecting`, `stopping`, `completed`, `failed`) and rejects stale discovery,
-  double starts, stale events, and conflicting file jobs.
-- One worker owns the synchronous engine call. Stop and close are cooperative,
-  idempotent, and wait for terminal finalization.
-- The frontend retains every committed `(sample_index, cumulative_z)` point but
-  receives no raw entropy and does not calculate authoritative statistics.
-- Why: preserve engine durability and cancellation semantics while keeping UI
-  responsiveness and deterministic authority.
+## Authority, collection, and IPC (2026-08-22 through 2026-08-23)
 
-## Privacy and filesystem contract (2026-08-22)
+- Rust owns coordinator states (`idle`, `discovering`, `ready`, `collecting`,
+  `stopping`, `completed`, `failed`), file-job exclusion, session IDs, and event
+  sequences. It rejects stale discovery/events, double starts, and conflicts.
+- One explicitly selected source and one application worker serve each session.
+  No silent selection, live XOR, fallback, reconnect, or resume is allowed.
+- Start reconstructs `SourceConfig` from a transient token, opens the source on
+  the worker, and calls `run_session`. Stop is cooperative and idempotent.
+  Worker startup, source open, engine, and terminal channel failures finish the
+  matching coordinator session as failed; clean stop finishes it as completed.
+- Per-session channels carry ordered metric DTOs only. Frontend command-response
+  generations do not invalidate terminal channel events; session and sequence
+  checks prevent older responses or stale events from replacing newer state.
+- Svelte retains every committed `(sample_index, cumulative_z)` point but never
+  receives entropy or calculates authoritative statistics.
+- Production IPC is `get_app_state`, `refresh_sources`, `select_source`,
+  `set_sample_bits`, `set_interval_seconds`, `set_fold`, `set_theme`,
+  `choose_output_folder`, `start_collection`, `stop_collection`,
+  `start_another_session`, and `open_session_folder`. `apply_dev_scenario` is
+  debug-only; non-Tauri browser tests use mock snapshots.
+- Open session folder is a Rust operation against the backend-known completed
+  directory. The frontend cannot supply a path or use an opener capability.
+- Why/impact: preserve engine durability, deterministic authority, responsive
+  UI, and an entropy-free frontend. Checkpoint 9 may add uPlot; close
+  interception remains later work.
 
-- Status: accepted
-- Hardware candidates stay in a backend-only transient registry keyed by opaque
-  tokens. Serials and OS paths never cross IPC or enter preferences.
-- Preferences contain only output root, sample bits, interval, fold, theme, and
-  validated window geometry.
-- Frontend errors are stable safe DTOs; copied diagnostics are explicit,
-  bounded, and redacted. Persistent production logs are disabled in v1.
-- Native and derived artifacts preserve containment, no-follow/no-overwrite
+## Discovery, draft, and preferences (2026-08-23)
+
+- `refresh_sources` runs `rngkit_sources::discover()` in blocking Tauri work.
+  Candidates live in a backend-only generation registry behind random opaque
+  tokens. DTOs contain token, source id, safe label, variant, ordinal, and fold
+  requirement only; refresh invalidates prior tokens and selection.
+- Multiple devices remain separate. Partial family failures are safe warnings.
+  Discovery never opens a source; compiled PseudoRNG is capability only, and OS
+  entropy availability is authoritative at explicit `open()`.
+- Rejected refresh/selection reconciles through `get_app_state`, restores usable
+  controls, and exposes only structured safe errors.
+- Preferences schema 1 contains output root, sample bits, interval, fold, theme,
+  and physical window geometry. It never stores selection, tokens, families,
+  serials, device paths, entropy, or seeds.
+- Writes use a sibling temporary file plus atomic platform replacement and roll
+  back both in-memory authorities on failure. Invalid/unsupported files reset
+  wholly with a safe warning without touching session files.
+- The directory dialog runs in Rust and returns only a label. Restored roots are
+  revalidated; missing roots are dropped. Physical geometry is clamped to a
+  visible monitor in one mixed-DPI-safe coordinate space.
+- Ready requires valid bits, interval, fold, output root, and explicit selection.
+- Default tests inject fake discovery/sources and never enumerate or open
+  hardware. One deterministic test opens real PseudoRNG, uses a fake clock, and
+  cancels after three samples.
+- Why/impact: allow explicit multi-device selection and restart-safe drafts
+  without leaking selectors or making collection implicit.
+
+## Privacy, filesystem, and diagnostics (2026-08-22)
+
+- Frontend capabilities are only `core:default` and `dialog:default`; general
+  opener, filesystem, shell, and logging access is forbidden.
+- Frontend errors are stable `SafeError` DTOs. Diagnostics are explicit,
+  bounded, redacted in-memory records with generated operation IDs; production
+  persistent logging is disabled.
+- Entropy, seeds, selectors, serials, OS paths, absolute legacy input paths, and
+  arbitrary error chains never cross IPC, preferences, or diagnostics.
+- Native and derived artifacts retain containment, no-follow/no-overwrite
   behavior, and backend-known open/reveal targets.
-- Why: prevent entropy, selector, path, and diagnostic leakage at the desktop
-  boundary.
+- Why: prevent sensitive material and filesystem authority from leaking across
+  the desktop boundary.
 
-## Reports and derived data contract (2026-08-22)
+## Reports and derived data (2026-08-22)
 
-- Status: accepted
-- XLSX reports are generated only through normalized library readers for native
-  sessions, RngKitPSG v3 BIN/CSV, and validated derived bundles.
-- Existing XLSX output requires an explicit Cancel/Replace round trip.
+- XLSX reports use normalized library readers for native sessions, RngKitPSG v3
+  BIN/CSV, and validated derived bundles. Existing output requires an explicit
+  Cancel/Replace round trip.
 - Strict concatenation accepts distinct compatible legacy v3 CSV inputs,
-  rejects ambiguous overlap (including equal boundaries), revalidates after
-  preview, streams creation, preserves input hashes/provenance, and never
-  modifies inputs or stores absolute input paths.
-- Derived data uses its own directory grammar and CSV plus schema-versioned
-  manifest; it cannot be mistaken for a native collection session.
-- Statistical Z and `+/-1.96` remain descriptive visual references with no
+  rejects ambiguous overlap including equal boundaries, revalidates after
+  preview, streams creation, records hashes/provenance, and never modifies
+  inputs or stores their absolute paths.
+- Derived output has distinct directory grammar and a same-stem CSV plus
+  schema-versioned manifest, so it cannot be mistaken for a native session.
+- Statistical Z and `+/-1.96` are descriptive visual references only: no
   p-values, certification, or pass/fail randomness conclusion.
 
-## Scaffold stack (2026-08-22)
+## Dependencies and delivery (2026-08-22 through 2026-08-23)
 
-- Status: accepted
-- Because `create-tauri-app`'s `svelte-ts` template is SvelteKit, the client-only
-  product combines its Tauri 2 Rust/config/icons with the official Vite
-  `svelte-ts` SPA layout. Exact versions remain in the lockfiles and context.
-- Tailwind `@theme` registers the light-default token namespace. System-dark
-  values use a plain CSS media override so the condition survives compilation.
-- Browser tests exercise production assets through installed Edge without real
-  IPC or hardware; scripts retain the approved names in `AGENTS.md`.
-- Frontend capabilities are `core:default` and `dialog:default`. Opener,
-  filesystem, shell, and logging permissions are not granted. The official
-  template's `tauri-plugin-opener` was not kept.
-- `rngkit-*` crates pin git `183f3c7811f5593b3b42c2558ac726552b86687d`.
-- Node floor is `^20.19.0 || >=22.12.0`; npm `>=10` (verified on Node 24.18.0 /
-  npm 11.16.0). Dependency upgrades require separate validation.
-- Why/impact: match the approved SPA and keep the frontend away from general
-  filesystem or hardware APIs while later checkpoints add product IPC.
-
-## Application shell (2026-08-22)
-
-- Status: accepted
-- A persistent rail exposes the four destinations; the top bar shows product,
-  operation status, and a light/dark/system theme control.
-- Theme is `data-theme` on `html`. `@theme` keeps light defaults; dark CSS
-  variables apply for `data-theme="dark"` and for system dark unless light is
-  forced. Collect stacks via a container query so the 800px minimum window does
-  not use a side-by-side configuration column.
-- Start and Stop never share one surface; disabled controls show a reason. Mock
-  snapshots remain for browser tests, and the scenario switch compiles only in
-  development. The shell and these rules remain when discovery is wired.
-
-## Coordinator and IPC seam (2026-08-23)
-
-- Status: accepted
-- Rust owns collection and file-job transitions. Prohibited transitions return
-  stable `SafeError` DTOs. Session IDs and event sequences are coordinator
-  state. Tagged camel-case DTOs are independent of `rngkit-*` types.
-- Production IPC is `get_app_state`, `refresh_sources`, and `select_source`.
-  `apply_dev_scenario` is compiled only under `debug_assertions`. Browser tests
-  keep mock snapshots when Tauri is absent.
-- Diagnostics are redacted, bounded, in-memory records. They never serialize
-  entropy, seeds, selectors, serials, OS paths, or arbitrary error chains.
-  Safe-error construction exposes only static canonical messages and generated
-  operation IDs. Fold is accepted only for a selected BitBabbler candidate.
-- Why: authority and the safe frontend contract must exist before discovery.
-- Impact: Discovery calls `discover()` through this coordinator. Do not add
-  filesystem, opener, or logging capabilities.
-
-## Discovery and selection (2026-08-23)
-
-- Status: accepted
-- `refresh_sources` runs `rngkit_sources::discover()` in Tauri's blocking
-  context. Candidates are stored behind random opaque tokens for one
-  generation. Frontend DTOs carry token, source id, safe label, variant,
-  ordinal, and fold requirement only.
-- Default tests inject `FakeDiscovery` and never enumerate or open hardware.
-  Refresh invalidates previous tokens and the previous selection. Partial
-  family failures become nonblocking safe warnings. Serials and OS paths do
-  not cross IPC.
-- Discovery never constructs a source or acquires entropy. With PseudoRNG
-  compiled in, the candidate represents capability; OS entropy availability is
-  authoritative only at explicit `open()` in Checkpoint 8.
-- Rejected refresh and selection commands reconcile through `get_app_state`,
-  restore usable controls, and surface only structured safe IPC messages.
-- Why: explicit multi-device selection without leaking selectors.
-- Impact: Checkpoint 7 may persist output root and other safe preferences.
-  Do not open a source or collect entropy until Checkpoint 8. The app pins the
-  reachable entropy-free discovery revision `183f3c7`.
-
-## Delivery and execution contract (2026-08-22)
-
-- Status: accepted
-- Implementation follows the approved checkpoint plan. Each checkpoint ends
-  with exact changed files, observed validation, manual test instructions,
-  unrun evidence, later limitations, and an approval request.
-- Later checkpoints are not implicitly authorized. Material contract changes
-  return to design review.
-- Default tests are deterministic and hardware-free; physical checks are
+- Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm
+  `>=10`, Rust edition 2024/MSRV 1.85. Dependency upgrades require separate
+  validation; prereleases are excluded.
+- `rngkit-*` crates use reachable git revision
+  `183f3c7811f5593b3b42c2558ac726552b86687d`, never local paths.
+- Work follows the approved checkpoint plan. Each checkpoint reports changed
+  files, observed validation, manual tests, unrun evidence, limitations, and an
+  approval request. Later checkpoints are not implicitly authorized.
+- Default tests are deterministic and hardware-free. Physical checks are
   ignored, opt-in, serial, and reported per device and OS.
 - v1 delivery is an unsigned per-user English NSIS installer with bundled
-  offline WebView2. Signing, release, publication of binaries, updater work,
-  and deployment require separate approval.
-- Repository source is public under the MIT License.
+  offline WebView2. Signing, binary publication, updater, release, and
+  deployment require separate approval. Source is public under MIT.

@@ -8,23 +8,16 @@
   } from '../../state/mock-scenarios';
   import { applyTheme } from '../../state/theme';
   import { statusTone } from '../../state/controls';
-  import { THEME_PREFERENCES, type ThemePreference } from '../../state/types';
   import CombinePage from '../../pages/CombinePage.svelte';
   import CollectPage from '../../pages/CollectPage.svelte';
   import HelpPage from '../../pages/HelpPage.svelte';
   import ReportsPage from '../../pages/ReportsPage.svelte';
   import Navigation from './Navigation.svelte';
+  import ThemeControl from './ThemeControl.svelte';
 
   $effect(() => {
     applyTheme(appState.theme);
   });
-
-  function onThemeChange(event: Event): void {
-    const value = (event.currentTarget as HTMLSelectElement).value;
-    if ((THEME_PREFERENCES as readonly string[]).includes(value)) {
-      appState.theme = value as ThemePreference;
-    }
-  }
 
   function onScenarioChange(event: Event): void {
     const value = (event.currentTarget as HTMLSelectElement).value;
@@ -50,18 +43,7 @@
       {copy.status}: {appState.snapshot.collection.statusLabel}
     </p>
     <div class="ml-auto flex flex-wrap items-center gap-3">
-      <label class="flex items-center gap-2 text-sm">
-        {copy.theme.legend}
-        <select
-          class="rounded-md border border-border bg-surface px-2 py-1"
-          value={appState.theme}
-          onchange={onThemeChange}
-        >
-          {#each THEME_PREFERENCES as preference (preference)}
-            <option value={preference}>{copy.theme[preference]}</option>
-          {/each}
-        </select>
-      </label>
+      <ThemeControl />
       {#if import.meta.env.DEV}
         <label class="flex items-center gap-2 text-sm">
           Development scenario

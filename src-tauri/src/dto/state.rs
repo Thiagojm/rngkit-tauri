@@ -25,6 +25,27 @@ pub enum FileJobState {
     Combining,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ThemePreference {
+    #[default]
+    System,
+    Light,
+    Dark,
+}
+
+impl ThemePreference {
+    #[must_use]
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "system" => Some(Self::System),
+            "light" => Some(Self::Light),
+            "dark" => Some(Self::Dark),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceCandidateDto {
@@ -35,6 +56,71 @@ pub struct SourceCandidateDto {
     pub variant: Option<String>,
     pub ordinal: u32,
     pub requires_fold: bool,
+}
+
+/// Sequenced collection event. Contains no entropy bytes or selectors.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum CollectionEventDto {
+    SessionStarted {
+        session_id: String,
+        sequence: u64,
+        stem: String,
+    },
+    SampleCommitted {
+        session_id: String,
+        sequence: u64,
+        sample_index: u64,
+        sample_count: u64,
+        elapsed_label: String,
+        ones_proportion_label: String,
+        cumulative_z_label: String,
+    },
+    TimingOverrun {
+        session_id: String,
+        sequence: u64,
+        overrun_count: u64,
+    },
+    CleanStop {
+        session_id: String,
+        sequence: u64,
+        sample_count: u64,
+        overrun_count: u64,
+    },
+    TerminalFailure {
+        session_id: String,
+        sequence: u64,
+        code: ErrorCode,
+        message: String,
+    },
+}
+
+impl CollectionEventDto {
+    #[must_use]
+    pub fn session_id(&self) -> &str {
+        match self {
+            Self::SessionStarted { session_id, .. }
+            | Self::SampleCommitted { session_id, .. }
+            | Self::TimingOverrun { session_id, .. }
+            | Self::CleanStop { session_id, .. }
+            | Self::TerminalFailure { session_id, .. } => session_id,
+        }
+    }
+
+    #[must_use]
+    pub fn sequence(&self) -> u64 {
+        match self {
+            Self::SessionStarted { sequence, .. }
+            | Self::SampleCommitted { sequence, .. }
+            | Self::TimingOverrun { sequence, .. }
+            | Self::CleanStop { sequence, .. }
+            | Self::TerminalFailure { sequence, .. } => *sequence,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -121,6 +207,8 @@ pub struct AppStateDto {
     pub file_job: FileJobState,
     pub reports: ReportsSnapshot,
     pub combine: CombineSnapshot,
+    pub theme: ThemePreference,
+    pub preferences_warning: Option<String>,
 }
 
 impl ReportsSnapshot {
@@ -145,9 +233,29 @@ impl CombineSnapshot {
 #[cfg(test)]
 mod tests {
     use super::{
-        AppStateDto, CollectionSnapshot, CollectionState, CombineSnapshot, FileJobState,
-        ReportsSnapshot,
+        AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineSnapshot,
+        FileJobState, ReportsSnapshot, ThemePreference,
     };
+
+    #[test]
+    fn collection_event_json_is_tagged_camel_case_without_entropy() {
+        let event = CollectionEventDto::SampleCommitted {
+            session_id: "s1".into(),
+            sequence: 2,
+            sample_index: 1,
+            sample_count: 1,
+            elapsed_label: "00:00:01".into(),
+            ones_proportion_label: "0.5000".into(),
+            cumulative_z_label: "+0.00".into(),
+        };
+        let value = serde_json::to_value(&event).expect("json");
+        assert_eq!(value["kind"], "sampleCommitted");
+        assert_eq!(value["sessionId"], "s1");
+        assert_eq!(value["sampleIndex"], 1);
+        let dump = value.to_string().to_ascii_lowercase();
+        assert!(!dump.contains("entropy"));
+        assert!(!dump.contains("seed"));
+    }
 
     #[test]
     fn snapshot_json_uses_camel_case() {
@@ -176,6 +284,8 @@ mod tests {
             file_job: FileJobState::GeneratingReport,
             reports: ReportsSnapshot::empty(),
             combine: CombineSnapshot::empty(),
+            theme: ThemePreference::System,
+            preferences_warning: None,
         };
         let value = serde_json::to_value(&dto).expect("json");
         assert!(value.get("fileJob").is_some());
@@ -184,5 +294,8 @@ mod tests {
         assert_eq!(value["collection"]["statusLabel"], "Idle");
         assert!(value["collection"].get("selectedToken").is_some());
         assert!(value["collection"].get("lastEventSequence").is_some());
+        assert_eq!(value["theme"], "system");
+        assert!(value.get("preferencesWarning").is_some());
+        assert!(value.get("selectedToken").is_none());
     }
 }

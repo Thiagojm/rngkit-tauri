@@ -13,10 +13,9 @@ Read these files before changing the project:
 
 ## Verified commands (Windows host, through 2026-08-23)
 
-From the repository root. Node.js 24.18.0 / npm 11.16.0 were used at scaffold
-time. The floor is Node `^20.19.0 || >=22.12.0` and npm `>=10`. Stable Rust is
-1.97.1; MSRV toolchain `1.85.0` is installed. Do not install a missing
-toolchain silently.
+From the repository root. Scaffold used Node.js 24.18.0 / npm 11.16.0; floors
+are Node `^20.19.0 || >=22.12.0` and npm `>=10`. Stable Rust is 1.97.1; MSRV
+toolchain `1.85.0` is installed. Do not install a missing toolchain silently.
 
 ```text
 npm ci
@@ -45,10 +44,8 @@ applicable later checkpoint verifies those commands.
 
 ## Repository conventions
 
-- Follow the approved plan one checkpoint at a time and stop for user testing
-  and approval before starting the next checkpoint.
-- A material contract change pauses implementation and requires renewed design
-  approval.
+- Follow the approved plan one checkpoint at a time; stop for user testing and
+  approval before the next. Material contract changes require renewed design approval.
 - Preserve the approved design and plan; update their current-state references
   only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`.
@@ -62,9 +59,13 @@ applicable later checkpoint verifies those commands.
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.
   Never grant general filesystem, shell, opener, or logging access. Production
-  IPC is `get_app_state`, `refresh_sources`, and `select_source`. Default start
-  does not enumerate hardware. Default tests inject a fake discovery service
-  and do not call `rngkit_sources::discover()`. Do not open a source.
+  IPC is `get_app_state`, `refresh_sources`, `select_source`, `set_sample_bits`,
+  `set_interval_seconds`, `set_fold`, `set_theme`, `choose_output_folder`,
+  `start_collection`, `stop_collection`, `start_another_session`, and
+  `open_session_folder`. Default start does not enumerate hardware. Default
+  tests inject fake discovery and fake sources and do not call
+  `rngkit_sources::discover()` or open hardware. Open session folder uses a
+  backend-known path only. Do not add uPlot or intercept window close.
 - Never persist or expose entropy, seeds, serials, OS device paths, or arbitrary
   diagnostic chains.
 - Keep statistical Z and `+/-1.96` explicitly descriptive, never inferential.

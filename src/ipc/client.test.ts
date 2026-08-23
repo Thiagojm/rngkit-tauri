@@ -3,10 +3,16 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { MOCK_SCENARIOS } from '../state/mock-scenarios';
 import {
   applyDevScenario,
+  chooseOutputFolder,
   getAppState,
+  openSessionFolder,
   refreshSources,
   safeErrorMessage,
   selectSource,
+  setSampleBits,
+  setTheme,
+  startCollection,
+  stopCollection,
 } from './client';
 
 function setTauri(enabled: boolean): void {
@@ -78,6 +84,50 @@ describe('ipc client', () => {
     });
     await expect(selectSource('mock-bitb-1')).resolves.toEqual(
       MOCK_SCENARIOS.ready,
+    );
+  });
+
+  it('invokes session-draft commands inside Tauri', async () => {
+    setTauri(true);
+    mockIPC((cmd, payload) => {
+      if (cmd === 'set_sample_bits') {
+        expect(payload).toEqual({ bits: 16 });
+        return MOCK_SCENARIOS.ready;
+      }
+      if (cmd === 'set_theme') {
+        expect(payload).toEqual({ theme: 'dark' });
+        return { ...MOCK_SCENARIOS.idle, theme: 'dark' };
+      }
+      if (cmd === 'choose_output_folder') {
+        return MOCK_SCENARIOS.ready;
+      }
+      throw new Error(`unexpected command ${cmd}`);
+    });
+    await expect(setSampleBits(16)).resolves.toEqual(MOCK_SCENARIOS.ready);
+    await expect(setTheme('dark')).resolves.toMatchObject({ theme: 'dark' });
+    await expect(chooseOutputFolder()).resolves.toEqual(MOCK_SCENARIOS.ready);
+  });
+
+  it('invokes collection commands inside Tauri', async () => {
+    setTauri(true);
+    mockIPC((cmd) => {
+      if (cmd === 'start_collection') {
+        return MOCK_SCENARIOS.collecting;
+      }
+      if (cmd === 'stop_collection') {
+        return MOCK_SCENARIOS.stopping;
+      }
+      if (cmd === 'open_session_folder') {
+        return MOCK_SCENARIOS.completed;
+      }
+      throw new Error(`unexpected command ${cmd}`);
+    });
+    await expect(startCollection(() => undefined)).resolves.toEqual(
+      MOCK_SCENARIOS.collecting,
+    );
+    await expect(stopCollection()).resolves.toEqual(MOCK_SCENARIOS.stopping);
+    await expect(openSessionFolder()).resolves.toEqual(
+      MOCK_SCENARIOS.completed,
     );
   });
 

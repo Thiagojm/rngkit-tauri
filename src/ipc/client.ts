@@ -1,11 +1,17 @@
-import { invoke, isTauri } from '@tauri-apps/api/core';
+import { Channel, invoke, isTauri } from '@tauri-apps/api/core';
 import {
   DEFAULT_SCENARIO,
   MOCK_SCENARIOS,
   browserDiscoverySnapshot,
   type ScenarioId,
 } from '../state/mock-scenarios';
-import { ERROR_CODES, type AppSnapshot, type SafeErrorDto } from './types';
+import {
+  ERROR_CODES,
+  type AppSnapshot,
+  type CollectionEvent,
+  type SafeErrorDto,
+  type ThemePreference,
+} from './types';
 
 const FALLBACK_ERROR_MESSAGE = 'The operation failed unexpectedly.';
 const SAFE_ERROR_CODES = new Set<string>(ERROR_CODES);
@@ -49,6 +55,137 @@ export async function refreshSources(): Promise<AppSnapshot> {
 export async function selectSource(token: string): Promise<AppSnapshot> {
   if (isTauri()) {
     return invoke<AppSnapshot>('select_source', { token });
+  }
+  return getAppState();
+}
+
+export async function setSampleBits(bits: number): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('set_sample_bits', { bits });
+  }
+  return getAppState();
+}
+
+export async function setIntervalSeconds(
+  seconds: number,
+): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('set_interval_seconds', { seconds });
+  }
+  return getAppState();
+}
+
+export async function setFold(fold: number): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('set_fold', { fold });
+  }
+  return getAppState();
+}
+
+export async function setTheme(theme: ThemePreference): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('set_theme', { theme });
+  }
+  return getAppState();
+}
+
+export async function chooseOutputFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('choose_output_folder');
+  }
+  if (import.meta.env.DEV) {
+    const snapshot = await getAppState();
+    return {
+      ...snapshot,
+      collection: {
+        ...snapshot.collection,
+        outputRootLabel: snapshot.collection.outputRootLabel ?? 'Chosen folder',
+      },
+    };
+  }
+  return getAppState();
+}
+
+export async function startCollection(
+  onEvent: (event: CollectionEvent) => void,
+): Promise<AppSnapshot> {
+  if (isTauri()) {
+    const channel = new Channel<CollectionEvent>(onEvent);
+    return invoke<AppSnapshot>('start_collection', { onEvent: channel });
+  }
+  const snapshot = await getAppState();
+  if (snapshot.collection.state !== 'ready') {
+    return snapshot;
+  }
+  return {
+    ...snapshot,
+    collection: {
+      ...snapshot.collection,
+      state: 'collecting',
+      statusLabel: 'Collecting',
+      sessionId: 's1',
+      lastEventSequence: 0,
+      errorCode: null,
+      errorMessage: null,
+    },
+  };
+}
+
+export async function stopCollection(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('stop_collection');
+  }
+  const snapshot = await getAppState();
+  if (
+    snapshot.collection.state !== 'collecting' &&
+    snapshot.collection.state !== 'stopping'
+  ) {
+    return snapshot;
+  }
+  return {
+    ...snapshot,
+    collection: {
+      ...snapshot.collection,
+      state: 'completed',
+      statusLabel: 'Completed',
+    },
+  };
+}
+
+export async function startAnotherSession(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('start_another_session');
+  }
+  const snapshot = await getAppState();
+  if (
+    snapshot.collection.state !== 'completed' &&
+    snapshot.collection.state !== 'failed'
+  ) {
+    return snapshot;
+  }
+  return {
+    ...snapshot,
+    collection: {
+      ...snapshot.collection,
+      state: snapshot.collection.outputRootLabel ? 'ready' : 'idle',
+      statusLabel: snapshot.collection.outputRootLabel ? 'Ready' : 'Idle',
+      sampleCount: 0,
+      elapsedLabel: '00:00:00',
+      onesProportionLabel: '—',
+      cumulativeZLabel: '—',
+      overrunCount: 0,
+      sessionStem: null,
+      sessionId: null,
+      lastEventSequence: 0,
+      errorCode: null,
+      errorMessage: null,
+    },
+  };
+}
+
+export async function openSessionFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_session_folder');
   }
   return getAppState();
 }

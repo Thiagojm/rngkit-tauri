@@ -3,6 +3,7 @@
 use crate::dto::{
     AppStateDto, CollectionSnapshot, CollectionState, CombineInputRow, CombineResult,
     CombineSnapshot, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot, SourceCandidateDto,
+    ThemePreference,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -179,6 +180,8 @@ fn snapshot(
         file_job,
         reports,
         combine,
+        theme: ThemePreference::System,
+        preferences_warning: None,
     }
 }
 
