@@ -7,9 +7,11 @@ Read these files before changing the project:
 1. `docs/PROJECT_CONTEXT.md`
 2. `docs/DECISIONS.md`
 3. `TODO.md`
-4. `docs/specs/2026-08-22-rngkit-tauri-design.md`
-5. `docs/plans/2026-08-22-rngkit-tauri-plan.md`
-6. `README.md` and the relevant implementation area
+4. `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
+5. `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
+6. `docs/specs/2026-08-22-rngkit-tauri-design.md`
+7. `docs/plans/2026-08-22-rngkit-tauri-plan.md`
+8. `README.md` and the relevant implementation area
 
 ## Verified commands (Windows host, through 2026-08-24)
 
@@ -44,7 +46,10 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
 
 ## Repository conventions
 
-- Checkpoints 3–18 of the approved plan are implemented. Stop for Checkpoint 18 approval before treating v1 as complete. Material contract changes require design approval. Later work needs a new explicit request.
+- Checkpoints 3–18 of the original plan are implemented. The 2026-08-24
+  workflow-improvements design and phased plan are approved but unimplemented.
+  No improvement phase is authorized; a future implementation request starts
+  Phase 1 only and must stop at its user-validation gate.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or

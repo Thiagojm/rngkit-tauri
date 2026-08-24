@@ -84,6 +84,31 @@ All decisions are accepted. Material changes return to design review.
   absolute input paths.
 - Statistical Z and `+/-1.96` are descriptive visual references only.
 
+## Approved workflow improvements (2026-08-24, unimplemented)
+
+- Default new collection state uses an auto-created `Documents/RngKit` output
+  root and 2048 sample bits; valid saved custom roots and sample sizes win.
+  Startup performs asynchronous discovery but never opens or selects a source;
+  manual Refresh and explicit selection remain.
+- Collect adopts the instrument-workspace chart direction with one `Fit all`
+  action. It frames retained points and resumes following only during active
+  collection. The two approved low-value Collect messages are removed; Help
+  retains a concise non-certification boundary.
+- Reports uses one file chooser and accepts validated bundle artifacts or
+  standalone current/legacy CSV/BIN. Without a manifest, the filename supplies
+  source/bits/interval/fold; a present parent manifest remains authoritative.
+- Combine stays CSV-only but accepts compatible legacy, current, or mixed
+  inputs. Selection accumulates across folders with opaque-ID Remove/Clear.
+  Existing schema-1 derived bundles remain readable; new output uses schema 2,
+  kind `csv_concatenation`, with per-input format and no absolute paths.
+- Parsing, normalization, compatibility, and derived writing remain owned by
+  `rngkit-core`. A new exact reachable revision is required before app
+  integration. The approved phased plan authorizes no implementation, commit,
+  or push by itself.
+- Why/impact: align the app with observed real legacy data and simpler native
+  workflows without duplicating parsers or weakening backend path/privacy
+  authority.
+
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 
 - Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm

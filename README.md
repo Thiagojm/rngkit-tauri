@@ -34,10 +34,16 @@ unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable librar
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
 `183f3c7811f5593b3b42c2558ac726552b86687d`.
 
+A follow-on workflow-improvements design and six-phase implementation plan
+dated 2026-08-24 are approved but unimplemented. No phase is authorized; Phase
+1 begins in `rngkit-core` only after a separate implementation request.
+
 ## Sources of truth
 
 - Product contract: `docs/specs/2026-08-22-rngkit-tauri-design.md`
 - Execution plan: `docs/plans/2026-08-22-rngkit-tauri-plan.md`
+- Approved improvements: `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
+- Approved phased improvements plan: `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
 - Current state: `docs/PROJECT_CONTEXT.md`
 - Durable decisions: `docs/DECISIONS.md`
 - Roadmap: `TODO.md`

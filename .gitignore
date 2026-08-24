@@ -27,6 +27,7 @@ npm-debug.log*
 # Tooling caches
 vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
+.superpowers/
 .playwright-mcp/
 test-results
 playwright-report

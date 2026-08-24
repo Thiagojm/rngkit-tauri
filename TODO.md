@@ -9,15 +9,17 @@
 - Checkpoint 18: design-to-evidence trace, deterministic suite, tracked-file
   scan, context update, and user-reported offline install/basic app smoke. No
   required product work was silently deferred.
+- Approved 2026-08-24 workflow-improvements design and six-phase plan.
 
 ## In progress
 
-- Checkpoint 18 user approval. No later implementation is authorized.
+- Workflow-improvements planning is complete. No implementation phase is
+  authorized.
 
 ## Next steps
 
-1. Review and approve Checkpoint 18 before treating v1 implementation as
-   complete.
+1. Explicitly authorize Phase 1: generalized standalone readers and CSV
+   concatenation in `rngkit-core`.
 
 ## Backlog
 
