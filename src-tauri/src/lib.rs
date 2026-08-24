@@ -1,6 +1,7 @@
 //! RngKit desktop application backend.
 
 pub mod collection;
+pub mod combine;
 pub mod commands;
 pub mod coordinator;
 pub mod diagnostics;
@@ -117,6 +118,10 @@ pub fn run() {
         commands::reports::replace_report,
         commands::reports::open_report,
         commands::reports::open_report_folder,
+        commands::combine::choose_csv_inputs,
+        commands::combine::create_derived,
+        commands::combine::generate_derived,
+        commands::combine::open_derived_folder,
         commands::dev::apply_dev_scenario,
     ]);
 
@@ -141,6 +146,10 @@ pub fn run() {
         commands::reports::replace_report,
         commands::reports::open_report,
         commands::reports::open_report_folder,
+        commands::combine::choose_csv_inputs,
+        commands::combine::create_derived,
+        commands::combine::generate_derived,
+        commands::combine::open_derived_folder,
     ]);
 
     builder

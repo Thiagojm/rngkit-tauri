@@ -9,6 +9,9 @@ describe('CombinePage', () => {
     appState.applyScenario('combineCompatible');
     render(CombinePage);
 
+    expect(
+      screen.getByRole('button', { name: copy.chooseCsvInputs }),
+    ).toBeTruthy();
     expect(screen.getByText('20260101T010000_bitb_s8_i1.csv')).toBeTruthy();
     expect(
       screen.getByRole('button', { name: copy.createDerived }),

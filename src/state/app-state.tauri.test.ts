@@ -40,10 +40,14 @@ describe('AppViewState native collection channel', () => {
     }));
     vi.doMock('../ipc/client', () => ({
       applyDevScenario: vi.fn(),
+      chooseCsvInputs: vi.fn(),
       chooseOutputFolder: vi.fn(),
       chooseReportInput: vi.fn(),
+      createDerived: vi.fn(),
+      generateDerived: vi.fn(),
       generateReport: vi.fn(),
       getAppState: vi.fn(async () => collecting),
+      openDerivedFolder: vi.fn(),
       openReport: vi.fn(),
       openReportFolder: vi.fn(),
       openSessionFolder: vi.fn(),
@@ -111,12 +115,16 @@ describe('AppViewState native collection channel', () => {
     }));
     vi.doMock('../ipc/client', () => ({
       applyDevScenario: vi.fn(),
+      chooseCsvInputs: vi.fn(),
       chooseOutputFolder: vi.fn(),
       chooseReportInput: vi.fn(),
       copyDiagnostics: vi.fn(),
+      createDerived: vi.fn(),
+      generateDerived: vi.fn(),
       generateReport: vi.fn(),
       getAppState,
       listenCloseRequested: vi.fn(async () => () => undefined),
+      openDerivedFolder: vi.fn(),
       openReport: vi.fn(),
       openReportFolder: vi.fn(),
       openSessionFolder: vi.fn(),

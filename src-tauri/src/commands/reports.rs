@@ -143,7 +143,7 @@ async fn run_generate(
             _ => {
                 let _ = coordinator.finish_file_job();
                 return Err(SafeError::invalid_configuration(
-                    "Inspect a session or file before generating a report.",
+                    "Inspect a session, file, or derived bundle before generating a report.",
                 ));
             }
         }

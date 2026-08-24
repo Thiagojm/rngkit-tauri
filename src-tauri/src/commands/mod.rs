@@ -1,6 +1,7 @@
 //! Tauri command handlers. Command functions translate IPC to coordinator calls.
 
 pub mod collection;
+pub mod combine;
 pub mod dialogs;
 pub mod discovery;
 pub mod lifecycle;

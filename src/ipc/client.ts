@@ -230,6 +230,34 @@ export async function openReportFolder(): Promise<AppSnapshot> {
   return getAppState();
 }
 
+export async function chooseCsvInputs(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('choose_csv_inputs');
+  }
+  return getAppState();
+}
+
+export async function createDerived(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('create_derived');
+  }
+  return getAppState();
+}
+
+export async function generateDerived(replace = false): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('generate_derived', { replace });
+  }
+  return getAppState();
+}
+
+export async function openDerivedFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_derived_folder');
+  }
+  return getAppState();
+}
+
 function formatMockDiagnostics(snapshot: AppSnapshot): string {
   if (snapshot.diagnostics.length === 0) {
     return 'RngKit diagnostics\nNo diagnostic records.';

@@ -4,9 +4,13 @@ import { MOCK_SCENARIOS } from '../state/mock-scenarios';
 import {
   applyDevScenario,
   chooseOutputFolder,
+  chooseCsvInputs,
   chooseReportInput,
+  createDerived,
+  generateDerived,
   generateReport,
   getAppState,
+  openDerivedFolder,
   openReport,
   openReportFolder,
   openSessionFolder,
@@ -182,6 +186,33 @@ describe('ipc client', () => {
     await expect(openReport()).resolves.toEqual(MOCK_SCENARIOS.reportsConflict);
     await expect(openReportFolder()).resolves.toEqual(
       MOCK_SCENARIOS.reportsConflict,
+    );
+  });
+
+  it('invokes combine commands inside Tauri', async () => {
+    setTauri(true);
+    mockIPC((cmd) => {
+      if (
+        cmd === 'choose_csv_inputs' ||
+        cmd === 'create_derived' ||
+        cmd === 'generate_derived' ||
+        cmd === 'open_derived_folder'
+      ) {
+        return MOCK_SCENARIOS.combineCompatible;
+      }
+      throw new Error(`unexpected command ${cmd}`);
+    });
+    await expect(chooseCsvInputs()).resolves.toEqual(
+      MOCK_SCENARIOS.combineCompatible,
+    );
+    await expect(createDerived()).resolves.toEqual(
+      MOCK_SCENARIOS.combineCompatible,
+    );
+    await expect(generateDerived()).resolves.toEqual(
+      MOCK_SCENARIOS.combineCompatible,
+    );
+    await expect(openDerivedFolder()).resolves.toEqual(
+      MOCK_SCENARIOS.combineCompatible,
     );
   });
 

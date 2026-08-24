@@ -55,11 +55,11 @@
   <section class="flex flex-col gap-2" aria-labelledby="help-reports">
     <h2 id="help-reports" class="text-lg font-medium">Reports</h2>
     <p>
-      XLSX reports are generated from validated native or legacy v3 inputs.
-      Legacy v3 BIN and CSV files stay read-only. BIN-only reports use estimated
-      timestamps. Derived inputs remain unavailable until Combine is
-      implemented. If the destination already exists, Cancel is the default;
-      Replace requires an explicit second request.
+      XLSX reports are generated from validated native, legacy v3, or derived
+      inputs. Legacy v3 BIN and CSV files stay read-only. BIN-only reports use
+      estimated timestamps. Derived reports copy timestamps from concatenated
+      inputs. If the destination already exists, Cancel is the default; Replace
+      requires an explicit second request.
     </p>
   </section>
 

@@ -1,20 +1,24 @@
-//! Native and legacy v3 report inspection, generation, and backend-known artifact opening.
+//! Native, legacy v3, and derived report inspection, generation, and opening.
 
 mod inspect;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use rngkit_recording::{NativeSession, open_legacy};
-use rngkit_xlsx::{Overwrite, legacy_report_path, native_report_path, write_report};
+use rngkit_recording::{ConcatenationStem, NativeSession, open_concatenation, open_legacy};
+use rngkit_xlsx::{
+    Overwrite, derived_report_path, legacy_report_path, native_report_path, write_report,
+};
 
 use crate::coordinator::{AppCoordinator, ReportKind};
 use crate::dto::{AppStateDto, CollectionState, FileJobState};
 use crate::errors::SafeError;
 
-pub use inspect::{InspectedReport, inspect_input, inspect_legacy, inspect_native};
+pub use inspect::{
+    InspectedReport, inspect_derived, inspect_input, inspect_legacy, inspect_native,
+};
 
-use inspect::{map_legacy, map_legacy_xlsx, map_xlsx};
+use inspect::{map_derived, map_derived_xlsx, map_legacy, map_legacy_xlsx, map_xlsx};
 
 pub trait ArtifactOpener: Send + Sync {
     fn open_folder(&self, path: &Path) -> Result<(), SafeError>;
@@ -94,9 +98,20 @@ impl ReportsHandle {
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .push(path.to_path_buf());
     }
+
+    pub fn open_existing_folder(&self, path: &Path) -> Result<(), SafeError> {
+        if !path.is_dir() {
+            return Err(SafeError::invalid_transition(
+                "The derived folder is no longer available.",
+            ));
+        }
+        self.opener.open_folder(path)?;
+        self.record(path);
+        Ok(())
+    }
 }
 
-fn ensure_artifact_open_allowed(coordinator: &AppCoordinator) -> Result<(), SafeError> {
+pub(crate) fn ensure_artifact_open_allowed(coordinator: &AppCoordinator) -> Result<(), SafeError> {
     let snapshot = coordinator.snapshot();
     if matches!(
         snapshot.collection.state,
@@ -153,7 +168,7 @@ pub fn generate_inspected(
     ) else {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
-            "Inspect a session or file before generating a report.",
+            "Inspect a session, file, or derived bundle before generating a report.",
         ));
     };
     let result = write_inspected_report(&input, kind, replace);
@@ -182,6 +197,7 @@ pub fn write_inspected_report(
     match kind {
         ReportKind::Native => write_native_report(input, replace),
         ReportKind::Legacy => write_legacy_report(input, replace),
+        ReportKind::Derived => write_derived_report(input, replace),
     }
 }
 
@@ -195,6 +211,13 @@ pub fn write_legacy_report(selected: &Path, replace: bool) -> Result<PathBuf, Sa
     let session = open_legacy(selected).map_err(map_legacy)?;
     let dest = legacy_report_path(selected);
     write_report(&session, &dest, overwrite_mode(replace)).map_err(map_legacy_xlsx)
+}
+
+pub fn write_derived_report(dir: &Path, replace: bool) -> Result<PathBuf, SafeError> {
+    let session = open_concatenation(dir).map_err(map_derived)?;
+    let stem = ConcatenationStem::parse(&session.meta().stem).map_err(map_derived)?;
+    let dest = derived_report_path(dir, &stem).map_err(map_xlsx)?;
+    write_report(&session, &dest, overwrite_mode(replace)).map_err(map_derived_xlsx)
 }
 
 fn overwrite_mode(replace: bool) -> Overwrite {
@@ -229,7 +252,7 @@ impl ArtifactOpener for RecordingArtifactOpener {
     }
 }
 
-fn spawn_open(path: &Path, folder: bool) -> Result<(), SafeError> {
+pub(crate) fn spawn_open(path: &Path, folder: bool) -> Result<(), SafeError> {
     let mut command = if cfg!(windows) {
         if folder {
             let mut command = std::process::Command::new("explorer");

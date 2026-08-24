@@ -1,12 +1,14 @@
-//! Native and legacy v3 inspection. Derived inputs stay unsupported here.
+//! Native, legacy v3, and derived concatenation inspection.
 
 use std::fs;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 use rngkit_core::{SessionStatus, TimestampProvenance};
-use rngkit_recording::{NativeSession, RecordingError, open_legacy};
-use rngkit_xlsx::{XlsxError, legacy_report_path, native_report_path};
+use rngkit_recording::{
+    ConcatenationStem, NativeSession, RecordingError, open_concatenation, open_legacy,
+};
+use rngkit_xlsx::{XlsxError, derived_report_path, legacy_report_path, native_report_path};
 
 use crate::coordinator::ReportKind;
 use crate::dto::ReportPreview;
@@ -15,6 +17,9 @@ use crate::errors::SafeError;
 const KIND_LABEL: &str = "Native session";
 const ORIGIN: &str = "Collected session";
 const LEGACY_KIND: &str = "Legacy v3";
+const DERIVED_KIND: &str = "Derived bundle";
+const DERIVED_ORIGIN: &str = "Concatenated legacy v3 CSV";
+const DERIVED_NOTE: &str = "Timestamps are copied from the concatenated inputs.";
 const ESTIMATED_WARNING: &str = "Timestamps are estimated from the filename start and interval.";
 const RECORDED_NOTE: &str = "Timestamps are recorded in the CSV input.";
 const TAIL_WARNING: &str =
@@ -34,7 +39,15 @@ pub fn inspect_input(
     live_recording: Option<&Path>,
 ) -> Result<InspectedReport, SafeError> {
     if path.is_dir() {
-        inspect_native(path, live_recording)
+        let name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("");
+        if ConcatenationStem::parse(name).is_ok() {
+            inspect_derived(path)
+        } else {
+            inspect_native(path, live_recording)
+        }
     } else {
         inspect_legacy(path)
     }
@@ -111,6 +124,31 @@ pub fn inspect_legacy(path: &Path) -> Result<InspectedReport, SafeError> {
     })
 }
 
+pub fn inspect_derived(path: &Path) -> Result<InspectedReport, SafeError> {
+    let session = open_concatenation(path).map_err(map_derived)?;
+    let stem = ConcatenationStem::parse(&session.meta().stem).map_err(map_derived)?;
+    let dest = derived_report_path(path, &stem).map_err(map_xlsx)?;
+    let directory = path.to_path_buf();
+    Ok(InspectedReport {
+        preview: ReportPreview {
+            kind_label: DERIVED_KIND.into(),
+            origin: DERIVED_ORIGIN.into(),
+            source: session.meta().source_label.clone(),
+            sample_bits: session.meta().sample_bits.get(),
+            interval_seconds: session.meta().interval.get(),
+            fold: session.meta().fold.map(|fold| u32::from(fold.get())),
+            status: status_label(session.meta().status).into(),
+            row_count: session.records().len() as u64,
+            warning: Some(DERIVED_NOTE.into()),
+            conflict: dest.exists(),
+        },
+        dest,
+        input: directory.clone(),
+        directory,
+        kind: ReportKind::Derived,
+    })
+}
+
 fn legacy_origin(path: &Path) -> &'static str {
     let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
         return LEGACY_KIND;
@@ -166,6 +204,32 @@ pub(super) fn map_legacy(error: RecordingError) -> SafeError {
     }
 }
 
+pub(super) fn map_derived(error: RecordingError) -> SafeError {
+    match error {
+        RecordingError::OnesExceedSampleBits { .. } => {
+            SafeError::invalid_configuration("A one-count exceeds the sample size.")
+        }
+        RecordingError::Corrupt { .. }
+        | RecordingError::Json(_)
+        | RecordingError::Csv(_)
+        | RecordingError::InconsistentConcatenationRange
+        | RecordingError::InvalidConcatenationHash => {
+            SafeError::corrupt_input("The selected derived bundle is corrupt.")
+        }
+        RecordingError::Io(io) if io.kind() == ErrorKind::PermissionDenied => {
+            SafeError::permission_denied("The selected derived bundle could not be read.")
+        }
+        RecordingError::UnsupportedConcatenationKind { .. }
+        | RecordingError::UnsupportedSchema { .. }
+        | RecordingError::UnsupportedVersion { .. }
+        | RecordingError::InvalidName { .. }
+        | RecordingError::Io(_) => {
+            SafeError::unsupported_input("That folder is not a supported derived bundle.")
+        }
+        _ => SafeError::unsupported_input("That folder is not a supported derived bundle."),
+    }
+}
+
 pub(super) fn map_xlsx(error: XlsxError) -> SafeError {
     match error {
         XlsxError::AlreadyExists { .. } => SafeError::report_exists(),
@@ -183,6 +247,13 @@ pub(super) fn map_xlsx(error: XlsxError) -> SafeError {
 pub(super) fn map_legacy_xlsx(error: XlsxError) -> SafeError {
     match error {
         XlsxError::Recording(error) => map_legacy(error),
+        other => map_xlsx(other),
+    }
+}
+
+pub(super) fn map_derived_xlsx(error: XlsxError) -> SafeError {
+    match error {
+        XlsxError::Recording(error) => map_derived(error),
         other => map_xlsx(other),
     }
 }

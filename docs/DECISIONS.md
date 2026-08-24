@@ -43,8 +43,8 @@ All decisions are accepted. Material changes return to design review.
   `set_sample_bits`, `set_interval_seconds`, `set_fold`, `set_theme`,
   `choose_output_folder`, `start_collection`, `stop_collection`,
   `start_another_session`, `open_session_folder`, `copy_diagnostics`,
-  `stop_and_exit`, `choose_report_input`, `generate_report`, `replace_report`,
-  `open_report`, and `open_report_folder` against backend-known paths only;
+  `stop_and_exit`, `choose_report_input`, `generate_report`, `replace_report`, `open_report`,
+  `open_report_folder`, `choose_csv_inputs`, `create_derived`, `generate_derived`, and `open_derived_folder` against backend-known paths only;
   collection and file jobs block artifact opening. `apply_dev_scenario` is debug-only; browser tests use mock snapshots.
 - Why/impact: preserve engine durability, deterministic authority, responsive
   UI, and an entropy-free frontend.

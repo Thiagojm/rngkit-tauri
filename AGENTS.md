@@ -60,8 +60,8 @@ or native long-session chart render/interaction evidence before its checkpoint.
   `set_interval_seconds`, `set_fold`, `set_theme`, `choose_output_folder`,
   `start_collection`, `stop_collection`, `start_another_session`,
   `open_session_folder`, `copy_diagnostics`, `stop_and_exit`,
-  `choose_report_input`, `generate_report`, `replace_report`, `open_report`,
-  and `open_report_folder`. Default start does not enumerate hardware. Default
+  `choose_report_input`, `generate_report`, `replace_report`, `open_report`, `open_report_folder`,
+  `choose_csv_inputs`, `create_derived`, `generate_derived`, and `open_derived_folder`. Default start does not enumerate hardware. Default
   tests inject fake discovery and fake sources and do not call
   `rngkit_sources::discover()` or open hardware. Open session folder and report
   artifacts use backend-known paths only. Close policy is captured while

@@ -39,6 +39,28 @@ describe('ReportsPage', () => {
     ).toBeTruthy();
   });
 
+  it('shows derived preview metadata', () => {
+    appState.applyScenario('reportsPreview');
+    appState.snapshot.reports.preview = {
+      kindLabel: 'Derived bundle',
+      origin: 'Concatenated legacy v3 CSV',
+      source: 'TrueRNG v1/v2/v3',
+      sampleBits: 16,
+      intervalSeconds: 1,
+      fold: null,
+      status: 'Completed',
+      rowCount: 4,
+      warning: 'Timestamps are copied from the concatenated inputs.',
+      conflict: false,
+    };
+    render(ReportsPage);
+    expect(screen.getByText('Derived bundle')).toBeTruthy();
+    expect(screen.getByText('Concatenated legacy v3 CSV')).toBeTruthy();
+    expect(
+      screen.getByText('Timestamps are copied from the concatenated inputs.'),
+    ).toBeTruthy();
+  });
+
   it('shows native preview metadata', () => {
     appState.applyScenario('reportsPreview');
     render(ReportsPage);

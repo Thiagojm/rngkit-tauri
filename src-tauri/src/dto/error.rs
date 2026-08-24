@@ -114,6 +114,14 @@ impl SafeError {
     }
 
     #[must_use]
+    pub fn derived_exists() -> Self {
+        Self::new(
+            ErrorCode::OutputExists,
+            "A derived bundle with that name already exists.",
+        )
+    }
+
+    #[must_use]
     pub fn unexpected_failure() -> Self {
         Self::new(
             ErrorCode::UnexpectedFailure,

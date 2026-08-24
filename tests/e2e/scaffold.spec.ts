@@ -71,6 +71,10 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   expect(js).toContain('replace_report');
   expect(js).toContain('open_report');
   expect(js).toContain('open_report_folder');
+  expect(js).toContain('choose_csv_inputs');
+  expect(js).toContain('create_derived');
+  expect(js).toContain('generate_derived');
+  expect(js).toContain('open_derived_folder');
   expect(js).not.toContain('apply_dev_scenario');
   await expect.poll(() => bodyBackground(page)).toBe(LIGHT_SURFACE);
 
@@ -87,6 +91,9 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   await expect(
     page.getByRole('heading', { name: copy.destinations.combine }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.chooseCsvInputs }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: copy.destinations.help }).click();
   await expect(
@@ -96,6 +103,9 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   await expect(page.getByText(copy.statsWarning)).toBeVisible();
   await expect(
     page.getByText(/Legacy v3 BIN and CSV files stay read-only/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Derived reports copy timestamps from concatenated/),
   ).toBeVisible();
 
   await page.getByLabel(copy.theme.legend).selectOption('dark');

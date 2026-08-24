@@ -10,9 +10,9 @@ use rngkit_sources::SourceConfig;
 use crate::diagnostics::redact_detail;
 use crate::discovery::{DiscoveryOutcome, MappedCandidate};
 use crate::dto::{
-    AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineSnapshot,
-    DiagnosticRecord, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot, SourceCandidateDto,
-    ThemePreference,
+    AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineResult,
+    CombineSnapshot, DiagnosticRecord, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot,
+    SourceCandidateDto, ThemePreference,
 };
 use crate::errors::SafeError;
 use crate::preferences::{self, Preferences, SessionDraft};
@@ -47,6 +47,7 @@ impl fmt::Debug for CollectionStart {
 pub enum ReportKind {
     Native,
     Legacy,
+    Derived,
 }
 
 /// Internal collection update applied before the frontend event is sent.
@@ -126,6 +127,8 @@ pub struct AppCoordinator {
     report_input: Option<PathBuf>,
     report_kind: Option<ReportKind>,
     combine: CombineSnapshot,
+    combine_inputs: Vec<PathBuf>,
+    combine_directory: Option<PathBuf>,
     diagnostics: VecDeque<DiagnosticRecord>,
     next_operation_seq: u64,
 }
@@ -151,6 +154,8 @@ impl fmt::Debug for AppCoordinator {
             .field("has_report_directory", &self.report_directory.is_some())
             .field("has_report_input", &self.report_input.is_some())
             .field("report_kind", &self.report_kind)
+            .field("has_combine_inputs", &!self.combine_inputs.is_empty())
+            .field("has_combine_directory", &self.combine_directory.is_some())
             .finish_non_exhaustive()
     }
 }
@@ -199,6 +204,8 @@ impl AppCoordinator {
             report_input: None,
             report_kind: None,
             combine: CombineSnapshot::empty(),
+            combine_inputs: Vec::new(),
+            combine_directory: None,
             diagnostics: VecDeque::new(),
             next_operation_seq: 0,
         }
@@ -352,6 +359,29 @@ impl AppCoordinator {
         if let Some(preview) = self.reports.preview.as_mut() {
             preview.conflict = true;
         }
+    }
+
+    #[must_use]
+    pub fn combine_inputs(&self) -> &[PathBuf] {
+        &self.combine_inputs
+    }
+
+    #[must_use]
+    pub fn combine_directory(&self) -> Option<&Path> {
+        self.combine_directory.as_deref()
+    }
+
+    pub fn set_combine_preview(&mut self, snapshot: CombineSnapshot, paths: Vec<PathBuf>) {
+        self.combine = snapshot;
+        self.combine_inputs = paths;
+        self.combine_directory = None;
+    }
+
+    pub fn set_combine_result(&mut self, result: CombineResult, directory: PathBuf) {
+        self.combine.result = Some(result);
+        self.combine.compatible = true;
+        self.combine.incompatibility = None;
+        self.combine_directory = Some(directory);
     }
 
     #[must_use]
@@ -993,6 +1023,8 @@ impl AppCoordinator {
         self.report_input = None;
         self.report_kind = None;
         self.combine = snapshot.combine;
+        self.combine_inputs.clear();
+        self.combine_directory = None;
         self.theme = snapshot.theme;
         self.preferences_warning = snapshot.preferences_warning;
         self.diagnostics = snapshot.diagnostics.into();

@@ -1,12 +1,16 @@
 import { isTauri } from '@tauri-apps/api/core';
 import {
   applyDevScenario,
+  chooseCsvInputs,
   chooseOutputFolder,
   chooseReportInput,
   copyDiagnostics as requestCopyDiagnostics,
+  createDerived,
+  generateDerived,
   generateReport,
   getAppState,
   listenCloseRequested,
+  openDerivedFolder,
   openReport,
   openReportFolder,
   openSessionFolder,
@@ -717,6 +721,61 @@ export class AppViewState {
     if (isTauri()) {
       void this.runDraftCommand(
         () => openReportFolder(),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  chooseCsvInputs(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => chooseCsvInputs(),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  createDerived(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => createDerived(),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  generateDerived(): void {
+    const preview = this.snapshot.reports.preview;
+    if (
+      preview?.kindLabel === 'Derived bundle' &&
+      preview.conflict &&
+      this.snapshot.combine.result
+    ) {
+      this.replaceDialogOpen = true;
+      return;
+    }
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => generateDerived(false),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  confirmReplaceDerived(): void {
+    this.replaceDialogOpen = false;
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => generateDerived(true),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  openDerivedFolder(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => openDerivedFolder(),
         (snapshot) => snapshot,
       );
     }

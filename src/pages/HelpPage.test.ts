@@ -18,6 +18,8 @@ describe('HelpPage', () => {
     expect(
       screen.getByText(/Legacy v3 BIN and CSV files stay read-only/i),
     ).toBeTruthy();
-    expect(screen.getByText(/Derived inputs remain unavailable/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Derived reports copy timestamps from concatenated/i),
+    ).toBeTruthy();
   });
 });
