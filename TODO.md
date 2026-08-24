@@ -2,37 +2,32 @@
 
 ## Done
 
-- Approved Windows-first design/plan and `rngkit-core` Checkpoints 1–2 plus Gate A at revision `183f3c7`.
-- Checkpoints 3–7: locked Tauri/Svelte/Vite/Tailwind shell, coordinator DTOs,
-  fake discovery, and atomic preferences; default start does not enumerate hardware.
-- Checkpoints 8–10: collection worker, live uPlot chart, close interception,
-  Stop and exit, and redacted Copy diagnostics.
-- Checkpoint 11: ignored serial Windows smokes passed one BitBabbler White
-  fold-0, one TrueRNG, and one RDSEED (ordinal 1, 3 fake-clock samples, native
-  bundle ok); unified discovery also listed PseudoRNG without opening. Other
-  folds/devices, unplug behavior, hardware UI collection, and Linux physical
-  behavior remain unverified.
-- Checkpoints 12–13: native and legacy v3 report inspection/generation.
-  Completed/interrupted native and CSV-only, BIN-only, or paired legacy inputs
-  write same-stem XLSX; invalid inputs fail safely, legacy files remain
-  unchanged, existing output needs explicit Replace, and artifact opening is
-  idle-only. Native/legacy desktop walkthroughs remain unverified.
-- Checkpoints 14–16: Combine/derived reports, security/a11y, and locked
-  Windows/Ubuntu CI (observed `a9f99e5` at https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632).
-- Checkpoint 17: unsigned per-user English NSIS with offline WebView2; local
-  `RngKit_0.1.0_x64-setup.exe` (208.4 MiB). Install/uninstall remain user-verified.
+- Approved Windows-first design/plan and `rngkit-core` Gate A at `183f3c7`.
+- Checkpoints 3–17: locked Tauri/Svelte shell, coordinator, collection, chart,
+  close policy, physical smokes, reports, Combine, security/a11y, CI, unsigned
+  NSIS. HEAD `061f66a`.
+- Checkpoint 18: design-to-evidence trace, deterministic suite, tracked-file
+  scan, context update, and user-reported offline install/basic app smoke. No
+  required product work was silently deferred.
 
 ## In progress
 
-- Checkpoint 17 user approval. No later checkpoint is authorized.
+- Checkpoint 18 user approval. No later implementation is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 17 after installer install/launch/uninstall, then authorize Checkpoint 18 (final audit).
+1. Review and approve Checkpoint 18 before treating v1 implementation as
+   complete.
 
 ## Backlog
 
-- Checkpoint 18: final context and acceptance audit.
-- Signing, binary releases, updater, Store submission, Linux packaging, and deployment remain outside v1 implementation authority.
-- TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
-  inference remain explicit non-goals or future work.
+- NSIS uninstall and session-data preservation.
+- Native hardware Collect UI, unplug-during-read, other folds/devices, Linux
+  physical behavior.
+- Native uPlot render/interaction at 100k/1M points; native Reports/Combine
+  dialogs; Windows 100%/150%/200% scaling; screen-reader sampling; Windows
+  file-symlink inspect (privilege 1314).
+- Signing, binary releases, updater, Store, Linux packaging, and deployment
+  remain outside v1 implementation authority.
+- TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and
+  statistical inference remain non-goals or future work.

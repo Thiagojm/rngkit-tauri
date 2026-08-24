@@ -37,14 +37,14 @@ git diff --check
 ```
 
 `.github/workflows/ci.yml` runs the locked suite without the NSIS step. Ubuntu is compile evidence, not Linux desktop support.
-Observed remote success for `a9f99e5` (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
+Observed remote success for `061f66a` (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes use `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`; replace `bitb` with `trng`, `rdseed`, or `discover`.
-Unsigned NSIS is local-only; do not claim install/uninstall, signing, or native long-session chart render/interaction. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
+Unsigned NSIS is local-only. The user reported offline installation, first launch, and basic app functionality on this Windows host; do not claim uninstall/session-data preservation, signing, or native long-session chart render/interaction. Data-only 100k/1M retention was remeasured in Checkpoint 18.
 
 ## Repository conventions
 
-- Follow the approved plan one checkpoint at a time; stop for user testing and approval before the next. Material contract changes require design approval.
+- Checkpoints 3–18 of the approved plan are implemented. Stop for Checkpoint 18 approval before treating v1 as complete. Material contract changes require design approval. Later work needs a new explicit request.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or

@@ -28,8 +28,9 @@ restricted CSP. Open commands use backend-known paths only.
 Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
 `src-tauri/tests/hardware.rs`; default tests do not run them.
 
-Implementation proceeds one independently testable checkpoint at a time and
-stops for user approval between checkpoints. The reusable library is
+The product and installer baseline is `061f66a`; the Checkpoint 18 audit is
+complete in the current tree and awaiting user approval. Uninstall and other
+unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
 `183f3c7811f5593b3b42c2558ac726552b86687d`.
 
@@ -73,8 +74,8 @@ npm run build
 
 `.github/workflows/ci.yml` runs locked frontend and Rust checks on Windows and
 Ubuntu, then `npm run tauri -- build --no-bundle -- --locked`. It does not run ignored
-physical tests or build an installer. Observed remote success for `a9f99e5`:
-https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
+physical tests or build an installer. Observed remote success for `061f66a`:
+https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 
 ## Packaging
 
@@ -90,7 +91,9 @@ npm run tauri -- build --bundles nsis -- --locked
 Local 2026-08-24 evidence (unsigned, not published):
 `src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
 208.4 MiB, SHA-256 `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`.
-The file is not tracked. Windows may warn because it is unsigned.
+The file is not tracked. The user reported offline installation, first launch,
+and basic app functionality on Windows. Uninstall and session-data preservation
+remain unverified. Windows may warn because the package is unsigned.
 
 ## License
 
