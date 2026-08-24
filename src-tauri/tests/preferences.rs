@@ -182,6 +182,35 @@ fn clean_preferences_prepare_the_default_documents_root() {
 }
 
 #[test]
+fn valid_saved_root_and_sample_size_skip_the_default_resolver() {
+    let root = temp_dir();
+    let custom = root.join("Custom");
+    fs::create_dir_all(&custom).expect("custom");
+    let prefs_path = root.join(PREFERENCES_FILE_NAME);
+    let first = PreferencesHandle::load(prefs_path.clone());
+    first
+        .save_draft(rngkit_lib::preferences::SessionDraft {
+            sample_bits: 4096,
+            interval_seconds: 2,
+            fold: None,
+            output_root: Some(custom.clone()),
+            theme: ThemePreference::Dark,
+        })
+        .expect("save custom root");
+
+    let handle = PreferencesHandle::load_with_documents(prefs_path, || {
+        panic!("Documents resolver must not run for a valid saved root")
+    });
+
+    let preferences = handle.current();
+    assert_eq!(preferences.output_root.as_deref(), Some(custom.as_path()));
+    assert_eq!(preferences.sample_bits, 4096);
+    assert_eq!(preferences.interval_seconds, 2);
+    assert_eq!(preferences.theme, ThemePreference::Dark);
+    assert!(handle.warning().is_none());
+}
+
+#[test]
 fn missing_saved_root_falls_back_to_the_default_root() {
     let root = temp_dir();
     let documents = root.join("Documents");
@@ -225,5 +254,43 @@ fn unavailable_documents_leave_a_recoverable_empty_root() {
             .warning()
             .as_deref()
             .is_some_and(|warning| warning.contains("Choose an output folder"))
+    );
+}
+
+#[test]
+fn missing_saved_root_and_unavailable_documents_report_folder_recovery() {
+    let root = temp_dir();
+    let custom = root.join("Custom");
+    fs::create_dir_all(&custom).expect("custom");
+    let prefs_path = root.join(PREFERENCES_FILE_NAME);
+    let first = PreferencesHandle::load(prefs_path.clone());
+    first
+        .save_draft(rngkit_lib::preferences::SessionDraft {
+            sample_bits: 32,
+            interval_seconds: 1,
+            fold: None,
+            output_root: Some(custom.clone()),
+            theme: ThemePreference::System,
+        })
+        .expect("save custom root");
+    fs::remove_dir(&custom).expect("remove custom root");
+
+    let handle = PreferencesHandle::load_with_documents(prefs_path, || {
+        Err(rngkit_lib::errors::SafeError::permission_denied("blocked"))
+    });
+
+    assert!(handle.current().output_root.is_none());
+    assert_eq!(handle.current().sample_bits, 32);
+    assert!(
+        handle
+            .warning()
+            .as_deref()
+            .is_some_and(|warning| warning.contains("Choose an output folder"))
+    );
+    assert!(
+        !handle
+            .warning()
+            .as_deref()
+            .is_some_and(|warning| warning.contains("is in use"))
     );
 }

@@ -172,10 +172,7 @@ impl PreferencesHandle {
         if outcome.preferences.output_root.is_none() {
             match create_default_output_root(resolve_documents) {
                 Ok(root) => outcome.preferences.output_root = Some(root),
-                Err(_) if outcome.warning.is_none() => {
-                    outcome.warning = Some(DEFAULT_FOLDER_WARNING.into());
-                }
-                Err(_) => {}
+                Err(_) => outcome.warning = Some(DEFAULT_FOLDER_WARNING.into()),
             }
         }
         Self {

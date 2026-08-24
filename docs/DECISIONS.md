@@ -117,13 +117,14 @@ All decisions are accepted. Material changes return to design review.
 - The app now prepares the backend-only `Documents/RngKit` root when needed,
   preserves valid saved roots and sample sizes, falls back safely when a saved
   root is missing, and remains usable with folder recovery when Documents is
-  unavailable.
+  unavailable. If both the saved root and default root are unavailable, the
+  recovery warning does not claim that the default is active; choosing a valid
+  folder clears the warning after persistence.
 - Frontend hydration performs one guarded asynchronous discovery for an idle
   empty snapshot. Candidates remain unselected, and manual Refresh plus
   explicit selection remain unchanged.
-- Phase 2 automated validation is complete locally; native manual validation
-  is the current user gate. Phase 3, commit, and push are not authorized by
-  this phase implementation request.
+- Phase 2 automated validation is complete on the Windows host. Native manual
+  validation remains unverified, and Phase 3 requires separate authorization.
 
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 

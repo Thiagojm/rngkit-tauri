@@ -5,6 +5,7 @@ use std::fs;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use rngkit_lib::collection::{CollectionHandle, VecSender};
 use rngkit_lib::coordinator::{AppCoordinator, pseudo_candidate};
@@ -23,6 +24,8 @@ const OPEN_COMBINE: &str = include_str!("../src/commands/combine.rs");
 const REPORTS_IMPL: &str = include_str!("../src/reports/mod.rs");
 const CI_WORKFLOW: &str = include_str!("../../.github/workflows/ci.yml");
 
+static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
+
 struct TempRoot(PathBuf);
 
 impl Deref for TempRoot {
@@ -39,8 +42,9 @@ impl Drop for TempRoot {
 }
 
 fn temp_root() -> TempRoot {
+    let counter = TEMP_ROOT_COUNTER.fetch_add(1, Ordering::Relaxed);
     let dir = std::env::temp_dir().join(format!(
-        "rngkit-security-{}-{}",
+        "rngkit-security-{}-{}-{counter}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

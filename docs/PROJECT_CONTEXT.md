@@ -19,9 +19,9 @@ debug-only. Capabilities are `core:default` and `dialog:default`. The live
 chart retains every committed `(sample_index, cumulative_z)` point. v1
 packaging is an unsigned per-user English NSIS installer with offline WebView2.
 
-The product-code and installer baseline remains `061f66a`; the current tree
-also contains the authorized Phase 2 implementation. The Checkpoint 18 audit
-is complete.
+The product-code and installer baseline remains `061f66a`; current `main` also
+contains the completed Phase 2 implementation. The Checkpoint 18 audit is
+complete.
 Original design acceptance criteria 1–17 and 19–20 are evidenced. Criterion 18
 is partial: offline installation, first launch, and basic app functionality
 passed by user report; uninstall and session-data preservation remain
@@ -29,8 +29,9 @@ unverified. No required original-v1 product work is stubbed.
 
 The follow-on workflow-improvements design and phased plan dated 2026-08-24
 are approved and readable under `docs/specs/` and `docs/plans/`. Phase 1 is
-complete and published in `rngkit-core`; Phase 2 is implemented locally in
-this app and awaiting user validation. Phase 3 is not authorized.
+complete and published in `rngkit-core`; Phase 2 is complete and validated
+automatically in this app. Its native manual test remains unverified, and
+Phase 3 is not authorized.
 
 The library is `https://github.com/Thiagojm/rngkit-core` at
 `2cdf311dd206cb5e7320ee520ef1e7a5139cc146` (git, never a local path).
@@ -108,3 +109,16 @@ physical; native 100k/1M chart canvas render/interaction; native
 Reports/Combine dialogs; Windows 100%/150%/200% scaling and screen-reader
 sampling; Windows file-symlink inspect (privilege 1314); NSIS uninstall and
 session-data preservation; SmartScreen behavior, signing, and publication.
+
+## Evidence (2026-08-24, workflow improvements Phase 2)
+
+- **Deterministic (this Windows host):** locked npm install, format, Svelte and
+  TypeScript checks, lint, Vitest 92/92, Playwright 5/5, production Vite build,
+  locked cargo fmt/check/test/clippy/doc, and Rust 1.85 check/test passed.
+- Default tests compiled four physical smokes and kept them ignored. No native
+  window, physical source, installer, or remote CI check was run for Phase 2.
+- Focused recovery tests cover clean default creation, preservation of a valid
+  custom root and sample size, missing-root fallback, unavailable Documents,
+  the combined failure case, and clearing a stale warning after choosing a
+  valid folder. Security temp roots use a process-local counter to avoid
+  parallel Windows test collisions.

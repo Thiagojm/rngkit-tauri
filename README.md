@@ -38,8 +38,8 @@ unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable librar
 
 A follow-on workflow-improvements design and six-phase implementation plan
 dated 2026-08-24 are approved. Phase 1 is complete in `rngkit-core`, and Phase
-2 is implemented locally in this app pending user validation. Phase 3 is not
-authorized; this work has not been committed or pushed.
+2 is complete and validated automatically in this app. Its native manual test
+remains pending, and Phase 3 is not authorized.
 
 ## Sources of truth
 

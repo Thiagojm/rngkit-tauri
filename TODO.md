@@ -13,16 +13,19 @@
 - Phase 1: generalized standalone readers and CSV concatenation completed and
   published in `rngkit-core`.
 - Phase 2: app pin/default-root/2048-bit/automatic-discovery implementation
-  completed locally and validated automatically; awaiting native user test.
+  completed and validated automatically; recovery warnings and parallel
+  security fixtures were corrected during review. Native user test remains
+  unverified.
 
 ## In progress
 
-- Phase 2 user-validation gate is active. Do not begin Phase 3, commit, or push
-  until separately authorized.
+- No implementation phase is currently authorized. Do not begin Phase 3
+  without a new explicit request.
 
 ## Next steps
 
 1. Run the Phase 2 native manual validation from the approved plan.
+2. Begin Phase 3 only after explicit authorization.
 
 ## Backlog
 

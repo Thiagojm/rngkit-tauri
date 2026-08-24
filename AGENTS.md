@@ -48,8 +48,8 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
 
 - Checkpoints 3–18 of the original plan are implemented. Phase 1 of the
   2026-08-24 workflow improvements is complete and published in `rngkit-core`;
-  Phase 2 is the currently authorized app phase and must stop at its
-  user-validation gate. Phase 3 is not authorized.
+  Phase 2 is complete and published in this app. Its native manual validation
+  remains unverified, and Phase 3 is not authorized.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or

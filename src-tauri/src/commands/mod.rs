@@ -35,6 +35,7 @@ pub(crate) fn update_and_persist_session_draft(
         coordinator.restore_session_draft(&previous);
         return Err(error);
     }
+    coordinator.set_preferences_warning(prefs.warning());
     Ok(coordinator.snapshot())
 }
 
@@ -43,6 +44,7 @@ mod tests {
     use std::fs;
 
     use super::*;
+    use crate::preferences::PREFERENCES_FILE_NAME;
 
     #[test]
     fn failed_persistence_rolls_back_the_authoritative_coordinator() {
@@ -67,5 +69,38 @@ mod tests {
         .expect_err("save must fail");
 
         assert_eq!(coordinator.session_draft(), before);
+    }
+
+    #[test]
+    fn successful_folder_recovery_clears_the_startup_warning() {
+        let root = std::env::temp_dir().join(format!(
+            "rngkit-command-recovery-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|duration| duration.as_nanos())
+                .unwrap_or(0)
+        ));
+        fs::create_dir_all(&root).expect("temp");
+        let prefs =
+            PreferencesHandle::load_with_documents(root.join(PREFERENCES_FILE_NAME), || {
+                Err(SafeError::permission_denied("blocked"))
+            });
+        let output = root.join("Output");
+        fs::create_dir_all(&output).expect("output");
+        let mut coordinator = AppCoordinator::new();
+        coordinator.set_preferences_warning(prefs.warning());
+
+        let snapshot = update_and_persist_session_draft(&prefs, &mut coordinator, |coordinator| {
+            coordinator.set_output_root(&output)
+        })
+        .expect("recover");
+
+        assert_eq!(
+            snapshot.collection.output_root_label.as_deref(),
+            Some("Output")
+        );
+        assert!(snapshot.preferences_warning.is_none());
+        assert!(prefs.warning().is_none());
     }
 }
