@@ -19,7 +19,7 @@ describe('LiveZChart', () => {
     expect(
       screen.getByRole('button', { name: copy.chart.fitAll }),
     ).toHaveProperty('disabled', true);
-    expect(screen.getByText(copy.chart.boundary)).toBeTruthy();
+    expect(screen.queryByText(copy.chart.boundary)).toBeNull();
     expect(
       screen.queryByRole('button', { name: /Reset view|Return to live/i }),
     ).toBeNull();
@@ -41,6 +41,28 @@ describe('LiveZChart', () => {
     await fireEvent.click(fitAll);
     expect(status.textContent).toContain(copy.chart.following);
     expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
+  });
+
+  it('reacts when retained points arrive after the chart is mounted', async () => {
+    render(CollectPage);
+
+    appState.applyScenario('collecting');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(screen.queryByText(copy.chart.empty)).toBeNull();
+    expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.chart.fitAll }),
+    ).toHaveProperty('disabled', false);
+  });
+
+  it('does not claim to follow new samples for an already completed session', () => {
+    appState.applyScenario('completed');
+    render(CollectPage);
+
+    expect(screen.getByTestId('chart-point-count').textContent).toContain(
+      copy.chart.paused,
+    );
   });
 
   it('preserves the mounted plot when the theme changes', async () => {

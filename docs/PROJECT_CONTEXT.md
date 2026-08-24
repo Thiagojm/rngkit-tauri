@@ -128,14 +128,17 @@ session-data preservation; SmartScreen behavior, signing, and publication.
 
 - The chart now has one `Fit all` action, adapter-owned following state,
   supersedable animation-frame updates, and pointer zoom/pan pause behavior.
-  The instrument-style card is taller and keeps the concise descriptive
-  boundary copy; retention remains every committed point.
+  The instrument-style card is taller; the concise descriptive boundary stays
+  in Help rather than Collect, and retention remains every committed point.
 - Deterministic validation passed: format check, Svelte/TypeScript check, lint,
-  Vitest 95/95, Playwright 5/5, production Vite build, chart stress 100k/1M,
+  Vitest 100/100, Playwright 5/5, production Vite build, chart stress 100k/1M,
   cargo fmt/check/test/clippy/doc, Rust 1.85 check/test, and `git diff --check`.
 - Chart stress measurements were 100,000 points: 0.40 ms replace, 0.567 ms
   append, 7.9 MiB heap delta; 1,000,000 points: 2.21 ms replace, 8.002 ms
   append, 30.9 MiB heap delta.
-- Browser CLI snapshot/screenshot evidence confirmed one `Fit all` control,
-  the boundary copy, no legacy Reset/Return controls, and the larger chart
-  card. Native window interaction remains unverified and is the user gate.
+- Browser-integrated snapshot/screenshot evidence confirmed that an already
+  mounted chart reacts to incoming points, `Fit all` remains singular and
+  follows while collecting, terminal state pauses, and narrow layout remains
+  usable. The audit also serialized Combine integration tests because their
+  library failpoint and inspect hook are process-global. Native window
+  interaction remains unverified and is the user gate.

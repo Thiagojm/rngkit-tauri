@@ -17,8 +17,8 @@
   security fixtures were corrected during review. Native user test remains
   unverified.
 - Phase 3: chart following/viewport race fix, single `Fit all` control, and
-  instrument-style Collect card completed and validated automatically. Native
-  user validation remains pending.
+  instrument-style Collect card completed, reviewed, corrected, and published.
+  Browser-integrated validation passed; native user validation remains pending.
 
 ## In progress
 

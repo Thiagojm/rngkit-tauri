@@ -133,11 +133,14 @@ All decisions are accepted. Material changes return to design review.
   supersedable animation-frame work cannot restore a stale viewport after
   `Fit all`.
 - The Collect chart uses the approved instrument-workspace card with a taller
-  responsive surface, integrated descriptive boundary copy, and no Reset/Return
-  controls. Every committed chart point remains retained.
+  responsive surface and no Reset/Return controls. The concise descriptive
+  boundary is Help-only. Every committed chart point remains retained, and the
+  point count reacts when a mounted chart receives a newly loaded series.
 - Automated validation and chart stress measurements passed on the Windows
-  host. Browser visual evidence passed; native manual interaction remains the
-  active user-validation gate before Phase 4.
+  host. Browser visual/interaction evidence passed. Combine integration tests
+  are serialized because their library failpoint and inspect hook are global.
+  Native manual interaction remains the active user-validation gate before
+  Phase 4.
 
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 

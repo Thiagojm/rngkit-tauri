@@ -6,7 +6,7 @@
   import Button from '../ui/Button.svelte';
 
   let host: HTMLDivElement | undefined = $state();
-  let following = $state(true);
+  let following = $state(false);
 
   const collection = $derived(appState.snapshot.collection);
   const collectionActive = $derived(
@@ -27,7 +27,11 @@
     },
   });
 
-  const pointCount = $derived(appState.chartSeries.length);
+  const chartSnapshot = $derived({
+    version: appState.chartVersion,
+    pointCount: appState.chartSeries.length,
+  });
+  const pointCount = $derived(chartSnapshot.pointCount);
   const empty = $derived(pointCount === 0);
 
   $effect(() => {
@@ -65,12 +69,9 @@
   aria-labelledby="live-z-heading"
 >
   <div class="flex flex-wrap items-start gap-3">
-    <div>
-      <h3 id="live-z-heading" class="text-base font-semibold">
-        {copy.chart.title}
-      </h3>
-      <p class="text-sm text-text-muted">{copy.chart.boundary}</p>
-    </div>
+    <h3 id="live-z-heading" class="text-base font-semibold">
+      {copy.chart.title}
+    </h3>
     <div class="ms-auto">
       <Button disabled={empty} onclick={fitAll}>{copy.chart.fitAll}</Button>
     </div>

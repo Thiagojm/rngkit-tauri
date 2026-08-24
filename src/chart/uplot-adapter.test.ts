@@ -122,6 +122,26 @@ describe('uPlot adapter', () => {
     expect(FakePlot.instances[0]?.setData.mock.calls[0]?.[1]).toBe(true);
   });
 
+  it('starts following when an active collection first supplies data', () => {
+    const { adapter, host, onViewportStateChange } = adapterHarness();
+    adapter.mount(host);
+
+    adapter.setData([[1], [0.1]], true);
+
+    expect(adapter.isFollowing()).toBe(true);
+    expect(onViewportStateChange).toHaveBeenCalledWith(true);
+  });
+
+  it('stays paused when mounted with an already completed collection', () => {
+    const { adapter, host, onViewportStateChange } = adapterHarness();
+    adapter.mount(host);
+
+    adapter.setData([[1], [0.1]], false);
+
+    expect(adapter.isFollowing()).toBe(false);
+    expect(onViewportStateChange).not.toHaveBeenCalled();
+  });
+
   it('keeps scales while paused and resumes following from Fit all', () => {
     const { adapter, host, frames, onViewportStateChange } = adapterHarness();
     adapter.mount(host);
@@ -180,10 +200,39 @@ describe('uPlot adapter', () => {
     ]);
   });
 
+  it('continues following appended samples after repeated Fit all clicks', () => {
+    const { adapter, host, frames } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    frames.length = 0;
+    FakePlot.instances[0]?.setData.mockClear();
+
+    adapter.setData([[1], [0.1]], true);
+    adapter.fitAll([[1], [0.1]], true);
+    adapter.fitAll([[1], [0.1]], true);
+    adapter.setData(
+      [
+        [1, 2],
+        [0.1, 0.2],
+      ],
+      true,
+    );
+    frames[0]?.(0);
+
+    expect(adapter.isFollowing()).toBe(true);
+    expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[0]).toEqual([
+      [1, 2],
+      [0.1, 0.2],
+    ]);
+    expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
+  });
+
   it('treats pointer zoom as a user viewport change', () => {
     const onViewportStateChange = vi.fn();
     const { adapter, host } = adapterHarness(onViewportStateChange);
     adapter.mount(host);
+    adapter.setData([[1], [0.1]], true);
+    onViewportStateChange.mockClear();
     FakePlot.instances[0]?.over.dispatchEvent(
       new MouseEvent('mousedown', {
         bubbles: true,

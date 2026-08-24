@@ -32,7 +32,7 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   await expect(
     page.getByRole('navigation', { name: copy.primaryNav }),
   ).toBeVisible();
-  await expect(page.getByText(copy.chart.boundary)).toBeVisible();
+  await expect(page.getByText(copy.chart.boundary)).toHaveCount(0);
   await expect(page.getByText(copy.chart.empty)).toBeVisible();
   await expect(
     page.getByRole('button', { name: copy.chart.fitAll }),

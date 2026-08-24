@@ -125,7 +125,7 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
   } | null = null;
   let lastData: AlignedChartData = emptyData();
   let lastCollectionActive = false;
-  let following = true;
+  let following = false;
   let frameVersion = 0;
   let rafHandle = 0;
   let detachPointer: (() => void) | null = null;
@@ -362,9 +362,14 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       schedule(lastData, false);
     },
     setData(data, collectionActive) {
+      const startedCollection = !lastCollectionActive && collectionActive;
       const endedFollowingCollection =
         lastCollectionActive && !collectionActive;
       lastCollectionActive = collectionActive;
+      if (startedCollection && !following) {
+        following = true;
+        options.onViewportStateChange?.(true);
+      }
       if (endedFollowingCollection && following) {
         following = false;
         options.onViewportStateChange?.(false);

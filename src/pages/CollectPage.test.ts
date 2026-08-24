@@ -12,7 +12,7 @@ describe('CollectPage', () => {
     expect(start).toHaveProperty('disabled', true);
     expect(screen.getByText(copy.start)).toBeTruthy();
     expect(screen.queryByRole('button', { name: copy.stop })).toBeNull();
-    expect(screen.getByText(copy.chart.boundary)).toBeTruthy();
+    expect(screen.queryByText(copy.chart.boundary)).toBeNull();
   });
 
   it('shows fold labels and Start when ready', () => {

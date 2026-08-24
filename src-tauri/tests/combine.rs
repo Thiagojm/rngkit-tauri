@@ -3,6 +3,7 @@
 use std::fs;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, MutexGuard};
 
 use rngkit_lib::combine::{create_previewed, generate_derived_report, preview_csvs};
 use rngkit_lib::coordinator::AppCoordinator;
@@ -20,6 +21,13 @@ const FILE_OVERLAP: &str = "20260821T18:30:01,8\n20260821T18:30:02,8\n";
 const STEM_A: &str = "20260821T183000_trng_s16_i1";
 const STEM_B: &str = "20260821T183010_trng_s16_i1";
 const STEM_C: &str = "20260821T183001_trng_s16_i1";
+static COMBINE_TEST_LOCK: Mutex<()> = Mutex::new(());
+
+fn combine_test_lock() -> MutexGuard<'static, ()> {
+    COMBINE_TEST_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 struct TempRoot(PathBuf);
 
@@ -84,6 +92,7 @@ fn ready_combine(root: &Path, paths: &[PathBuf]) -> AppCoordinator {
 
 #[test]
 fn compatible_csvs_create_bundle_without_mutation() {
+    let _lock = combine_test_lock();
     let root = temp_root();
     let a = write_csv(&root, STEM_A, FILE_A);
     let b = write_csv(&root, STEM_B, FILE_B);
@@ -124,6 +133,7 @@ fn compatible_csvs_create_bundle_without_mutation() {
 
 #[test]
 fn overlapping_and_mismatched_inputs_fail_before_a_bundle() {
+    let _lock = combine_test_lock();
     let root = temp_root();
     let a = write_csv(&root, STEM_A, FILE_A);
     let overlap = write_csv(&root, STEM_C, FILE_OVERLAP);
@@ -167,6 +177,7 @@ fn overlapping_and_mismatched_inputs_fail_before_a_bundle() {
 
 #[test]
 fn malformed_input_keeps_per_input_validation_rows_without_paths() {
+    let _lock = combine_test_lock();
     let root = temp_root();
     let valid = write_csv(&root, STEM_A, FILE_A);
     let malformed = write_csv(&root, "20260821T184000_trng_s16_i1", "not-a-timestamp,4\n");
@@ -196,6 +207,7 @@ fn malformed_input_keeps_per_input_validation_rows_without_paths() {
 
 #[test]
 fn changed_after_preview_and_write_failure_leave_inputs_and_no_bundle() {
+    let _lock = combine_test_lock();
     let root = temp_root();
     let a = write_csv(&root, STEM_A, FILE_A);
     let b = write_csv(&root, STEM_B, FILE_B);
@@ -232,6 +244,7 @@ fn changed_after_preview_and_write_failure_leave_inputs_and_no_bundle() {
 
 #[test]
 fn derived_report_matches_ordered_rows_and_existing_xlsx_needs_replace() {
+    let _lock = combine_test_lock();
     let root = temp_root();
     let a = write_csv(&root, STEM_A, FILE_A);
     let b = write_csv(&root, STEM_B, FILE_B);
