@@ -17,23 +17,23 @@
   write same-stem XLSX; invalid inputs fail safely, legacy files remain
   unchanged, existing output needs explicit Replace, and artifact opening is
   idle-only. Native/legacy desktop walkthroughs remain unverified.
-- Checkpoint 14: Combine preview/create and derived reports. Compatible legacy
-  v3 CSVs preview chronologically and write a no-overwrite derived CSV/manifest bundle; per-input errors, incompatible,
-  overlapping, changed-after-preview, and write failures leave inputs unchanged
-  and no partial bundle. Derived folders inspect and generate contained XLSX.
-  Native Combine/Reports desktop walkthroughs remain unverified.
+- Checkpoint 14: Combine preview/create and derived reports.
+- Checkpoint 15: capabilities/CSP audit, backend-known opens, path/redaction
+  adversarial tests, keyboard/contrast/reduced-motion coverage, data-only 100k/1M
+  chart retention, and a no-bundle Tauri release build on Windows. Native canvas,
+  OS 100%/150%/200% scaling, and screen-reader sampling remain unverified.
 
 ## In progress
 
-- Checkpoint 14 user approval. No later checkpoint is authorized.
+- Checkpoint 15 user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 14, then authorize Checkpoint 15 (hardening).
+1. Approve Checkpoint 15, then authorize Checkpoint 16 (CI).
 
 ## Backlog
 
-- Checkpoints 15–18: hardening, CI, installer, and final audit.
+- Checkpoints 16–18: CI, installer, and final audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical

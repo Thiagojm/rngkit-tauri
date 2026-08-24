@@ -7,7 +7,7 @@ All decisions are accepted. Material changes return to design review.
 - RngKit v1 is an English Windows 10/11 x64 Tauri 2 desktop app with one resizable window and persistent Collect, Reports, Combine, and Help destinations.
 - The client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses locked stable dependencies, uPlot, and no extra UI framework.
 - The scaffold combines official Tauri 2 Rust/config/icons with the Vite `svelte-ts` SPA; the official Svelte Tauri template is SvelteKit.
-- Theme is `data-theme` on `html`; Tailwind owns light defaults and plain CSS preserves system dark unless light is forced.
+- Theme is `data-theme` on `html`; Tailwind owns light defaults and plain CSS preserves system dark unless light is forced. Body and muted text meet 4.5:1 contrast; reduced-motion disables extra animation; the window minimum is 800×600.
 - The top bar exposes product, operation status, and light/dark/system theme. Collect stacks at the 800px minimum; Start and Stop remain separate and disabled controls explain why.
 - Browser tests use production assets through Edge without Tauri IPC or hardware. Mock snapshots are browser-only; scenario switching is debug-only.
 - Why/impact: modernize familiar workflows while keeping desktop authority and permissions out of the frontend.
@@ -76,15 +76,13 @@ All decisions are accepted. Material changes return to design review.
 
 ## Privacy, filesystem, and diagnostics (2026-08-22)
 
-- Frontend capabilities are only `core:default` and `dialog:default`; general
-  opener, filesystem, shell, and logging access is forbidden.
+- Frontend capabilities are only `core:default` and `dialog:default`; general opener, filesystem, shell, and logging access is forbidden. Production CSP allows only required app/Tauri protocols; development endpoints live in `devCsp`.
 - Frontend errors are stable `SafeError` DTOs. Diagnostics are explicit,
   bounded, redacted in-memory records with generated operation IDs; production
   persistent logging is disabled.
 - Entropy, seeds, selectors, serials, OS paths, absolute legacy input paths, and
   arbitrary error chains never cross IPC, preferences, or diagnostics.
-- Native and derived artifacts retain containment, no-follow/no-overwrite
-  behavior, and backend-known open/reveal targets.
+- Native and derived artifacts retain containment, no-follow/no-overwrite behavior, and backend-known open/reveal targets. Open commands take no frontend path and Windows launchers do not invoke a command interpreter.
 - Why: prevent sensitive material and filesystem authority from leaking across
   the desktop boundary.
 

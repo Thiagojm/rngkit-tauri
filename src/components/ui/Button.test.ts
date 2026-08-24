@@ -13,5 +13,6 @@ describe('Button', () => {
     const button = screen.getByRole('button', { name: 'Start' });
     expect(button).toHaveProperty('disabled', true);
     expect(screen.getByText('Select a source first.')).toBeTruthy();
+    expect(button.getAttribute('aria-describedby')).toBeTruthy();
   });
 });

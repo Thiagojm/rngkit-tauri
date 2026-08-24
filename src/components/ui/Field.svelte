@@ -29,7 +29,7 @@
     class="field-control"
     role={group ? 'group' : undefined}
     aria-labelledby={group ? labelId : undefined}
-    aria-describedby={group && hint ? hintId : undefined}
+    aria-describedby={hint ? hintId : undefined}
   >
     {@render children()}
   </div>

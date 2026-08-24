@@ -232,11 +232,11 @@ struct LiveArtifactOpener;
 
 impl ArtifactOpener for LiveArtifactOpener {
     fn open_folder(&self, path: &Path) -> Result<(), SafeError> {
-        spawn_open(path, true)
+        spawn_open(path)
     }
 
     fn open_file(&self, path: &Path) -> Result<(), SafeError> {
-        spawn_open(path, false)
+        spawn_open(path)
     }
 }
 
@@ -252,17 +252,11 @@ impl ArtifactOpener for RecordingArtifactOpener {
     }
 }
 
-pub(crate) fn spawn_open(path: &Path, folder: bool) -> Result<(), SafeError> {
+pub(crate) fn spawn_open(path: &Path) -> Result<(), SafeError> {
     let mut command = if cfg!(windows) {
-        if folder {
-            let mut command = std::process::Command::new("explorer");
-            command.arg(path);
-            command
-        } else {
-            let mut command = std::process::Command::new("cmd");
-            command.args(["/C", "start", "", &path.to_string_lossy()]);
-            command
-        }
+        let mut command = std::process::Command::new("explorer");
+        command.arg(path);
+        command
     } else {
         let mut command = std::process::Command::new("xdg-open");
         command.arg(path);

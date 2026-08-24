@@ -216,6 +216,30 @@ describe('ipc client', () => {
     );
   });
 
+  it('opens artifacts without a frontend path argument', async () => {
+    setTauri(true);
+    const payloads: Record<string, unknown> = {};
+    mockIPC((cmd, payload) => {
+      payloads[cmd] = payload;
+      return MOCK_SCENARIOS.completed;
+    });
+    await openSessionFolder();
+    await openReport();
+    await openReportFolder();
+    await openDerivedFolder();
+    for (const command of [
+      'open_session_folder',
+      'open_report',
+      'open_report_folder',
+      'open_derived_folder',
+    ]) {
+      const encoded = JSON.stringify(payloads[command] ?? {});
+      expect(encoded).not.toMatch(/path/i);
+      expect(encoded).not.toMatch(/[A-Za-z]:\\/);
+      expect(encoded).not.toMatch(/\/dev\//);
+    }
+  });
+
   it('uses only structured safe IPC errors in the UI', () => {
     expect(
       safeErrorMessage({

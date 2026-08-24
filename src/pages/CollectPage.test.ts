@@ -47,6 +47,8 @@ describe('CollectPage', () => {
     const hint = screen.getByText('No output folder selected.');
 
     expect(group.getAttribute('aria-describedby')).toBe(hint.id);
+    expect(screen.getByLabelText(copy.sampleBits)).toBeTruthy();
+    expect(screen.getByLabelText(copy.sampleInterval)).toBeTruthy();
   });
 
   it('shows Stop and not Start while collecting', () => {

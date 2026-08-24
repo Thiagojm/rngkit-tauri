@@ -21,5 +21,8 @@ describe('HelpPage', () => {
     expect(
       screen.getByText(/Derived reports copy timestamps from concatenated/i),
     ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Accessibility' })).toBeTruthy();
+    expect(screen.getByText(/usable from the keyboard/i)).toBeTruthy();
+    expect(screen.queryByText(/p-value/i)).toBeNull();
   });
 });

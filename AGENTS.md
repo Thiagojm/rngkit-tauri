@@ -37,7 +37,7 @@ git diff --check
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes:
 `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`
 or replace `bitb` with `trng`, `rdseed`, or `discover`. Do not claim CI, installer,
-or native long-session chart render/interaction evidence before its checkpoint.
+or native long-session chart render/interaction evidence. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
 
 ## Repository conventions
 
@@ -55,8 +55,8 @@ or native long-session chart render/interaction evidence before its checkpoint.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.
-  Never grant general filesystem, shell, opener, or logging access. Production
-  IPC is `get_app_state`, `refresh_sources`, `select_source`, `set_sample_bits`,
+  Never grant general filesystem, shell, opener, or logging access. CSP in
+  `src-tauri/tauri.conf.json` is restricted. Production IPC is `get_app_state`, `refresh_sources`, `select_source`, `set_sample_bits`,
   `set_interval_seconds`, `set_fold`, `set_theme`, `choose_output_folder`,
   `start_collection`, `stop_collection`, `start_another_session`,
   `open_session_folder`, `copy_diagnostics`, `stop_and_exit`,

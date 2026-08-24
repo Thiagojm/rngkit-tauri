@@ -27,6 +27,7 @@ the frontend poll authoritative state until terminal reconciliation. Copy
 diagnostics returns a redacted in-memory history. Ignored `hardware.rs` smokes require explicit tokens;
 this Windows host passed BitBabbler White fold-0, TrueRNG, and RDSEED ordinal 1 (3 fake-clock samples each), then listed those families and PseudoRNG without opening.
 Reports inspect a chosen native directory, read-only legacy v3 BIN/CSV, or derived concatenation bundle in Rust, expose recorded/estimated timestamp provenance, reject live/corrupt/unsupported inputs, and generate same-stem XLSX through `write_report()`; Cancel/Replace are separate requests, and artifacts open only when ready and idle. Combine previews compatible legacy v3 CSV files, creates a no-overwrite derived CSV/manifest bundle, and never stores absolute input paths.
+Capabilities remain `core:default` and `dialog:default`. Production CSP excludes development endpoints; open/reveal IPC takes no frontend path and Windows artifact launching bypasses command interpreters. Adversarial tests cover malformed derived manifests, no-overwrite XLSX, and Windows junctions; file-symlink creation needs a privilege and is unverified. A release Tauri build without bundling passed on this host.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which
@@ -70,8 +71,7 @@ entropy-free PseudoRNG discovery.
 
 ## Stable constraints
 
-- Windows 10/11 x64 is the v1 desktop target; Ubuntu CI is not Linux desktop
-  support.
+- Windows 10/11 x64 is the v1 desktop target; Ubuntu CI is not Linux desktop support.
 - Locked stack: Tauri 2.11.5, Svelte 5.56.10, TypeScript 6.0.3, Vite 8.2.2,
   Tailwind CSS 4.3.3, uPlot 1.6.32. Prereleases and extra UI frameworks are
   excluded. Playwright 1.62.1 provides browser-level tests against production
@@ -85,10 +85,10 @@ entropy-free PseudoRNG discovery.
 - Frontend capabilities are `core:default` and `dialog:default` only.
 - One source per session; no live XOR, fallback, reconnect, resume, or silent
   first-device selection.
-- Retain every chart point for the active session. The 2026-08-23 Windows
+- Retain every chart point for the active session. The 2026-08-24 Windows
   data-only harness retained 100,001 points after append (0.29 ms replace,
-  0.445 ms append, 7.8 MiB heap delta) and 1,000,001 points (1.90 ms replace,
-  7.528 ms append, 31.1 MiB delta). Native canvas render and interaction at
+  0.47 ms append, 7.7 MiB heap delta) and 1,000,001 points (1.76 ms replace,
+  7.27 ms append, 31.1 MiB delta). Native canvas render and interaction at
   those sizes remain unverified.
 - Diagnostics and preferences must exclude entropy, seeds, selectors, serials,
   device paths, and absolute legacy input paths. Frontend error messages are

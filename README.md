@@ -22,6 +22,8 @@ Reports inspect a native session directory, a legacy v3 BIN/CSV file, or a
 derived concatenation bundle and generate a same-stem XLSX with an explicit
 Cancel/Replace round trip. Combine previews compatible legacy v3 CSV files and
 creates a provenance-bearing derived bundle without modifying inputs.
+Production capabilities stay `core:default` and `dialog:default` with a
+restricted CSP. Open commands use backend-known paths only.
 
 Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
 `src-tauri/tests/hardware.rs`; default tests do not run them.

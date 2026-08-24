@@ -49,6 +49,15 @@ describe('AppShell', () => {
     expect(document.documentElement.dataset.theme).toBe('light');
   });
 
+  it('exposes a skip link and live status', () => {
+    render(AppShell);
+
+    expect(
+      screen.getByRole('link', { name: copy.skipToMain }).getAttribute('href'),
+    ).toBe('#main-content');
+    expect(screen.getByText(`${copy.status}: Idle`)).toBeTruthy();
+  });
+
   it('exposes the development scenario switch in unit tests', async () => {
     render(AppShell);
 

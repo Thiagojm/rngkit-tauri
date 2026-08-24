@@ -68,6 +68,16 @@
     <p>{copy.statsWarning}</p>
   </section>
 
+  <section class="flex flex-col gap-2" aria-labelledby="help-access">
+    <h2 id="help-access" class="text-lg font-medium">Accessibility</h2>
+    <p>
+      Every workflow is usable from the keyboard. Status text and icons stay
+      visible together. Theme colors keep readable contrast. The window minimum
+      is 800 by 600 logical pixels. Chart drawing does not add extra motion when
+      the system requests reduced motion.
+    </p>
+  </section>
+
   <section class="flex flex-col gap-2" aria-labelledby="help-codes">
     <h2 id="help-codes" class="text-lg font-medium">Troubleshooting codes</h2>
     <p>
