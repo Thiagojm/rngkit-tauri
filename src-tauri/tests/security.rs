@@ -363,6 +363,32 @@ fn ci_is_locked_and_skips_hardware_and_installer() {
 }
 
 #[test]
+fn nsis_bundle_is_unsigned_per_user_english_offline() {
+    let conf: serde_json::Value = serde_json::from_str(TAURI_CONF).expect("json");
+    let identifier = conf["identifier"].as_str().expect("identifier");
+    assert_eq!(identifier, "com.rngkit.desktop");
+    assert!(
+        !identifier.ends_with(".app"),
+        "identifier {identifier} ends with .app"
+    );
+    let bundle = &conf["bundle"];
+    assert_eq!(bundle["targets"], serde_json::json!(["nsis"]));
+    assert_eq!(bundle["createUpdaterArtifacts"], false);
+    let windows = &bundle["windows"];
+    assert_eq!(
+        windows["webviewInstallMode"]["type"].as_str(),
+        Some("offlineInstaller")
+    );
+    assert_eq!(windows["nsis"]["installMode"].as_str(), Some("currentUser"));
+    assert_eq!(windows["nsis"]["languages"], serde_json::json!(["English"]));
+    assert_ne!(windows["nsis"]["displayLanguageSelector"], true);
+    assert!(windows["certificateThumbprint"].is_null());
+    assert!(windows["digestAlgorithm"].is_null());
+    assert!(windows["signCommand"].is_null());
+    assert!(windows["timestampUrl"].is_null());
+}
+
+#[test]
 fn existing_native_xlsx_is_not_overwritten_without_replace() {
     let (root, directory) = completed_session();
     write_native_report(&directory, false).expect("first");

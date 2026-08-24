@@ -17,24 +17,22 @@
   write same-stem XLSX; invalid inputs fail safely, legacy files remain
   unchanged, existing output needs explicit Replace, and artifact opening is
   idle-only. Native/legacy desktop walkthroughs remain unverified.
-- Checkpoint 14: Combine preview/create and derived reports.
-- Checkpoint 15: capabilities/CSP audit, backend-known opens, path/redaction
-  adversarial tests, keyboard/contrast/reduced-motion coverage, data-only 100k/1M
-  chart retention, and a no-bundle Tauri release build on Windows. Native canvas,
-  OS 100%/150%/200% scaling, and screen-reader sampling remain unverified.
-- Checkpoint 16: locked Windows/Ubuntu CI, no ignored hardware jobs, local no-bundle compile, and observed remote success for `a9f99e5` at https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.
+- Checkpoints 14–16: Combine/derived reports, security/a11y, and locked
+  Windows/Ubuntu CI (observed `a9f99e5` at https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632).
+- Checkpoint 17: unsigned per-user English NSIS with offline WebView2; local
+  `RngKit_0.1.0_x64-setup.exe` (208.4 MiB). Install/uninstall remain user-verified.
 
 ## In progress
 
-- Checkpoint 16 user approval. No later checkpoint is authorized.
+- Checkpoint 17 user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 16, then authorize Checkpoint 17 (unsigned NSIS).
+1. Approve Checkpoint 17 after installer install/launch/uninstall, then authorize Checkpoint 18 (final audit).
 
 ## Backlog
 
-- Checkpoints 17–18: installer and final audit.
+- Checkpoint 18: final context and acceptance audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and deployment remain outside v1 implementation authority.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
   inference remain explicit non-goals or future work.

@@ -76,6 +76,22 @@ Ubuntu, then `npm run tauri -- build --no-bundle -- --locked`. It does not run i
 physical tests or build an installer. Observed remote success for `a9f99e5`:
 https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
 
+## Packaging
+
+v1 ships an unsigned per-user English NSIS installer with an embedded offline
+WebView2 installer (about 127 MB extra). Signing, SmartScreen, publication,
+and updater setup are out of scope. Uninstall must leave user session output
+intact.
+
+```text
+npm run tauri -- build --bundles nsis -- --locked
+```
+
+Local 2026-08-24 evidence (unsigned, not published):
+`src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
+208.4 MiB, SHA-256 `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`.
+The file is not tracked. Windows may warn because it is unsigned.
+
 ## License
 
 MIT. See `LICENSE`.

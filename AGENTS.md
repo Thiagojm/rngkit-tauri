@@ -31,15 +31,16 @@ cargo test --locked --manifest-path src-tauri/Cargo.toml --doc
 cargo +1.85.0 check --locked --manifest-path src-tauri/Cargo.toml --all-targets
 cargo +1.85.0 test --locked --manifest-path src-tauri/Cargo.toml --all-targets
 npm run tauri -- build --no-bundle -- --locked
+npm run tauri -- build --bundles nsis -- --locked
 git status --short --branch
 git diff --check
 ```
 
-`.github/workflows/ci.yml` runs that suite on `windows-latest` and `ubuntu-22.04` with locked resolution. It runs no ignored hardware tests or installer; Ubuntu is compile evidence, not Linux desktop support.
+`.github/workflows/ci.yml` runs the locked suite without the NSIS step. Ubuntu is compile evidence, not Linux desktop support.
 Observed remote success for `a9f99e5` (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
 
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes use `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`; replace `bitb` with `trng`, `rdseed`, or `discover`.
-Do not claim installer or native long-session chart render/interaction evidence. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
+Unsigned NSIS is local-only; do not claim install/uninstall, signing, or native long-session chart render/interaction. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
 
 ## Repository conventions
 

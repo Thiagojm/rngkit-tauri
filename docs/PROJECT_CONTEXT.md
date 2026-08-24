@@ -28,6 +28,10 @@ Capabilities remain `core:default` and `dialog:default`. Production CSP excludes
 `windows-latest` and `ubuntu-22.04` succeeded for `a9f99e5` at
 https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632 (no hardware
 jobs, no installer). Ubuntu remains compile evidence, not Linux desktop support.
+An unsigned per-user English NSIS installer with offline WebView2 exists locally
+as `src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe` (208.4 MiB,
+SHA-256 `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`);
+install, uninstall, SmartScreen, signing, and publication remain unverified or out of scope.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which
@@ -94,7 +98,9 @@ entropy-free PseudoRNG discovery.
   device paths, and absolute legacy input paths. Frontend error messages are
   canonical safe strings; raw failure detail is redacted before retention.
 - v1 packaging is an unsigned per-user English NSIS installer with offline
-  WebView2. Signing, release, updater, and deployment remain separate work.
+  WebView2 (`com.rngkit.desktop`, current-user, English only). The embedded
+  WebView2 offline installer adds about 127 MB. Signing, release, updater, and
+  deployment remain separate work.
 - Validation claims must distinguish deterministic, CI, native Windows,
   physical hardware, chart stress, and installer evidence. Physical results
   name device variant, ordinal, fold, and OS; absence is unverified, not passed.

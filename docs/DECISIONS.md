@@ -114,7 +114,11 @@ All decisions are accepted. Material changes return to design review.
   `src-tauri/tests/hardware.rs`. Absence is unverified, not passed; permission,
   busy, protocol, timeout, and USB failures fail the smoke.
 - v1 delivery is an unsigned per-user English NSIS installer with bundled
-  offline WebView2. Signing, binary publication, updater, release, and
-  deployment require separate approval. Source is public under MIT.
+  offline WebView2 (~127 MB extra), id `com.rngkit.desktop`, no updater
+  artifacts, and no certificate. Signing, publication, updater, release, and
+  deployment require separate approval. Source is MIT. Local 2026-08-24
+  `RngKit_0.1.0_x64-setup.exe` is 208.4 MiB, SHA-256
+  `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`;
+  install and uninstall remain user-verified.
 - CI (`windows-latest` and `ubuntu-22.04`) uses `npm ci`, `cargo --locked`, and `tauri build --no-bundle -- --locked`; it never runs ignored hardware tests.
   Ubuntu installs the documented Tauri Debian packages plus `libudev-dev` and `libusb-1.0-0-dev` for source-crate linking; it is not Linux desktop support. Text files use LF via `.gitattributes`. Observed remote success for `a9f99e5`: https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.
