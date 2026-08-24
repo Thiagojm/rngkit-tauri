@@ -84,7 +84,7 @@ function collection(
     candidates: [],
     selectedToken: null,
     familyWarning: null,
-    sampleBits: 8,
+    sampleBits: 2048,
     intervalSeconds: 1,
     fold: null,
     outputRootLabel: null,

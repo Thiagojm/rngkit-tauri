@@ -7,7 +7,8 @@ use rngkit_lib::commands::dialogs::{FakeFolderPicker, apply_picked_folder};
 use rngkit_lib::coordinator::AppCoordinator;
 use rngkit_lib::dto::{CollectionState, ThemePreference};
 use rngkit_lib::preferences::{
-    PREFERENCES_FILE_NAME, PreferencesHandle, load_from_path, output_root_label,
+    DEFAULT_OUTPUT_DIRECTORY_NAME, PREFERENCES_FILE_NAME, PreferencesHandle, load_from_path,
+    output_root_label,
 };
 
 fn temp_dir() -> PathBuf {
@@ -94,7 +95,7 @@ fn corrupt_preferences_leave_session_files_untouched() {
 
     let outcome = load_from_path(&prefs_path);
     assert!(outcome.warning.is_some());
-    assert_eq!(outcome.preferences.sample_bits, 8);
+    assert_eq!(outcome.preferences.sample_bits, 2048);
     assert_eq!(
         fs::read(&session).expect("read session"),
         b"sample_index,captured_at_utc,ones\n"
@@ -160,5 +161,69 @@ fn invalid_bits_do_not_reach_ready() {
         coordinator.snapshot().collection.state,
         CollectionState::Ready
     );
-    assert_eq!(coordinator.snapshot().collection.sample_bits, 8);
+    assert_eq!(coordinator.snapshot().collection.sample_bits, 2048);
+}
+
+#[test]
+fn clean_preferences_prepare_the_default_documents_root() {
+    let root = temp_dir();
+    let documents = root.join("Documents");
+    let handle = PreferencesHandle::load_with_documents(root.join(PREFERENCES_FILE_NAME), || {
+        Ok(documents.clone())
+    });
+
+    let preferences = handle.current();
+    let output_root = preferences.output_root.expect("default root");
+    assert_eq!(output_root, documents.join(DEFAULT_OUTPUT_DIRECTORY_NAME));
+    assert!(output_root.is_dir());
+    assert_eq!(output_root_label(&output_root), "RngKit");
+    assert_eq!(preferences.sample_bits, 2048);
+    assert!(handle.warning().is_none());
+}
+
+#[test]
+fn missing_saved_root_falls_back_to_the_default_root() {
+    let root = temp_dir();
+    let documents = root.join("Documents");
+    let custom = root.join("Custom");
+    fs::create_dir_all(&custom).expect("custom");
+    let prefs_path = root.join(PREFERENCES_FILE_NAME);
+    let first = PreferencesHandle::load(prefs_path.clone());
+    first
+        .save_draft(rngkit_lib::preferences::SessionDraft {
+            sample_bits: 16,
+            interval_seconds: 1,
+            fold: None,
+            output_root: Some(custom.clone()),
+            theme: ThemePreference::System,
+        })
+        .expect("save custom root");
+    fs::remove_dir(&custom).expect("remove custom root");
+
+    let handle = PreferencesHandle::load_with_documents(prefs_path, || Ok(documents.clone()));
+    let output_root = handle.current().output_root.expect("fallback root");
+    assert_eq!(output_root, documents.join(DEFAULT_OUTPUT_DIRECTORY_NAME));
+    assert_eq!(handle.current().sample_bits, 16);
+    assert!(
+        handle
+            .warning()
+            .as_deref()
+            .is_some_and(|warning| warning.contains("default RngKit"))
+    );
+}
+
+#[test]
+fn unavailable_documents_leave_a_recoverable_empty_root() {
+    let handle =
+        PreferencesHandle::load_with_documents(temp_dir().join(PREFERENCES_FILE_NAME), || {
+            Err(rngkit_lib::errors::SafeError::permission_denied("blocked"))
+        });
+
+    assert!(handle.current().output_root.is_none());
+    assert!(
+        handle
+            .warning()
+            .as_deref()
+            .is_some_and(|warning| warning.contains("Choose an output folder"))
+    );
 }

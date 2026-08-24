@@ -9,9 +9,11 @@ and safely combining compatible RngKitPSG v3 CSV files.
 
 The four-destination shell is connected to a Rust coordinator through
 discovery, selection, session-draft, preference, and collection commands.
-Default startup is idle and does not enumerate hardware or restore a source.
-Refresh runs real discovery in the native window; default tests inject fake
-discovery and fake sources. Safe settings survive restart. Start opens the
+Startup restores safe settings, prepares `Documents/RngKit` when no valid saved
+output root exists, and displays 2048-bit new-user defaults. After frontend
+hydration, one asynchronous discovery runs without opening or selecting a
+source; manual Refresh remains available. Default tests inject fake discovery
+and fake sources. Safe settings survive restart. Start opens the
 selected source, collects until cooperative Stop, and records a native
 BIN/CSV/manifest bundle. Open session folder uses a backend-known path.
 Closing while collecting confirms Keep collecting or Stop and exit. Debug
@@ -32,11 +34,12 @@ The product and installer baseline is `061f66a`; the Checkpoint 18 audit is
 complete in the current tree and awaiting user approval. Uninstall and other
 unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
-`183f3c7811f5593b3b42c2558ac726552b86687d`.
+`2cdf311dd206cb5e7320ee520ef1e7a5139cc146`.
 
 A follow-on workflow-improvements design and six-phase implementation plan
-dated 2026-08-24 are approved but unimplemented. No phase is authorized; Phase
-1 begins in `rngkit-core` only after a separate implementation request.
+dated 2026-08-24 are approved. Phase 1 is complete in `rngkit-core`, and Phase
+2 is implemented locally in this app pending user validation. Phase 3 is not
+authorized; this work has not been committed or pushed.
 
 ## Sources of truth
 

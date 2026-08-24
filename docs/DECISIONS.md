@@ -84,7 +84,7 @@ All decisions are accepted. Material changes return to design review.
   absolute input paths.
 - Statistical Z and `+/-1.96` are descriptive visual references only.
 
-## Approved workflow improvements (2026-08-24, unimplemented)
+## Approved workflow improvements (2026-08-24 contract)
 
 - Default new collection state uses an auto-created `Documents/RngKit` output
   root and 2048 sample bits; valid saved custom roots and sample sizes win.
@@ -109,12 +109,28 @@ All decisions are accepted. Material changes return to design review.
   workflows without duplicating parsers or weakening backend path/privacy
   authority.
 
+## Phase 2 implementation status (2026-08-24)
+
+- Phase 1 is published at reachable `rngkit-core` revision
+  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`. The app pins every `rngkit-*`
+  dependency to that exact revision.
+- The app now prepares the backend-only `Documents/RngKit` root when needed,
+  preserves valid saved roots and sample sizes, falls back safely when a saved
+  root is missing, and remains usable with folder recovery when Documents is
+  unavailable.
+- Frontend hydration performs one guarded asynchronous discovery for an idle
+  empty snapshot. Candidates remain unselected, and manual Refresh plus
+  explicit selection remain unchanged.
+- Phase 2 automated validation is complete locally; native manual validation
+  is the current user gate. Phase 3, commit, and push are not authorized by
+  this phase implementation request.
+
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 
 - Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm
   `>=10`, Rust edition 2024/MSRV 1.85. Prereleases are excluded.
 - `rngkit-*` crates use reachable revision
-  `183f3c7811f5593b3b42c2558ac726552b86687d`, never local paths.
+  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`, never local paths.
 - Default tests are deterministic and hardware-free. Physical checks are
   ignored, opt-in, and serial in `src-tauri/tests/hardware.rs`.
 - v1 delivery is an unsigned per-user English NSIS installer with bundled

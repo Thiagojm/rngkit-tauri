@@ -44,7 +44,7 @@ describe('CollectPage', () => {
     render(CollectPage);
 
     const group = screen.getByRole('group', { name: copy.outputRoot });
-    const hint = screen.getByText('No output folder selected.');
+    const hint = screen.getByText(copy.noOutputFolder);
 
     expect(group.getAttribute('aria-describedby')).toBe(hint.id);
     expect(screen.getByLabelText(copy.sampleBits)).toBeTruthy();

@@ -77,7 +77,7 @@
   <Field
     id="output-root"
     label={copy.outputRoot}
-    hint={collection.outputRootLabel ?? 'No output folder selected.'}
+    hint={collection.outputRootLabel ?? copy.noOutputFolder}
     group
   >
     <Button

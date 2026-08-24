@@ -11,28 +11,29 @@ This repository is a locked Tauri 2 + client-only Svelte 5 + TypeScript + Vite +
 Tailwind CSS 4 app. Rust owns the coordinator
 (`idle|discovering|ready|collecting|stopping|completed|failed`), file jobs,
 discovery tokens, collection worker, reports, Combine, close policy, and
-redacted diagnostics. Default start is idle and does not enumerate hardware.
+redacted diagnostics. Startup prepares `Documents/RngKit` when no valid saved
+root exists, defaults new users to 2048 bits, and performs one asynchronous
+discovery after frontend hydration without selecting a source.
 Production IPC matches the approved command list; `apply_dev_scenario` is
 debug-only. Capabilities are `core:default` and `dialog:default`. The live
 chart retains every committed `(sample_index, cumulative_z)` point. v1
 packaging is an unsigned per-user English NSIS installer with offline WebView2.
 
-The product-code and installer baseline remains `061f66a`; later commits are
-acceptance context or planning only. The Checkpoint 18 audit is complete.
+The product-code and installer baseline remains `061f66a`; the current tree
+also contains the authorized Phase 2 implementation. The Checkpoint 18 audit
+is complete.
 Original design acceptance criteria 1–17 and 19–20 are evidenced. Criterion 18
 is partial: offline installation, first launch, and basic app functionality
 passed by user report; uninstall and session-data preservation remain
 unverified. No required original-v1 product work is stubbed.
 
 The follow-on workflow-improvements design and phased plan dated 2026-08-24
-are approved and readable under `docs/specs/` and `docs/plans/`. They cover
-Collect defaults/discovery/chart, standalone Reports inputs, current/legacy
-mixed CSV Combine, and task-oriented Help. No implementation phase is
-authorized or complete. Phase 1 changes `rngkit-core`; app integration requires
-a later separately authorized reachable-library-revision gate.
+are approved and readable under `docs/specs/` and `docs/plans/`. Phase 1 is
+complete and published in `rngkit-core`; Phase 2 is implemented locally in
+this app and awaiting user validation. Phase 3 is not authorized.
 
 The library is `https://github.com/Thiagojm/rngkit-core` at
-`183f3c7811f5593b3b42c2558ac726552b86687d` (git, never a local path).
+`2cdf311dd206cb5e7320ee520ef1e7a5139cc146` (git, never a local path).
 
 ## Main product flows
 

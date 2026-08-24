@@ -17,11 +17,14 @@ pub const MIN_WINDOW_WIDTH: u32 = 800;
 pub const MIN_WINDOW_HEIGHT: u32 = 600;
 pub const DEFAULT_WINDOW_WIDTH: u32 = 1280;
 pub const DEFAULT_WINDOW_HEIGHT: u32 = 800;
+pub const DEFAULT_OUTPUT_DIRECTORY_NAME: &str = "RngKit";
 
 const CORRUPT_WARNING: &str =
     "Saved settings could not be restored. Default session settings are in use.";
 const MISSING_FOLDER_WARNING: &str =
-    "The selected output folder is no longer available. Choose an output folder again.";
+    "The selected output folder is unavailable. The default RngKit folder is in use.";
+const DEFAULT_FOLDER_WARNING: &str =
+    "The default RngKit folder is unavailable. Choose an output folder.";
 const SAVE_FAILED: &str = "Settings could not be saved.";
 
 /// Visible display rectangle used to clamp restored window geometry.
@@ -111,7 +114,7 @@ impl std::fmt::Debug for Preferences {
 impl Default for Preferences {
     fn default() -> Self {
         Self {
-            sample_bits: 8,
+            sample_bits: 2048,
             interval_seconds: 1,
             fold: None,
             output_root: None,
@@ -151,6 +154,30 @@ impl PreferencesHandle {
     #[must_use]
     pub fn load(path: PathBuf) -> Self {
         let outcome = load_from_path(&path);
+        Self {
+            path,
+            inner: Mutex::new(outcome),
+        }
+    }
+
+    /// Load preferences and prepare the safe default output root when no valid
+    /// saved root is available. The resolver is injected so startup behavior
+    /// remains deterministic and filesystem failures are testable.
+    #[must_use]
+    pub fn load_with_documents<F>(path: PathBuf, resolve_documents: F) -> Self
+    where
+        F: FnOnce() -> Result<PathBuf, SafeError>,
+    {
+        let mut outcome = load_from_path(&path);
+        if outcome.preferences.output_root.is_none() {
+            match create_default_output_root(resolve_documents) {
+                Ok(root) => outcome.preferences.output_root = Some(root),
+                Err(_) if outcome.warning.is_none() => {
+                    outcome.warning = Some(DEFAULT_FOLDER_WARNING.into());
+                }
+                Err(_) => {}
+            }
+        }
         Self {
             path,
             inner: Mutex::new(outcome),
@@ -385,6 +412,17 @@ pub fn validate_output_root(path: &Path) -> Result<PathBuf, SafeError> {
         ));
     }
     Ok(path.to_path_buf())
+}
+
+fn create_default_output_root<F>(resolve_documents: F) -> Result<PathBuf, SafeError>
+where
+    F: FnOnce() -> Result<PathBuf, SafeError>,
+{
+    let documents =
+        resolve_documents().map_err(|_| SafeError::permission_denied(DEFAULT_FOLDER_WARNING))?;
+    let root = documents.join(DEFAULT_OUTPUT_DIRECTORY_NAME);
+    fs::create_dir_all(&root).map_err(|_| SafeError::permission_denied(DEFAULT_FOLDER_WARNING))?;
+    validate_output_root(&root)
 }
 
 #[must_use]

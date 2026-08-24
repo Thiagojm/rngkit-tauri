@@ -51,6 +51,14 @@ function cloneSnapshot(id: ScenarioId): AppSnapshot {
 
 const ACTIVE_RECONCILE_MS = 250;
 
+function needsStartupDiscovery(snapshot: AppSnapshot): boolean {
+  return (
+    snapshot.collection.state === 'idle' &&
+    snapshot.collection.candidates.length === 0 &&
+    snapshot.collection.selectedToken === null
+  );
+}
+
 function isActiveCollection(snapshot: AppSnapshot): boolean {
   return (
     snapshot.collection.state === 'collecting' ||
@@ -71,6 +79,7 @@ export class AppViewState {
   backendSnapshot = $state<AppSnapshot>(cloneSnapshot(DEFAULT_SCENARIO));
   loadGeneration = 0;
   collectionChannelGeneration = 0;
+  startupDiscoveryStarted = false;
   chartSeries = new ChartSeries();
   chartVersion = $state(0);
 
@@ -131,6 +140,10 @@ export class AppViewState {
       return;
     }
     this.reconcile(snapshot);
+    if (!this.startupDiscoveryStarted && needsStartupDiscovery(snapshot)) {
+      this.startupDiscoveryStarted = true;
+      void this.refreshSources();
+    }
     if (isActiveCollection(snapshot)) {
       void this.reconcileReloadedSession(generation);
     }

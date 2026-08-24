@@ -28,6 +28,7 @@ fn empty_discovery_stays_idle_without_selection() {
     assert!(snapshot.collection.candidates.is_empty());
     assert!(snapshot.collection.selected_token.is_none());
     assert!(snapshot.collection.family_warning.is_none());
+    assert_eq!(snapshot.collection.sample_bits, 2048);
 }
 
 #[test]

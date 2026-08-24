@@ -2,7 +2,7 @@
 
 ## Done
 
-- Approved Windows-first design/plan and `rngkit-core` Gate A at `183f3c7`.
+- Approved Windows-first design/plan and `rngkit-core` Gate A at `2cdf311`.
 - Checkpoints 3–17: locked Tauri/Svelte shell, coordinator, collection, chart,
   close policy, physical smokes, reports, Combine, security/a11y, CI, unsigned
   NSIS. HEAD `061f66a`.
@@ -10,16 +10,19 @@
   scan, context update, and user-reported offline install/basic app smoke. No
   required product work was silently deferred.
 - Approved 2026-08-24 workflow-improvements design and six-phase plan.
+- Phase 1: generalized standalone readers and CSV concatenation completed and
+  published in `rngkit-core`.
+- Phase 2: app pin/default-root/2048-bit/automatic-discovery implementation
+  completed locally and validated automatically; awaiting native user test.
 
 ## In progress
 
-- Workflow-improvements planning is complete. No implementation phase is
-  authorized.
+- Phase 2 user-validation gate is active. Do not begin Phase 3, commit, or push
+  until separately authorized.
 
 ## Next steps
 
-1. Explicitly authorize Phase 1: generalized standalone readers and CSV
-   concatenation in `rngkit-core`.
+1. Run the Phase 2 native manual validation from the approved plan.
 
 ## Backlog
 

@@ -10,6 +10,41 @@ afterEach(() => {
 });
 
 describe('AppViewState native collection channel', () => {
+  it('automatically discovers once after idle hydration without selecting a source', async () => {
+    const idle = structuredClone(MOCK_SCENARIOS.idle);
+    const discovered = structuredClone(MOCK_SCENARIOS.idle);
+    discovered.collection.candidates = structuredClone(
+      MOCK_SCENARIOS.ready.collection.candidates,
+    );
+    const getAppState = vi
+      .fn<() => Promise<AppSnapshot>>()
+      .mockResolvedValueOnce(idle)
+      .mockResolvedValue(discovered);
+    const refreshSources = vi.fn(async () => discovered);
+
+    vi.resetModules();
+    vi.doMock('@tauri-apps/api/core', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('@tauri-apps/api/core')>()),
+      isTauri: () => true,
+    }));
+    vi.doMock('../ipc/client', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../ipc/client')>()),
+      getAppState,
+      refreshSources,
+    }));
+    const { AppViewState } = await import('./app-state.svelte');
+    const state = new AppViewState();
+
+    await state.hydrate();
+    await vi.waitFor(() => expect(refreshSources).toHaveBeenCalledTimes(1));
+    await state.hydrate();
+
+    expect(getAppState).toHaveBeenCalledTimes(2);
+    expect(refreshSources).toHaveBeenCalledTimes(1);
+    expect(state.snapshot.collection.candidates).toHaveLength(2);
+    expect(state.snapshot.collection.selectedToken).toBeNull();
+  });
+
   it('accepts CleanStop after Stop and ignores the older stopping response', async () => {
     let onEvent: ((event: CollectionEvent) => void) | undefined;
     let resolveStop: ((snapshot: AppSnapshot) => void) | undefined;

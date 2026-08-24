@@ -176,7 +176,7 @@ impl AppCoordinator {
             candidates: Vec::new(),
             selected_token: None,
             family_warning: None,
-            sample_bits: 8,
+            sample_bits: 2048,
             interval_seconds: 1,
             fold: None,
             preferred_fold: None,

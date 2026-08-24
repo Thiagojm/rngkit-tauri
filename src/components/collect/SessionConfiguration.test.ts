@@ -26,7 +26,7 @@ describe('SessionConfiguration', () => {
     const bits = screen.getByLabelText(copy.sampleBits);
     await fireEvent.change(bits, { target: { value: '7' } });
 
-    expect(appState.snapshot.collection.sampleBits).toBe(8);
+    expect(appState.snapshot.collection.sampleBits).toBe(2048);
     expect(appState.snapshot.preferencesWarning).toMatch(/multiple of 8/i);
     expect(screen.getByRole('button', { name: copy.start })).toHaveProperty(
       'disabled',

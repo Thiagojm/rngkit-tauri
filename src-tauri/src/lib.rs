@@ -23,7 +23,7 @@ use reports::ReportsHandle;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
-pub const RNGKIT_CORE_REVISION: &str = "183f3c7811f5593b3b42c2558ac726552b86687d";
+pub const RNGKIT_CORE_REVISION: &str = "2cdf311dd206cb5e7320ee520ef1e7a5139cc146";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -40,7 +40,13 @@ pub fn run() {
                 .app_config_dir()
                 .map(|dir| dir.join(preferences::PREFERENCES_FILE_NAME))
                 .expect("app config directory");
-            let prefs = PreferencesHandle::load(prefs_path);
+            let prefs = PreferencesHandle::load_with_documents(prefs_path, || {
+                app.path().document_dir().map_err(|_| {
+                    crate::errors::SafeError::permission_denied(
+                        "The Documents folder is unavailable.",
+                    )
+                })
+            });
             {
                 let coordinator = app.state::<Mutex<AppCoordinator>>();
                 let mut coordinator = coordinator
@@ -193,7 +199,7 @@ mod tests {
     fn pins_gate_a_library_revision() {
         assert_eq!(
             RNGKIT_CORE_REVISION,
-            "183f3c7811f5593b3b42c2558ac726552b86687d"
+            "2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
         );
     }
 

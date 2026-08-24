@@ -23,6 +23,7 @@ export const copy = {
   sampleBits: 'Sample size (bits)',
   sampleInterval: 'Sample interval (seconds)',
   outputRoot: 'Output folder',
+  noOutputFolder: 'No output folder selected. Choose a folder to continue.',
   entropySource: 'Entropy source',
   refreshSources: 'Refresh sources',
   chooseFolder: 'Choose folder',
@@ -81,7 +82,7 @@ export const copy = {
     empty: 'No diagnostics are available.',
   },
   noSources:
-    'No sources discovered yet. Refresh to look for currently attached devices. Nothing is selected automatically.',
+    'Sources are discovered automatically on startup. Refresh to search again. Nothing is selected automatically.',
   noReportInput: 'No report input selected.',
   noCombineInputs: 'No legacy v3 CSV files selected.',
   status: 'Status',
