@@ -6,7 +6,12 @@
   import Button from '../ui/Button.svelte';
 
   let host: HTMLDivElement | undefined = $state();
-  let live = $state(true);
+  let following = $state(true);
+
+  const collection = $derived(appState.snapshot.collection);
+  const collectionActive = $derived(
+    collection.state === 'collecting' || collection.state === 'stopping',
+  );
 
   const adapter = createChartAdapter({
     labels: {
@@ -17,8 +22,8 @@
       refPlus: copy.chart.refPlus,
       refMinus: copy.chart.refMinus,
     },
-    onUserViewport: () => {
-      live = false;
+    onViewportStateChange: (nextFollowing) => {
+      following = nextFollowing;
     },
   });
 
@@ -47,46 +52,36 @@
     if (host) {
       host.dataset.chartVersion = String(appState.chartVersion);
     }
-    adapter.setData(appState.chartSeries.aligned(), live);
+    adapter.setData(appState.chartSeries.aligned(), collectionActive);
   });
 
-  function resetView(): void {
-    live = false;
-    adapter.resetView(appState.chartSeries.aligned());
-  }
-
-  function returnToLive(): void {
-    live = true;
-    adapter.returnToLive(appState.chartSeries.aligned());
+  function fitAll(): void {
+    adapter.fitAll(appState.chartSeries.aligned(), collectionActive);
   }
 </script>
 
-<section class="flex min-w-0 flex-col gap-3" aria-labelledby="live-z-heading">
-  <div class="flex flex-wrap items-center gap-2">
-    <h3 id="live-z-heading" class="text-base font-medium">
-      {copy.chart.title}
-    </h3>
-    <div class="ms-auto flex flex-wrap gap-2">
-      <Button
-        disabled={empty}
-        disabledReason={empty ? copy.chart.needsPoints : ''}
-        onclick={resetView}>{copy.chart.resetView}</Button
-      >
-      <Button
-        disabled={empty || live}
-        disabledReason={empty
-          ? copy.chart.needsPoints
-          : live
-            ? copy.chart.alreadyLive
-            : ''}
-        onclick={returnToLive}>{copy.chart.returnToLive}</Button
-      >
+<section
+  class="flex min-w-0 flex-col gap-3 rounded-md border border-border bg-surface-muted p-3"
+  aria-labelledby="live-z-heading"
+>
+  <div class="flex flex-wrap items-start gap-3">
+    <div>
+      <h3 id="live-z-heading" class="text-base font-semibold">
+        {copy.chart.title}
+      </h3>
+      <p class="text-sm text-text-muted">{copy.chart.boundary}</p>
+    </div>
+    <div class="ms-auto">
+      <Button disabled={empty} onclick={fitAll}>{copy.chart.fitAll}</Button>
     </div>
   </div>
-  <div class="relative min-h-48 min-w-0">
+
+  <div
+    class="relative min-h-[18rem] min-w-0 rounded-sm border border-border bg-surface p-2 @[36rem]:min-h-[20rem] @[36rem]:h-[min(42vh,30rem)]"
+  >
     <div
       bind:this={host}
-      class="live-z-chart h-48 min-h-48 w-full min-w-0"
+      class="live-z-chart h-full min-h-[17rem] w-full min-w-0 @[36rem]:min-h-[19rem]"
       data-testid="live-z-chart"
       role="img"
       aria-label={copy.chart.caption}
@@ -99,7 +94,7 @@
       </p>
     {/if}
   </div>
-  <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted">
+  <ul class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
     <li class="flex items-center gap-2">
       <span class="h-0.5 w-4 bg-chart-z" aria-hidden="true"></span>
       {copy.chart.series}
@@ -125,7 +120,7 @@
   </ul>
   <p class="text-sm text-text-muted" data-testid="chart-point-count">
     {copy.chart.retainedPoints}: {pointCount}
-    · {live ? copy.chart.live : copy.chart.paused}
+    · {following ? copy.chart.following : copy.chart.paused}
   </p>
 </section>
 
@@ -134,6 +129,7 @@
     font-family: var(--font-sans);
     color: var(--color-text);
     width: 100%;
+    height: 100%;
   }
 
   :global(.live-z-chart .u-wrap) {

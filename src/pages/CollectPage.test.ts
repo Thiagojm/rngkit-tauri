@@ -12,7 +12,7 @@ describe('CollectPage', () => {
     expect(start).toHaveProperty('disabled', true);
     expect(screen.getByText(copy.start)).toBeTruthy();
     expect(screen.queryByRole('button', { name: copy.stop })).toBeNull();
-    expect(screen.getByText(copy.statsWarning)).toBeTruthy();
+    expect(screen.getByText(copy.chart.boundary)).toBeTruthy();
   });
 
   it('shows fold labels and Start when ready', () => {
@@ -64,7 +64,7 @@ describe('CollectPage', () => {
     expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
     expect(screen.getByText(copy.chart.refPlus)).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: copy.chart.resetView }),
+      screen.getByRole('button', { name: copy.chart.fitAll }),
     ).toHaveProperty('disabled', false);
   });
 

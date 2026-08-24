@@ -38,8 +38,10 @@ unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable librar
 
 A follow-on workflow-improvements design and six-phase implementation plan
 dated 2026-08-24 are approved. Phase 1 is complete in `rngkit-core`, and Phase
-2 is complete and validated automatically in this app. Its native manual test
-remains pending, and Phase 3 is not authorized.
+2 is complete and validated automatically in this app. Phase 3 is implemented
+in the current worktree: the Collect chart has one `Fit all` action and the
+instrument-style layout, with automated validation complete. Native manual
+validation remains pending, and Phase 4 is not authorized.
 
 ## Sources of truth
 

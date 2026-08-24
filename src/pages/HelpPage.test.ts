@@ -12,7 +12,7 @@ describe('HelpPage', () => {
       screen.getByRole('heading', { name: copy.destinations.help }),
     ).toBeTruthy();
     expect(screen.getByText(copy.fold.raw)).toBeTruthy();
-    expect(screen.getByText(copy.statsWarning)).toBeTruthy();
+    expect(screen.getByText(copy.chart.boundary)).toBeTruthy();
     expect(screen.getByText(RNGKIT_CORE_REVISION)).toBeTruthy();
     expect(screen.getByText(/one explicitly selected/i)).toBeTruthy();
     expect(

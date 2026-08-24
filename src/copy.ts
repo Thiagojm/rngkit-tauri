@@ -14,8 +14,6 @@ export const copy = {
     light: 'Light',
     dark: 'Dark',
   },
-  statsWarning:
-    'Cumulative Z and the chart lines at ±1.96 are descriptive visual references only. They are not a significance, pass/fail, or certification result.',
   fold: {
     label: 'Fold',
     raw: '0 - Raw',
@@ -47,23 +45,21 @@ export const copy = {
   openFolder: 'Open folder',
   chart: {
     title: 'Descriptive cumulative Z',
+    boundary: 'Z shows balance over time; it does not certify randomness.',
     xAxis: 'Sample index',
     yAxis: 'Descriptive cumulative Z',
     series: 'Descriptive cumulative Z',
     zero: 'Zero',
     refPlus: 'Reference +1.96',
     refMinus: 'Reference -1.96',
-    resetView: 'Reset view',
-    returnToLive: 'Return to live',
+    fitAll: 'Fit all',
     empty:
       'No committed samples yet. Every committed point is retained for this session.',
     caption:
       'Sample index versus descriptive cumulative Z. The zero line and ±1.96 lines are visual guides only.',
     retainedPoints: 'Retained points',
-    live: 'Following new samples',
+    following: 'Following new samples',
     paused: 'View paused; new samples still append',
-    needsPoints: 'Available after the first committed sample.',
-    alreadyLive: 'The chart already follows new samples.',
   },
   close: {
     title: 'Stop collection before closing?',

@@ -65,7 +65,7 @@
 
   <section class="flex flex-col gap-2" aria-labelledby="help-stats">
     <h2 id="help-stats" class="text-lg font-medium">Descriptive statistics</h2>
-    <p>{copy.statsWarning}</p>
+    <p>{copy.chart.boundary}</p>
   </section>
 
   <section class="flex flex-col gap-2" aria-labelledby="help-access">

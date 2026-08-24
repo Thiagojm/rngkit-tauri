@@ -17,11 +17,14 @@ function flatten(value: unknown): string[] {
 describe('user-facing copy', () => {
   it('keeps Z descriptive and omits secrets or selectors', () => {
     const text = flatten(copy).join('\n');
-    expect(text).toMatch(/descriptive visual references only/i);
-    expect(text).toMatch(/not a significance, pass\/fail, or certification/i);
+    expect(text).toMatch(
+      /Z shows balance over time; it does not certify randomness/i,
+    );
     expect(text).not.toMatch(/p-value/i);
     expect(text).not.toMatch(/statistically significant/i);
     expect(text).not.toMatch(/confidence interval/i);
+    expect(text).not.toMatch(/Available after the first committed sample/i);
+    expect(text).not.toMatch(/Cumulative Z and the chart lines at ±1\.96/i);
     expect(text).not.toMatch(/entropy byte/i);
     expect(text).not.toMatch(/\bseed=/i);
     expect(text).not.toMatch(/\bserial=/i);

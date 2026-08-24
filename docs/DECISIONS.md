@@ -124,7 +124,20 @@ All decisions are accepted. Material changes return to design review.
   empty snapshot. Candidates remain unselected, and manual Refresh plus
   explicit selection remain unchanged.
 - Phase 2 automated validation is complete on the Windows host. Native manual
-  validation remains unverified, and Phase 3 requires separate authorization.
+  validation remains unverified.
+
+## Phase 3 implementation status (2026-08-24)
+
+- The live chart owns one `Fit all` interaction through the adapter. Following
+  is enabled only for active collection; pointer zoom/pan pauses it, and
+  supersedable animation-frame work cannot restore a stale viewport after
+  `Fit all`.
+- The Collect chart uses the approved instrument-workspace card with a taller
+  responsive surface, integrated descriptive boundary copy, and no Reset/Return
+  controls. Every committed chart point remains retained.
+- Automated validation and chart stress measurements passed on the Windows
+  host. Browser visual evidence passed; native manual interaction remains the
+  active user-validation gate before Phase 4.
 
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 

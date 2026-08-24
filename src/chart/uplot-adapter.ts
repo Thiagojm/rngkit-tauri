@@ -19,14 +19,14 @@ export interface ChartAdapterOptions {
   uPlot?: ChartPlotCtor;
   raf?: (callback: FrameRequestCallback) => number;
   caf?: (handle: number) => void;
-  onUserViewport?: () => void;
+  onViewportStateChange?: (following: boolean) => void;
 }
 
 export interface ChartAdapter {
   mount(target: HTMLElement): void;
-  setData(data: AlignedChartData, resetScales: boolean): void;
-  resetView(data: AlignedChartData): void;
-  returnToLive(data: AlignedChartData): void;
+  setData(data: AlignedChartData, collectionActive: boolean): void;
+  fitAll(data: AlignedChartData, collectionActive: boolean): void;
+  isFollowing(): boolean;
   refreshTheme(): void;
   destroy(): void;
 }
@@ -118,21 +118,33 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
   const caf = options.caf ?? ((id) => cancelAnimationFrame(id));
   let plot: uPlot | null = null;
   let target: HTMLElement | null = null;
-  let pending: { data: AlignedChartData; resetScales: boolean } | null = null;
+  let pending: {
+    data: AlignedChartData;
+    resetScales: boolean;
+    version: number;
+  } | null = null;
   let lastData: AlignedChartData = emptyData();
-  let lastReset = true;
+  let lastCollectionActive = false;
+  let following = true;
+  let frameVersion = 0;
   let rafHandle = 0;
   let detachPointer: (() => void) | null = null;
   let resizeObserver: ResizeObserver | null = null;
 
   function notifyUserViewport(): void {
+    if (following) {
+      following = false;
+      options.onViewportStateChange?.(false);
+    }
     if (pending) {
       pending.resetScales = false;
     }
-    options.onUserViewport?.();
   }
 
-  function flush(): void {
+  function flush(version: number): void {
+    if (version !== frameVersion) {
+      return;
+    }
     rafHandle = 0;
     if (!plot || !pending) {
       return;
@@ -142,23 +154,33 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
     plot.setData(next.data, next.resetScales);
   }
 
-  function remember(data: AlignedChartData, resetScales: boolean): void {
+  function remember(data: AlignedChartData): void {
     lastData = data;
-    lastReset = resetScales;
   }
 
   function schedule(data: AlignedChartData, resetScales: boolean): void {
-    remember(data, resetScales);
+    remember(data);
+    const version = frameVersion;
     pending = {
       data,
       resetScales: Boolean(pending?.resetScales) || resetScales,
+      version,
     };
     if (rafHandle !== 0) {
       return;
     }
     rafHandle = raf(() => {
-      flush();
+      flush(version);
     });
+  }
+
+  function cancelPendingFrame(): void {
+    frameVersion += 1;
+    pending = null;
+    if (rafHandle !== 0) {
+      caf(rafHandle);
+      rafHandle = 0;
+    }
   }
 
   function attachPointer(instance: uPlot): () => void {
@@ -269,7 +291,7 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
   function chartOptions(host: HTMLElement): uPlot.Options {
     return {
       width: Math.max(host.clientWidth, 320),
-      height: Math.max(host.clientHeight, 192),
+      height: Math.max(host.clientHeight, 288),
       class: 'live-z-uplot',
       legend: { show: false },
       cursor: {
@@ -282,24 +304,24 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       axes: [
         {
           label: options.labels.xAxis,
-          stroke: () => cssColor(host, '--color-text-muted', '#4a5a70'),
+          stroke: () => cssColor(host, '--color-chart-axis', '#4a5a70'),
           grid: {
-            stroke: () => cssColor(host, '--color-border', '#c5d0de'),
+            stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
           ticks: {
-            stroke: () => cssColor(host, '--color-border', '#c5d0de'),
+            stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
           values: (_plot, splits) =>
             splits.map((value) => String(Math.round(value))),
         },
         {
           label: options.labels.yAxis,
-          stroke: () => cssColor(host, '--color-text-muted', '#4a5a70'),
+          stroke: () => cssColor(host, '--color-chart-axis', '#4a5a70'),
           grid: {
-            stroke: () => cssColor(host, '--color-border', '#c5d0de'),
+            stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
           ticks: {
-            stroke: () => cssColor(host, '--color-border', '#c5d0de'),
+            stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
         },
       ],
@@ -308,7 +330,7 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
         {
           label: options.labels.series,
           stroke: () => cssColor(host, '--color-chart-z', '#1d6fd8'),
-          width: 1.5,
+          width: 2.25,
           points: { show: false },
         },
       ],
@@ -337,36 +359,41 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
         });
         resizeObserver.observe(host);
       }
-      schedule(lastData, lastReset);
+      schedule(lastData, false);
     },
-    setData(data, resetScales) {
-      schedule(data, resetScales);
-    },
-    resetView(data) {
-      remember(data, true);
-      pending = null;
-      if (rafHandle !== 0) {
-        caf(rafHandle);
-        rafHandle = 0;
+    setData(data, collectionActive) {
+      const endedFollowingCollection =
+        lastCollectionActive && !collectionActive;
+      lastCollectionActive = collectionActive;
+      if (endedFollowingCollection && following) {
+        following = false;
+        options.onViewportStateChange?.(false);
       }
+      schedule(
+        data,
+        (following && collectionActive) || endedFollowingCollection,
+      );
+    },
+    fitAll(data, collectionActive) {
+      cancelPendingFrame();
+      following = collectionActive;
+      lastCollectionActive = collectionActive;
+      options.onViewportStateChange?.(following);
+      remember(data);
       if (!plot) {
         schedule(data, true);
         return;
       }
       plot.setData(data, true);
     },
-    returnToLive(data) {
-      this.resetView(data);
+    isFollowing() {
+      return following;
     },
     refreshTheme() {
       plot?.redraw(false, true);
     },
     destroy() {
-      if (rafHandle !== 0) {
-        caf(rafHandle);
-        rafHandle = 0;
-      }
-      pending = null;
+      cancelPendingFrame();
       detachPointer?.();
       detachPointer = null;
       resizeObserver?.disconnect();

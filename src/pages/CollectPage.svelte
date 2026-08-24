@@ -47,11 +47,6 @@
           />
         </div>
         <LiveZChart />
-        <p
-          class="rounded-md border border-border bg-surface-muted px-4 py-3 text-sm text-text-muted"
-        >
-          {copy.statsWarning}
-        </p>
         <SessionSummary />
       </section>
     </div>

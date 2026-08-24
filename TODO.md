@@ -16,16 +16,19 @@
   completed and validated automatically; recovery warnings and parallel
   security fixtures were corrected during review. Native user test remains
   unverified.
+- Phase 3: chart following/viewport race fix, single `Fit all` control, and
+  instrument-style Collect card completed and validated automatically. Native
+  user validation remains pending.
 
 ## In progress
 
-- No implementation phase is currently authorized. Do not begin Phase 3
-  without a new explicit request.
+- Phase 3 native user validation gate. Do not begin Phase 4 without a new
+  explicit request.
 
 ## Next steps
 
-1. Run the Phase 2 native manual validation from the approved plan.
-2. Begin Phase 3 only after explicit authorization.
+1. Run the Phase 3 native manual validation from the approved plan.
+2. Begin Phase 4 only after explicit authorization.
 
 ## Backlog
 

@@ -54,7 +54,7 @@ class FakePlot {
   }
 }
 
-function adapterHarness(onUserViewport = vi.fn()) {
+function adapterHarness(onViewportStateChange = vi.fn()) {
   FakePlot.instances = [];
   FakePlot.opts = [];
   const frames: FrameRequestCallback[] = [];
@@ -70,21 +70,22 @@ function adapterHarness(onUserViewport = vi.fn()) {
     caf: () => {
       frames.length = 0;
     },
-    onUserViewport,
+    onViewportStateChange,
   });
-  return { adapter, host, frames, onUserViewport };
+  return { adapter, host, frames, onViewportStateChange };
 }
 
 describe('uPlot adapter', () => {
   afterEach(() => {
     document.body.replaceChildren();
+    vi.unstubAllGlobals();
   });
 
   it('constructs one plot, draws two series, and destroys it', () => {
-    const { adapter, host, onUserViewport } = adapterHarness();
+    const { adapter, host, onViewportStateChange } = adapterHarness();
     adapter.mount(host);
     expect(FakePlot.instances).toHaveLength(1);
-    expect(onUserViewport).not.toHaveBeenCalled();
+    expect(onViewportStateChange).not.toHaveBeenCalled();
     const opts = FakePlot.opts[0] as { series: unknown[] };
     expect(opts.series).toHaveLength(2);
     adapter.destroy();
@@ -121,11 +122,19 @@ describe('uPlot adapter', () => {
     expect(FakePlot.instances[0]?.setData.mock.calls[0]?.[1]).toBe(true);
   });
 
-  it('keeps scales when not live and resets them from Reset view', () => {
-    const { adapter, host, frames } = adapterHarness();
+  it('keeps scales while paused and resumes following from Fit all', () => {
+    const { adapter, host, frames, onViewportStateChange } = adapterHarness();
     adapter.mount(host);
     frames[0]?.(0);
     frames.length = 0;
+    FakePlot.instances[0]?.setData.mockClear();
+    adapter.fitAll(
+      [
+        [1, 2],
+        [0.1, 0.2],
+      ],
+      false,
+    );
     FakePlot.instances[0]?.setData.mockClear();
     adapter.setData(
       [
@@ -136,16 +145,44 @@ describe('uPlot adapter', () => {
     );
     frames[0]?.(0);
     expect(FakePlot.instances[0]?.setData.mock.calls[0]?.[1]).toBe(false);
-    adapter.resetView([
+    adapter.fitAll(
+      [
+        [1, 2],
+        [0.1, 0.2],
+      ],
+      true,
+    );
+    expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
+    expect(adapter.isFollowing()).toBe(true);
+    expect(onViewportStateChange).toHaveBeenCalledWith(true);
+  });
+
+  it('cancels stale frames when Fit all supersedes a pending append', () => {
+    const { adapter, host, frames } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    frames.length = 0;
+    FakePlot.instances[0]?.setData.mockClear();
+    adapter.setData([[1], [0.1]], true);
+    const staleFrame = frames[0];
+    adapter.fitAll(
+      [
+        [1, 2],
+        [0.1, 0.2],
+      ],
+      true,
+    );
+    staleFrame?.(0);
+    expect(FakePlot.instances[0]?.setData).toHaveBeenCalledTimes(1);
+    expect(FakePlot.instances[0]?.setData.mock.calls[0]?.[0]).toEqual([
       [1, 2],
       [0.1, 0.2],
     ]);
-    expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
   });
 
   it('treats pointer zoom as a user viewport change', () => {
-    const onUserViewport = vi.fn();
-    const { adapter, host } = adapterHarness(onUserViewport);
+    const onViewportStateChange = vi.fn();
+    const { adapter, host } = adapterHarness(onViewportStateChange);
     adapter.mount(host);
     FakePlot.instances[0]?.over.dispatchEvent(
       new MouseEvent('mousedown', {
@@ -158,12 +195,60 @@ describe('uPlot adapter', () => {
     window.dispatchEvent(
       new MouseEvent('mouseup', { clientX: 30, clientY: 10 }),
     );
-    expect(onUserViewport).toHaveBeenCalledTimes(1);
+    expect(onViewportStateChange).toHaveBeenCalledWith(false);
+    expect(adapter.isFollowing()).toBe(false);
+  });
+
+  it('stops following and frames the final data when collection ends', () => {
+    const { adapter, host, frames, onViewportStateChange } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    frames.length = 0;
+    FakePlot.instances[0]?.setData.mockClear();
+
+    adapter.setData([[1], [0.1]], true);
+    frames[0]?.(0);
+    adapter.setData([[1], [0.1]], false);
+    frames[0]?.(0);
+
+    expect(adapter.isFollowing()).toBe(false);
+    expect(onViewportStateChange).toHaveBeenCalledWith(false);
+    expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
+  });
+
+  it('resizes the mounted plot without replacing it', () => {
+    const resizeCallbacks: ResizeObserverCallback[] = [];
+    class FakeResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        resizeCallbacks.push(callback);
+      }
+
+      observe() {}
+
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+    const { adapter, host } = adapterHarness();
+    Object.defineProperty(host, 'clientWidth', {
+      configurable: true,
+      value: 640,
+    });
+    Object.defineProperty(host, 'clientHeight', {
+      configurable: true,
+      value: 320,
+    });
+    adapter.mount(host);
+    const plot = FakePlot.instances[0];
+
+    resizeCallbacks[0]?.([], {} as ResizeObserver);
+
+    expect(plot?.setSize).toHaveBeenCalledWith({ width: 640, height: 320 });
+    expect(FakePlot.instances).toHaveLength(1);
   });
 
   it('refreshes theme colors without replacing the plot or viewport', () => {
-    const onUserViewport = vi.fn();
-    const { adapter, host } = adapterHarness(onUserViewport);
+    const onViewportStateChange = vi.fn();
+    const { adapter, host } = adapterHarness(onViewportStateChange);
     adapter.mount(host);
     const plot = FakePlot.instances[0];
 
@@ -171,6 +256,6 @@ describe('uPlot adapter', () => {
 
     expect(FakePlot.instances).toHaveLength(1);
     expect(plot?.redraw).toHaveBeenCalledWith(false, true);
-    expect(onUserViewport).not.toHaveBeenCalled();
+    expect(onViewportStateChange).not.toHaveBeenCalled();
   });
 });

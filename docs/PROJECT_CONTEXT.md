@@ -30,8 +30,9 @@ unverified. No required original-v1 product work is stubbed.
 The follow-on workflow-improvements design and phased plan dated 2026-08-24
 are approved and readable under `docs/specs/` and `docs/plans/`. Phase 1 is
 complete and published in `rngkit-core`; Phase 2 is complete and validated
-automatically in this app. Its native manual test remains unverified, and
-Phase 3 is not authorized.
+automatically in this app. Phase 3 is implemented in the current worktree and
+has passed automated validation; its native manual test is the active gate and
+Phase 4 is not authorized.
 
 The library is `https://github.com/Thiagojm/rngkit-core` at
 `2cdf311dd206cb5e7320ee520ef1e7a5139cc146` (git, never a local path).
@@ -122,3 +123,19 @@ session-data preservation; SmartScreen behavior, signing, and publication.
   the combined failure case, and clearing a stale warning after choosing a
   valid folder. Security temp roots use a process-local counter to avoid
   parallel Windows test collisions.
+
+## Evidence (2026-08-24, workflow improvements Phase 3)
+
+- The chart now has one `Fit all` action, adapter-owned following state,
+  supersedable animation-frame updates, and pointer zoom/pan pause behavior.
+  The instrument-style card is taller and keeps the concise descriptive
+  boundary copy; retention remains every committed point.
+- Deterministic validation passed: format check, Svelte/TypeScript check, lint,
+  Vitest 95/95, Playwright 5/5, production Vite build, chart stress 100k/1M,
+  cargo fmt/check/test/clippy/doc, Rust 1.85 check/test, and `git diff --check`.
+- Chart stress measurements were 100,000 points: 0.40 ms replace, 0.567 ms
+  append, 7.9 MiB heap delta; 1,000,000 points: 2.21 ms replace, 8.002 ms
+  append, 30.9 MiB heap delta.
+- Browser CLI snapshot/screenshot evidence confirmed one `Fit all` control,
+  the boundary copy, no legacy Reset/Return controls, and the larger chart
+  card. Native window interaction remains unverified and is the user gate.

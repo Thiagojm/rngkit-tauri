@@ -5,7 +5,7 @@ import { appState } from '../../state/app-state.svelte';
 import CollectPage from '../../pages/CollectPage.svelte';
 
 describe('LiveZChart', () => {
-  it('shows empty guidance and disabled view controls before samples arrive', () => {
+  it('shows empty guidance and a disabled Fit all before samples arrive', () => {
     render(CollectPage);
 
     expect(
@@ -17,39 +17,29 @@ describe('LiveZChart', () => {
     expect(screen.getByText(copy.chart.zero)).toBeTruthy();
     expect(screen.getByLabelText(copy.chart.caption)).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: copy.chart.resetView }),
+      screen.getByRole('button', { name: copy.chart.fitAll }),
     ).toHaveProperty('disabled', true);
+    expect(screen.getByText(copy.chart.boundary)).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: copy.chart.returnToLive }),
-    ).toHaveProperty('disabled', true);
-    expect(
-      screen.queryByText(
-        /p-value|statistically significant|confidence interval/i,
-      ),
+      screen.queryByRole('button', { name: /Reset view|Return to live/i }),
     ).toBeNull();
   });
 
-  it('keeps Reset view and Return to live distinct while points are retained', async () => {
+  it('keeps Fit all singular while points are retained', async () => {
     appState.applyScenario('collecting');
     render(CollectPage);
 
     expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
     const status = screen.getByTestId('chart-point-count');
-    expect(status.textContent).toContain(copy.chart.live);
-    const reset = screen.getByRole('button', { name: copy.chart.resetView });
-    const follow = screen.getByRole('button', {
-      name: copy.chart.returnToLive,
-    });
-    expect(reset).toHaveProperty('disabled', false);
-    expect(follow).toHaveProperty('disabled', true);
+    expect(status.textContent).toContain(copy.chart.following);
+    const fitAll = screen.getByRole('button', { name: copy.chart.fitAll });
+    expect(fitAll).toHaveProperty('disabled', false);
+    expect(
+      screen.getAllByRole('button', { name: copy.chart.fitAll }),
+    ).toHaveLength(1);
 
-    await fireEvent.click(reset);
-    expect(status.textContent).toContain(copy.chart.paused);
-    expect(follow).toHaveProperty('disabled', false);
-
-    await fireEvent.click(follow);
-    expect(status.textContent).toContain(copy.chart.live);
-    expect(follow).toHaveProperty('disabled', true);
+    await fireEvent.click(fitAll);
+    expect(status.textContent).toContain(copy.chart.following);
     expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
   });
 

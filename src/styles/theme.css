@@ -16,6 +16,8 @@
   --color-chart-z: #1d6fd8;
   --color-chart-zero: #4a5a70;
   --color-chart-ref: #b54708;
+  --color-chart-axis: #4a5a70;
+  --color-chart-grid: #c5d0de;
   --font-sans: 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', 'Segoe UI Mono', ui-monospace, monospace;
   --radius-sm: 0.25rem;
@@ -42,6 +44,8 @@
   --color-chart-z: #6ea8f0;
   --color-chart-zero: #9aabc0;
   --color-chart-ref: #f5b56b;
+  --color-chart-axis: #9aabc0;
+  --color-chart-grid: #2c3b52;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -63,5 +67,7 @@
     --color-chart-z: #6ea8f0;
     --color-chart-zero: #9aabc0;
     --color-chart-ref: #f5b56b;
+    --color-chart-axis: #9aabc0;
+    --color-chart-grid: #2c3b52;
   }
 }
