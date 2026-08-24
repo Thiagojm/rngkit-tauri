@@ -120,5 +120,5 @@ All decisions are accepted. Material changes return to design review.
   compiles with `tauri build --no-bundle`, and never runs ignored hardware tests.
   Ubuntu installs the documented Tauri Debian packages plus `libudev-dev` and
   `libusb-1.0-0-dev` so source crates link at compile time; it is not Linux
-  desktop support. Text files use LF via `.gitattributes`. Remote green is
-  claimed only after an authorized push is observed.
+  desktop support. Text files use LF via `.gitattributes`. Observed remote
+  success: https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.

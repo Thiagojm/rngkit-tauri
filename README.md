@@ -73,8 +73,8 @@ npm run build
 
 `.github/workflows/ci.yml` runs locked frontend and Rust checks on Windows and
 Ubuntu, then `npm run tauri -- build --no-bundle`. It does not run ignored
-physical tests or build an installer. Remote results are unverified until an
-authorized push is observed.
+physical tests or build an installer. Observed remote success:
+https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
 
 ## License
 

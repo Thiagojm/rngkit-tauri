@@ -38,7 +38,7 @@ git diff --check
 `.github/workflows/ci.yml` runs that suite on `windows-latest` and `ubuntu-22.04`
 with `npm ci` and `cargo --locked`. It does not run ignored hardware tests or
 build an installer. Ubuntu is compile evidence, not Linux desktop support.
-Do not claim a remote CI result until an authorized push is observed.
+Observed remote success (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
 
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes:
 `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`
