@@ -39,6 +39,24 @@ describe('deriveControls', () => {
     expect(collecting.configure.enabled).toBe(false);
   });
 
+  it('enables open report after a generated or existing workbook', () => {
+    expect(
+      deriveControls(MOCK_SCENARIOS.reportsPreview).openReport.enabled,
+    ).toBe(false);
+    expect(
+      deriveControls(MOCK_SCENARIOS.reportsConflict).openReport.enabled,
+    ).toBe(true);
+  });
+
+  it('blocks report artifact opening while another file job runs', () => {
+    const generating = {
+      ...MOCK_SCENARIOS.reportsConflict,
+      fileJob: 'generatingReport' as const,
+    };
+    expect(deriveControls(generating).openReport.enabled).toBe(false);
+    expect(deriveControls(generating).openContainingFolder.enabled).toBe(false);
+  });
+
   it('shows fold when the selected source requires it', () => {
     expect(deriveControls(MOCK_SCENARIOS.ready).showFold).toBe(true);
     expect(deriveControls(MOCK_SCENARIOS.idle).showFold).toBe(false);

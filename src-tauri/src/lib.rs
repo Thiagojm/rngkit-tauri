@@ -9,6 +9,7 @@ pub mod dto;
 pub mod errors;
 pub mod lifecycle;
 pub mod preferences;
+pub mod reports;
 
 use std::sync::Mutex;
 
@@ -17,6 +18,7 @@ use commands::dialogs::DialogHandle;
 use coordinator::AppCoordinator;
 use discovery::DiscoveryHandle;
 use preferences::{MonitorRect, PreferencesHandle, clamp_geometry};
+use reports::ReportsHandle;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
@@ -29,6 +31,7 @@ pub fn run() {
         .manage(Mutex::new(AppCoordinator::new()))
         .manage(DiscoveryHandle::live())
         .manage(CollectionHandle::live())
+        .manage(ReportsHandle::live())
         .manage(lifecycle::LifecycleHandle::new())
         .setup(|app| {
             let prefs_path = app
@@ -109,6 +112,11 @@ pub fn run() {
         commands::collection::open_session_folder,
         commands::lifecycle::copy_diagnostics,
         commands::lifecycle::stop_and_exit,
+        commands::reports::choose_report_input,
+        commands::reports::generate_report,
+        commands::reports::replace_report,
+        commands::reports::open_report,
+        commands::reports::open_report_folder,
         commands::dev::apply_dev_scenario,
     ]);
 
@@ -128,6 +136,11 @@ pub fn run() {
         commands::collection::open_session_folder,
         commands::lifecycle::copy_diagnostics,
         commands::lifecycle::stop_and_exit,
+        commands::reports::choose_report_input,
+        commands::reports::generate_report,
+        commands::reports::replace_report,
+        commands::reports::open_report,
+        commands::reports::open_report_folder,
     ]);
 
     builder

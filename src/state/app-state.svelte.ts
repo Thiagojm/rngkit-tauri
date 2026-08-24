@@ -2,11 +2,16 @@ import { isTauri } from '@tauri-apps/api/core';
 import {
   applyDevScenario,
   chooseOutputFolder,
+  chooseReportInput,
   copyDiagnostics as requestCopyDiagnostics,
+  generateReport,
   getAppState,
   listenCloseRequested,
+  openReport,
+  openReportFolder,
   openSessionFolder,
   refreshSources,
+  replaceReport,
   safeErrorMessage,
   selectSource,
   setFold,
@@ -635,6 +640,85 @@ export class AppViewState {
         .catch((error: unknown) =>
           this.reconcileCommandFailure(generation, fallback, error),
         );
+    }
+  }
+
+  chooseReportInput(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => chooseReportInput(),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  generateReport(): void {
+    const preview = this.snapshot.reports.preview;
+    if (!preview) {
+      return;
+    }
+    if (preview.conflict) {
+      this.replaceDialogOpen = true;
+      return;
+    }
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => generateReport(),
+        (snapshot) => snapshot,
+      );
+      return;
+    }
+    this.replaceDialogOpen = false;
+    this.reconcile({
+      ...this.snapshot,
+      reports: {
+        preview: { ...preview, conflict: true },
+        reportReady: true,
+      },
+    });
+  }
+
+  confirmReplaceReport(): void {
+    this.replaceDialogOpen = false;
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => replaceReport(),
+        (snapshot) => snapshot,
+      );
+      return;
+    }
+    const preview = this.snapshot.reports.preview;
+    if (!preview) {
+      return;
+    }
+    this.reconcile({
+      ...this.snapshot,
+      reports: {
+        preview: { ...preview, conflict: true },
+        reportReady: true,
+      },
+    });
+  }
+
+  cancelReplaceReport(): void {
+    this.replaceDialogOpen = false;
+  }
+
+  openReport(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => openReport(),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  openReportFolder(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => openReportFolder(),
+        (snapshot) => snapshot,
+      );
     }
   }
 

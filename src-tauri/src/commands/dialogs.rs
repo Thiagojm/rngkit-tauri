@@ -14,7 +14,7 @@ use crate::preferences::PreferencesHandle;
 use super::update_and_persist_session_draft;
 
 pub trait FolderPicker: Send + Sync {
-    fn pick_folder(&self, current: Option<&Path>) -> Option<PathBuf>;
+    fn pick_folder(&self, title: &str, current: Option<&Path>) -> Option<PathBuf>;
 }
 
 pub struct LiveFolderPicker<R: Runtime> {
@@ -29,8 +29,8 @@ impl<R: Runtime> LiveFolderPicker<R> {
 }
 
 impl<R: Runtime> FolderPicker for LiveFolderPicker<R> {
-    fn pick_folder(&self, current: Option<&Path>) -> Option<PathBuf> {
-        let mut builder = self.app.dialog().file().set_title("Choose output folder");
+    fn pick_folder(&self, title: &str, current: Option<&Path>) -> Option<PathBuf> {
+        let mut builder = self.app.dialog().file().set_title(title);
         if let Some(directory) = current.filter(|path| path.is_dir()) {
             builder = builder.set_directory(directory);
         }
@@ -59,8 +59,8 @@ impl DialogHandle {
     }
 
     #[must_use]
-    pub fn pick_folder(&self, current: Option<&Path>) -> Option<PathBuf> {
-        self.inner.pick_folder(current)
+    pub fn pick_folder(&self, title: &str, current: Option<&Path>) -> Option<PathBuf> {
+        self.inner.pick_folder(title, current)
     }
 }
 
@@ -86,7 +86,7 @@ impl FakeFolderPicker {
 }
 
 impl FolderPicker for FakeFolderPicker {
-    fn pick_folder(&self, _current: Option<&Path>) -> Option<PathBuf> {
+    fn pick_folder(&self, _title: &str, _current: Option<&Path>) -> Option<PathBuf> {
         self.next
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
@@ -100,7 +100,7 @@ pub fn apply_picked_folder(
 ) -> Result<AppStateDto, SafeError> {
     coordinator.ensure_configurable()?;
     let current = coordinator.output_root().map(Path::to_path_buf);
-    match picker.pick_folder(current.as_deref()) {
+    match picker.pick_folder("Choose output folder", current.as_deref()) {
         Some(path) => {
             coordinator.set_output_root(&path)?;
             Ok(coordinator.snapshot())
@@ -124,10 +124,11 @@ pub async fn choose_output_folder(
     };
 
     let handle = (*dialogs).clone();
-    let picked =
-        tauri::async_runtime::spawn_blocking(move || handle.pick_folder(current.as_deref()))
-            .await
-            .map_err(|_| SafeError::unexpected_failure())?;
+    let picked = tauri::async_runtime::spawn_blocking(move || {
+        handle.pick_folder("Choose output folder", current.as_deref())
+    })
+    .await
+    .map_err(|_| SafeError::unexpected_failure())?;
 
     let mut coordinator = coordinator
         .lock()

@@ -14,6 +14,13 @@ describe('ReportsPage', () => {
     expect(screen.getByText(copy.noReportInput)).toBeTruthy();
   });
 
+  it('shows native preview metadata', () => {
+    appState.applyScenario('reportsPreview');
+    render(ReportsPage);
+    expect(screen.getByText('Native session')).toBeTruthy();
+    expect(screen.getByText(copy.fold.raw)).toBeTruthy();
+  });
+
   it('opens the Cancel/Replace dialog for a conflicting report', async () => {
     appState.applyScenario('reportsConflict');
     appState.destination = 'reports';
@@ -21,6 +28,9 @@ describe('ReportsPage', () => {
 
     expect(screen.getByText('Native session')).toBeTruthy();
     expect(screen.getByText(copy.fold.raw)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.openReport }),
+    ).toHaveProperty('disabled', false);
 
     await fireEvent.click(
       screen.getByRole('button', { name: copy.generateReport }),

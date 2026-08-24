@@ -48,7 +48,7 @@ const PSEUDO: CollectionSnapshot['candidates'][number] = {
   requiresFold: false,
 };
 
-const emptyReports = { preview: null };
+const emptyReports = { preview: null, reportReady: false };
 const emptyCombine = {
   inputs: [],
   compatible: false,
@@ -230,14 +230,19 @@ export const MOCK_SCENARIOS: Record<ScenarioId, AppSnapshot> = {
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    { reports: { preview: nativePreview } },
+    { reports: { preview: nativePreview, reportReady: false } },
   ),
   reportsConflict: snapshot(
     collection({
       state: 'idle',
       statusLabel: 'Idle',
     }),
-    { reports: { preview: { ...nativePreview, conflict: true } } },
+    {
+      reports: {
+        preview: { ...nativePreview, conflict: true },
+        reportReady: true,
+      },
+    },
   ),
   combineCompatible: snapshot(
     collection({

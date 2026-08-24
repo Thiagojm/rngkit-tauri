@@ -4,8 +4,13 @@ import { MOCK_SCENARIOS } from '../state/mock-scenarios';
 import {
   applyDevScenario,
   chooseOutputFolder,
+  chooseReportInput,
+  generateReport,
   getAppState,
+  openReport,
+  openReportFolder,
   openSessionFolder,
+  replaceReport,
   refreshSources,
   safeErrorMessage,
   selectSource,
@@ -146,6 +151,35 @@ describe('ipc client', () => {
     });
     await expect(copyDiagnostics()).resolves.toContain('RngKit');
     await expect(stopAndExit()).resolves.toEqual(MOCK_SCENARIOS.stopping);
+  });
+
+  it('invokes native report commands inside Tauri', async () => {
+    setTauri(true);
+    mockIPC((cmd) => {
+      if (cmd === 'choose_report_input') {
+        return MOCK_SCENARIOS.reportsPreview;
+      }
+      if (cmd === 'generate_report' || cmd === 'replace_report') {
+        return MOCK_SCENARIOS.reportsConflict;
+      }
+      if (cmd === 'open_report' || cmd === 'open_report_folder') {
+        return MOCK_SCENARIOS.reportsConflict;
+      }
+      throw new Error(`unexpected command ${cmd}`);
+    });
+    await expect(chooseReportInput()).resolves.toEqual(
+      MOCK_SCENARIOS.reportsPreview,
+    );
+    await expect(generateReport()).resolves.toEqual(
+      MOCK_SCENARIOS.reportsConflict,
+    );
+    await expect(replaceReport()).resolves.toEqual(
+      MOCK_SCENARIOS.reportsConflict,
+    );
+    await expect(openReport()).resolves.toEqual(MOCK_SCENARIOS.reportsConflict);
+    await expect(openReportFolder()).resolves.toEqual(
+      MOCK_SCENARIOS.reportsConflict,
+    );
   });
 
   it('uses only structured safe IPC errors in the UI', () => {

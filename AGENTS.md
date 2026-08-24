@@ -11,10 +11,9 @@ Read these files before changing the project:
 5. `docs/plans/2026-08-22-rngkit-tauri-plan.md`
 6. `README.md` and the relevant implementation area
 
-## Verified commands (Windows host, through 2026-08-23)
+## Verified commands (Windows host, through 2026-08-24)
 
-From the repository root. Scaffold used Node.js 24.18.0 / npm 11.16.0; Node floor is `^20.19.0 || >=22.12.0`.
-npm floor is `>=10`; stable Rust is 1.97.1 and MSRV `1.85.0` is installed. Do not install a toolchain silently.
+From the repository root. Scaffold used Node.js 24.18.0 / npm 11.16.0; floors are Node `^20.19.0 || >=22.12.0` and npm `>=10`. Stable Rust is 1.97.1 and MSRV `1.85.0` is installed. Do not install a toolchain silently.
 
 ```text
 npm ci
@@ -60,10 +59,12 @@ or native long-session chart render/interaction evidence before its checkpoint.
   IPC is `get_app_state`, `refresh_sources`, `select_source`, `set_sample_bits`,
   `set_interval_seconds`, `set_fold`, `set_theme`, `choose_output_folder`,
   `start_collection`, `stop_collection`, `start_another_session`,
-  `open_session_folder`, `copy_diagnostics`, and `stop_and_exit`. Default start
-  does not enumerate hardware. Default tests inject fake discovery and fake
-  sources and do not call `rngkit_sources::discover()` or open hardware. Open
-  session folder uses a backend-known path only. Close policy is captured while
+  `open_session_folder`, `copy_diagnostics`, `stop_and_exit`,
+  `choose_report_input`, `generate_report`, `replace_report`, `open_report`,
+  and `open_report_folder`. Default start does not enumerate hardware. Default
+  tests inject fake discovery and fake sources and do not call
+  `rngkit_sources::discover()` or open hardware. Open session folder and report
+  artifacts use backend-known paths only. Close policy is captured while
   coordinator state is locked. Active reloads poll until terminal reconciliation.
   Close while collecting confirms Keep collecting or Stop and exit; close while
   stopping waits for finalization.
@@ -76,5 +77,4 @@ or native long-session chart render/interaction evidence before its checkpoint.
 ## Context maintenance
 
 Update `TODO.md` after relevant work, `docs/DECISIONS.md` for durable contracts,
-and `docs/PROJECT_CONTEXT.md` when product facts or evidence change. Keep them
-dense and within the `tjm-memoria` soft budgets.
+and `docs/PROJECT_CONTEXT.md` when product facts or evidence change. Keep them dense within the `tjm-memoria` soft budgets.

@@ -106,6 +106,14 @@ impl SafeError {
     }
 
     #[must_use]
+    pub fn report_exists() -> Self {
+        Self::new(
+            ErrorCode::OutputExists,
+            "An XLSX file already exists for this input.",
+        )
+    }
+
+    #[must_use]
     pub fn unexpected_failure() -> Self {
         Self::new(
             ErrorCode::UnexpectedFailure,

@@ -130,6 +130,7 @@ pub fn scenario_snapshot(scenario: DevScenario) -> AppStateDto {
             FileJobState::Idle,
             ReportsSnapshot {
                 preview: Some(native_preview(false)),
+                report_ready: false,
             },
             empty_combine(),
         ),
@@ -138,6 +139,7 @@ pub fn scenario_snapshot(scenario: DevScenario) -> AppStateDto {
             FileJobState::Idle,
             ReportsSnapshot {
                 preview: Some(native_preview(true)),
+                report_ready: true,
             },
             empty_combine(),
         ),

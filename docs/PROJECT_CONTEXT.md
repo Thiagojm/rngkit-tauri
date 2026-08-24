@@ -7,9 +7,8 @@ samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG;
 monitors descriptive statistics; records native sessions; generates XLSX; and
 safely combines compatible RngKitPSG v3 CSV files.
 
-This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript +
-Vite + Tailwind CSS 4 app with the four-destination shell, a Rust-authoritative
-coordinator, camel-case DTOs, discovery/selection, a validated session draft,
+This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript + Vite + Tailwind CSS 4 app with a four-destination shell,
+Rust-authoritative coordinator, camel-case DTOs, discovery/selection, a validated session draft,
 and a PseudoRNG collection vertical slice. Preferences persist only output
 root, sample bits, interval, fold, theme, and physical window geometry.
 Default start is idle and does not enumerate hardware or restore a source.
@@ -27,6 +26,7 @@ while stopping waits for cooperative finalization. Active sessions reloaded in
 the frontend poll authoritative state until terminal reconciliation. Copy
 diagnostics returns a redacted in-memory history. Ignored `hardware.rs` smokes require explicit tokens;
 this Windows host passed BitBabbler White fold-0, TrueRNG, and RDSEED ordinal 1 (3 fake-clock samples each), then listed those families and PseudoRNG without opening.
+Reports inspect a chosen native session directory in Rust, reject live/corrupt/unsupported inputs, and generate a same-stem XLSX through `write_report()`; Cancel/Replace are separate requests, and artifacts open only when ready and idle. Legacy and derived report inputs are not accepted yet.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which

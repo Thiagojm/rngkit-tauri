@@ -193,6 +193,41 @@ export async function openSessionFolder(): Promise<AppSnapshot> {
   return getAppState();
 }
 
+export async function chooseReportInput(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('choose_report_input');
+  }
+  return getAppState();
+}
+
+export async function generateReport(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('generate_report');
+  }
+  return getAppState();
+}
+
+export async function replaceReport(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('replace_report');
+  }
+  return getAppState();
+}
+
+export async function openReport(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_report');
+  }
+  return getAppState();
+}
+
+export async function openReportFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_report_folder');
+  }
+  return getAppState();
+}
+
 function formatMockDiagnostics(snapshot: AppSnapshot): string {
   if (snapshot.diagnostics.length === 0) {
     return 'RngKit diagnostics\nNo diagnostic records.';

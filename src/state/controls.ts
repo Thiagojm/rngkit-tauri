@@ -41,6 +41,8 @@ export interface DerivedControls {
   reports: Control;
   combine: Control;
   generateReport: Control;
+  openReport: Control;
+  openContainingFolder: Control;
   createDerived: Control;
   showStart: boolean;
   showStop: boolean;
@@ -49,16 +51,19 @@ export interface DerivedControls {
 }
 
 export function deriveControls(snapshot: AppSnapshot): DerivedControls {
-  const { collection, reports, combine } = snapshot;
+  const { collection, reports, combine, fileJob } = snapshot;
   const state = collection.state;
   const busy = sessionBusy(state);
   const selected = collection.candidates.find(
     (candidate) => candidate.token === collection.selectedToken,
   );
 
+  const fileBusy = busy || fileJob !== 'idle';
   const fileJobReason = busy
     ? 'File jobs cannot run while a session is collecting or stopping.'
-    : '';
+    : fileJob !== 'idle'
+      ? 'A file job is already running.'
+      : '';
 
   return {
     start: state === 'ready' ? enabled() : disabled(startReason(state)),
@@ -92,16 +97,26 @@ export function deriveControls(snapshot: AppSnapshot): DerivedControls {
       state === 'completed' || state === 'failed'
         ? enabled()
         : disabled('Open the session folder after collection finishes.'),
-    reports: busy ? disabled(fileJobReason) : enabled(),
-    combine: busy ? disabled(fileJobReason) : enabled(),
+    reports: fileBusy ? disabled(fileJobReason) : enabled(),
+    combine: fileBusy ? disabled(fileJobReason) : enabled(),
     generateReport:
-      busy || !reports.preview
+      fileBusy || !reports.preview
         ? disabled(
-            busy
+            fileBusy
               ? fileJobReason
               : 'Inspect a session or file before generating a report.',
           )
         : enabled(),
+    openReport: fileBusy
+      ? disabled(fileJobReason)
+      : reports.reportReady
+        ? enabled()
+        : disabled('Open the report after a report is generated.'),
+    openContainingFolder: fileBusy
+      ? disabled(fileJobReason)
+      : reports.reportReady
+        ? enabled()
+        : disabled('Open the containing folder after a report exists.'),
     createDerived:
       busy || !combine.compatible || combine.inputs.length === 0
         ? disabled(

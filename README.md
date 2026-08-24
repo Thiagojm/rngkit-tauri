@@ -18,6 +18,10 @@ Closing while collecting confirms Keep collecting or Stop and exit. Debug
 builds include a scenario switch that calls `apply_dev_scenario`; production
 omits that command and the switch. The live chart retains every committed
 descriptive cumulative Z point. Copied diagnostics are bounded and redacted.
+Reports inspect a native session directory and generate a same-stem XLSX with
+an explicit Cancel/Replace round trip. Legacy and derived inputs are not
+accepted yet.
+
 Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
 `src-tauri/tests/hardware.rs`; default tests do not run them.
 

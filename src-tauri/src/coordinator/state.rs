@@ -11,7 +11,7 @@ use crate::diagnostics::redact_detail;
 use crate::discovery::{DiscoveryOutcome, MappedCandidate};
 use crate::dto::{
     AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineSnapshot,
-    DiagnosticRecord, ErrorCode, FileJobState, ReportsSnapshot, SourceCandidateDto,
+    DiagnosticRecord, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot, SourceCandidateDto,
     ThemePreference,
 };
 use crate::errors::SafeError;
@@ -114,6 +114,8 @@ pub struct AppCoordinator {
     error_message: Option<String>,
     error_recovery: Option<String>,
     reports: ReportsSnapshot,
+    report_directory: Option<PathBuf>,
+    report_dest: Option<PathBuf>,
     combine: CombineSnapshot,
     diagnostics: VecDeque<DiagnosticRecord>,
     next_operation_seq: u64,
@@ -137,6 +139,7 @@ impl fmt::Debug for AppCoordinator {
             .field("theme", &self.theme)
             .field("preferences_warning", &self.preferences_warning)
             .field("has_session_directory", &self.session_directory.is_some())
+            .field("has_report_directory", &self.report_directory.is_some())
             .finish_non_exhaustive()
     }
 }
@@ -180,6 +183,8 @@ impl AppCoordinator {
             error_message: None,
             error_recovery: None,
             reports: ReportsSnapshot::empty(),
+            report_directory: None,
+            report_dest: None,
             combine: CombineSnapshot::empty(),
             diagnostics: VecDeque::new(),
             next_operation_seq: 0,
@@ -268,6 +273,53 @@ impl AppCoordinator {
     #[must_use]
     pub fn session_directory(&self) -> Option<&Path> {
         self.session_directory.as_deref()
+    }
+
+    #[must_use]
+    pub fn live_recording_directory(&self) -> Option<&Path> {
+        if matches!(
+            self.collection,
+            CollectionState::Collecting | CollectionState::Stopping
+        ) {
+            self.session_directory.as_deref()
+        } else {
+            None
+        }
+    }
+
+    #[must_use]
+    pub fn report_directory(&self) -> Option<&Path> {
+        self.report_directory.as_deref()
+    }
+
+    #[must_use]
+    pub fn report_dest(&self) -> Option<&Path> {
+        self.report_dest.as_deref()
+    }
+
+    #[must_use]
+    pub fn report_ready(&self) -> bool {
+        self.reports.report_ready
+    }
+
+    pub fn set_native_report(&mut self, preview: ReportPreview, directory: PathBuf, dest: PathBuf) {
+        self.reports.report_ready = preview.conflict;
+        self.reports.preview = Some(preview);
+        self.report_directory = Some(directory);
+        self.report_dest = Some(dest);
+    }
+
+    pub fn mark_report_written(&mut self) {
+        if let Some(preview) = self.reports.preview.as_mut() {
+            preview.conflict = true;
+        }
+        self.reports.report_ready = true;
+    }
+
+    pub fn mark_report_conflict(&mut self) {
+        if let Some(preview) = self.reports.preview.as_mut() {
+            preview.conflict = true;
+        }
     }
 
     #[must_use]
@@ -904,6 +956,8 @@ impl AppCoordinator {
         self.error_message = collection.error_message;
         self.error_recovery = collection.error_recovery;
         self.reports = snapshot.reports;
+        self.report_directory = None;
+        self.report_dest = None;
         self.combine = snapshot.combine;
         self.theme = snapshot.theme;
         self.preferences_warning = snapshot.preferences_warning;

@@ -193,6 +193,7 @@ pub struct CombineResult {
 #[serde(rename_all = "camelCase")]
 pub struct ReportsSnapshot {
     pub preview: Option<ReportPreview>,
+    pub report_ready: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -219,7 +220,10 @@ pub struct AppStateDto {
 impl ReportsSnapshot {
     #[must_use]
     pub fn empty() -> Self {
-        Self { preview: None }
+        Self {
+            preview: None,
+            report_ready: false,
+        }
     }
 }
 
@@ -301,6 +305,7 @@ mod tests {
         assert!(value.get("fileJob").is_some());
         assert!(value.get("file_job").is_none());
         assert_eq!(value["fileJob"], "generatingReport");
+        assert_eq!(value["reports"]["reportReady"], false);
         assert_eq!(value["collection"]["statusLabel"], "Idle");
         assert!(value["collection"].get("selectedToken").is_some());
         assert!(value.get("diagnostics").is_some());

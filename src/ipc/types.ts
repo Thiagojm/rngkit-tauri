@@ -152,6 +152,7 @@ export interface CombineResult {
 
 export interface ReportsSnapshot {
   preview: ReportPreview | null;
+  reportReady: boolean;
 }
 
 export interface CombineSnapshot {

@@ -9,30 +9,28 @@
   enumerate hardware.
 - Checkpoints 8–10: collection worker, live uPlot chart, close interception,
   Stop and exit, and redacted Copy diagnostics.
-- Checkpoint 11A: ignored serial BitBabbler app smoke. This Windows host ran
-  fold-0 for one White ordinal-1 device (3 samples, fake clock, native bundle
-  ok). Other folds, extra BitBabbler devices, and the Collect UI path remain
-  unverified.
-- Checkpoint 11B: ignored serial TrueRNG app smoke. This Windows host ran one
-  ordinal-1 device (variant TrueRNG, 3 samples, fake clock, native bundle ok).
-  Unplug-during-read, extra ports, and the Collect UI path remain unverified.
-- Checkpoint 11C: ignored RDSEED and unified discovery smokes. This Windows
-  host ran RDSEED ordinal 1 (variant RDSEED, 3 samples, fake clock, native
-  bundle ok) and listed BitBabbler, TrueRNG, RDSEED, and PseudoRNG without
-  opening. Collect UI on hardware remains unverified.
+- Checkpoint 11: ignored serial Windows smokes passed one BitBabbler White
+  fold-0, one TrueRNG, and one RDSEED (ordinal 1, 3 fake-clock samples, native
+  bundle ok); unified discovery also listed PseudoRNG without opening. Other
+  folds/devices, unplug behavior, hardware UI collection, and Linux physical
+  behavior remain unverified.
+- Checkpoint 12: native report inspection and generation. Completed and
+  interrupted committed-prefix sessions inspect; live/corrupt/unsupported
+  inputs fail safely; existing XLSX needs explicit Replace; artifact opening is
+  idle-only. Legacy/derived inputs and the native desktop workbook walkthrough
+  remain unverified.
 
 ## In progress
 
-- Checkpoint 11C user approval. No later checkpoint is authorized.
+- Checkpoint 12 user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 11C, then authorize Checkpoint 12 (native report
-   inspection and generation).
+1. Approve Checkpoint 12, then authorize Checkpoint 13 (legacy v3 reports).
 
 ## Backlog
 
-- Checkpoints 12–18: reports, Combine, hardening, CI, installer, and final
+- Checkpoints 13–18: legacy/derived reports, Combine, hardening, CI, installer, and final
   audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.
