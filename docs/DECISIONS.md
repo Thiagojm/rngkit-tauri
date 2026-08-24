@@ -117,7 +117,8 @@ All decisions are accepted. Material changes return to design review.
   offline WebView2. Signing, binary publication, updater, release, and
   deployment require separate approval. Source is public under MIT.
 - CI (`windows-latest` and `ubuntu-22.04`) uses `npm ci` and `cargo --locked`,
-  installs only the documented Ubuntu Tauri Debian packages, compiles with
-  `tauri build --no-bundle`, and never runs ignored hardware tests. Ubuntu CI
-  is not Linux desktop support. Remote green is claimed only after an authorized
-  push is observed.
+  compiles with `tauri build --no-bundle`, and never runs ignored hardware tests.
+  Ubuntu installs the documented Tauri Debian packages plus `libudev-dev` and
+  `libusb-1.0-0-dev` so source crates link at compile time; it is not Linux
+  desktop support. Text files use LF via `.gitattributes`. Remote green is
+  claimed only after an authorized push is observed.

@@ -25,6 +25,9 @@ jobs:
         os: [windows-latest, ubuntu-22.04]
 
     steps:
+      - run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -55,7 +58,10 @@ jobs:
             libxdo-dev \
             libssl-dev \
             libayatana-appindicator3-dev \
-            librsvg2-dev
+            librsvg2-dev \
+            pkg-config \
+            libudev-dev \
+            libusb-1.0-0-dev
 
       - run: npm ci
 
