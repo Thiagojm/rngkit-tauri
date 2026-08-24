@@ -22,9 +22,7 @@
   adversarial tests, keyboard/contrast/reduced-motion coverage, data-only 100k/1M
   chart retention, and a no-bundle Tauri release build on Windows. Native canvas,
   OS 100%/150%/200% scaling, and screen-reader sampling remain unverified.
-- Checkpoint 16: Windows/Ubuntu CI with locked installs, no ignored hardware
-  jobs, local no-bundle compile, and observed remote success
-  https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.
+- Checkpoint 16: locked Windows/Ubuntu CI, no ignored hardware jobs, local no-bundle compile, and observed remote success for `a9f99e5` at https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.
 
 ## In progress
 
@@ -37,7 +35,6 @@
 ## Backlog
 
 - Checkpoints 17–18: installer and final audit.
-- Signing, binary releases, updater, Store submission, Linux packaging, and
-  deployment remain outside v1 implementation authority.
+- Signing, binary releases, updater, Store submission, Linux packaging, and deployment remain outside v1 implementation authority.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
   inference remain explicit non-goals or future work.

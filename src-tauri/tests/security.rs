@@ -354,7 +354,10 @@ fn ci_is_locked_and_skips_hardware_and_installer() {
         CI_WORKFLOW.contains("libwebkit2gtk-4.1-dev"),
         "{CI_WORKFLOW}"
     );
-    assert!(CI_WORKFLOW.contains("build --no-bundle"), "{CI_WORKFLOW}");
+    assert!(
+        CI_WORKFLOW.contains("build --no-bundle -- --locked"),
+        "{CI_WORKFLOW}"
+    );
     assert!(!CI_WORKFLOW.contains("--ignored"), "{CI_WORKFLOW}");
     assert!(!CI_WORKFLOW.contains("--bundles"), "{CI_WORKFLOW}");
 }

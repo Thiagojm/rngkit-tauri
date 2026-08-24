@@ -116,9 +116,5 @@ All decisions are accepted. Material changes return to design review.
 - v1 delivery is an unsigned per-user English NSIS installer with bundled
   offline WebView2. Signing, binary publication, updater, release, and
   deployment require separate approval. Source is public under MIT.
-- CI (`windows-latest` and `ubuntu-22.04`) uses `npm ci` and `cargo --locked`,
-  compiles with `tauri build --no-bundle`, and never runs ignored hardware tests.
-  Ubuntu installs the documented Tauri Debian packages plus `libudev-dev` and
-  `libusb-1.0-0-dev` so source crates link at compile time; it is not Linux
-  desktop support. Text files use LF via `.gitattributes`. Observed remote
-  success: https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.
+- CI (`windows-latest` and `ubuntu-22.04`) uses `npm ci`, `cargo --locked`, and `tauri build --no-bundle -- --locked`; it never runs ignored hardware tests.
+  Ubuntu installs the documented Tauri Debian packages plus `libudev-dev` and `libusb-1.0-0-dev` for source-crate linking; it is not Linux desktop support. Text files use LF via `.gitattributes`. Observed remote success for `a9f99e5`: https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632.

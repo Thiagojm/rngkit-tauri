@@ -28,9 +28,9 @@ jobs:
       - run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
@@ -85,6 +85,6 @@ jobs:
       - run: cargo +1.85.0 check --locked --manifest-path src-tauri/Cargo.toml --all-targets
       - run: cargo +1.85.0 test --locked --manifest-path src-tauri/Cargo.toml --all-targets
 
-      - run: npm run tauri -- build --no-bundle
+      - run: npm run tauri -- build --no-bundle -- --locked
 
       - run: git diff --check

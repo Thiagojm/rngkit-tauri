@@ -30,29 +30,22 @@ cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D w
 cargo test --locked --manifest-path src-tauri/Cargo.toml --doc
 cargo +1.85.0 check --locked --manifest-path src-tauri/Cargo.toml --all-targets
 cargo +1.85.0 test --locked --manifest-path src-tauri/Cargo.toml --all-targets
-npm run tauri -- build --no-bundle
+npm run tauri -- build --no-bundle -- --locked
 git status --short --branch
 git diff --check
 ```
 
-`.github/workflows/ci.yml` runs that suite on `windows-latest` and `ubuntu-22.04`
-with `npm ci` and `cargo --locked`. It does not run ignored hardware tests or
-build an installer. Ubuntu is compile evidence, not Linux desktop support.
-Observed remote success (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
+`.github/workflows/ci.yml` runs that suite on `windows-latest` and `ubuntu-22.04` with locked resolution. It runs no ignored hardware tests or installer; Ubuntu is compile evidence, not Linux desktop support.
+Observed remote success for `a9f99e5` (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32750338632
 
-Run the native window with `npm run tauri dev`. Opt-in serial physical smokes:
-`cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`
-or replace `bitb` with `trng`, `rdseed`, or `discover`. Do not claim installer
-or native long-session chart render/interaction evidence. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
+Run the native window with `npm run tauri dev`. Opt-in serial physical smokes use `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`; replace `bitb` with `trng`, `rdseed`, or `discover`.
+Do not claim installer or native long-session chart render/interaction evidence. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
 
 ## Repository conventions
 
-- Follow the approved plan one checkpoint at a time; stop for user testing and
-  approval before the next. Material contract changes require design approval.
-- Preserve the approved design and plan; update their current-state references
-  only when evidence changes.
-- Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`.
-  Do not float dependencies. Prereleases are excluded.
+- Follow the approved plan one checkpoint at a time; stop for user testing and approval before the next. Material contract changes require design approval.
+- Preserve the approved design and plan; update their current-state references only when evidence changes.
+- Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or
   hardware. On Windows they use the installed Edge channel. Vitest component
   tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.

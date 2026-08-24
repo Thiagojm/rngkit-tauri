@@ -2,10 +2,7 @@
 
 ## Purpose and current state
 
-RngKit is a Windows-first desktop application that collects fixed-size entropy
-samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG;
-monitors descriptive statistics; records native sessions; generates XLSX; and
-safely combines compatible RngKitPSG v3 CSV files.
+RngKit is a Windows-first desktop application that collects fixed-size entropy samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG; monitors descriptive statistics; records native sessions; generates XLSX; and safely combines compatible RngKitPSG v3 CSV files.
 
 This repository has a locked Tauri 2 + client-only Svelte 5 + TypeScript + Vite + Tailwind CSS 4 app with a four-destination shell,
 Rust-authoritative coordinator, camel-case DTOs, discovery/selection, a validated session draft,
