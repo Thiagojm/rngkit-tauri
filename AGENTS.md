@@ -37,8 +37,8 @@ git diff --check
 
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes:
 `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`
-or replace `bitb` with `trng`. Do not claim CI, installer, RDSEED, or native
-long-session chart render/interaction evidence before its checkpoint.
+or replace `bitb` with `trng`, `rdseed`, or `discover`. Do not claim CI, installer,
+or native long-session chart render/interaction evidence before its checkpoint.
 
 ## Repository conventions
 

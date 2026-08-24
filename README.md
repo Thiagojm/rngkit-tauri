@@ -18,8 +18,8 @@ Closing while collecting confirms Keep collecting or Stop and exit. Debug
 builds include a scenario switch that calls `apply_dev_scenario`; production
 omits that command and the switch. The live chart retains every committed
 descriptive cumulative Z point. Copied diagnostics are bounded and redacted.
-Ignored BitBabbler and TrueRNG app smokes live in `src-tauri/tests/hardware.rs`;
-default tests do not run them.
+Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
+`src-tauri/tests/hardware.rs`; default tests do not run them.
 
 Implementation proceeds one independently testable checkpoint at a time and
 stops for user approval between checkpoints. The reusable library is

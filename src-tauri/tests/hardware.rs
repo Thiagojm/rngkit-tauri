@@ -4,6 +4,8 @@
 //! ```text
 //! cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture
 //! cargo test --manifest-path src-tauri/Cargo.toml --test hardware trng -- --ignored --test-threads=1 --nocapture
+//! cargo test --manifest-path src-tauri/Cargo.toml --test hardware rdseed -- --ignored --test-threads=1 --nocapture
+//! cargo test --manifest-path src-tauri/Cargo.toml --test hardware discover -- --ignored --test-threads=1 --nocapture
 //! ```
 
 use std::collections::HashSet;
@@ -379,4 +381,235 @@ fn trng_explicit_selection_writes_native_bundle() {
         }
         collect_trng(&shared, candidate);
     }
+}
+
+fn collect_rdseed(coordinator: &Mutex<AppCoordinator>, candidate: &SourceCandidateDto) {
+    let root = temp_root();
+    {
+        let mut inner = coordinator
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        inner.set_output_root(&root).expect("root");
+        inner.select_token(&candidate.token).expect("select");
+        let snapshot = inner.snapshot();
+        assert_eq!(
+            snapshot.collection.selected_token.as_deref(),
+            Some(candidate.token.as_str())
+        );
+        assert_eq!(snapshot.collection.fold, None);
+        assert!(
+            matches!(
+                inner.selected_library_source(),
+                Some(SourceCandidate::Rdseed)
+            ),
+            "selected library source is not RDSEED"
+        );
+        let SourceConfig::Rdseed { .. } = inner.selected_source_config().expect("config") else {
+            panic!("reconstructed config is not RDSEED");
+        };
+    }
+
+    let plan = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .begin_collection()
+        .expect("start");
+    let handle = CollectionHandle::live_for_tests(SAMPLES);
+    let sender = VecSender::new();
+    handle.run_blocking(coordinator, &sender, plan);
+
+    let (snapshot, directory) = {
+        let mut inner = coordinator
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let snapshot = inner.snapshot();
+        assert_eq!(
+            snapshot.collection.selected_token.as_deref(),
+            Some(candidate.token.as_str()),
+            "another candidate must not replace the explicit selection"
+        );
+        assert_eq!(snapshot.collection.state, CollectionState::Completed);
+        assert_eq!(snapshot.collection.sample_count, u64::from(SAMPLES));
+        assert_eq!(snapshot.collection.fold, None);
+        let directory = inner.session_directory().expect("dir").to_path_buf();
+        inner.start_another().expect("reset");
+        (snapshot, directory)
+    };
+
+    let native = NativeSession::open(&directory).expect("native");
+    let manifest = native.manifest();
+    assert_eq!(manifest.status(), ManifestStatus::Completed);
+    assert_eq!(manifest.source_id().as_str(), "rdseed");
+    assert_eq!(manifest.source_variant(), Some("RDSEED"));
+    assert_eq!(manifest.fold(), None);
+    assert_eq!(manifest.committed_samples(), u64::from(SAMPLES));
+    assert_eq!(native.records().len(), usize::try_from(SAMPLES).expect("n"));
+    assert!(
+        sender
+            .events()
+            .iter()
+            .any(|event| matches!(event, CollectionEventDto::CleanStop { .. }))
+    );
+    assert_safe_json(&serde_json::to_string(&snapshot).expect("snap"));
+    assert_safe_json(&serde_json::to_string(&sender.events()).expect("events"));
+    eprintln!(
+        "RDSEED variant=RDSEED ordinal={} samples={} native=ok",
+        candidate.ordinal, SAMPLES
+    );
+    drop(native);
+    fs::remove_dir_all(&root).expect("cleanup");
+}
+
+#[test]
+#[ignore]
+fn rdseed_explicit_selection_writes_native_bundle() {
+    let _guard = HARDWARE
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let mut coordinator = AppCoordinator::new();
+    let snapshot = coordinator
+        .refresh_with(&LiveDiscovery)
+        .expect("live discover");
+    assert!(
+        snapshot.collection.selected_token.is_none(),
+        "discovery must not silently select a source"
+    );
+
+    let devices: Vec<SourceCandidateDto> = snapshot
+        .collection
+        .candidates
+        .iter()
+        .filter(|candidate| candidate.source_id == "rdseed")
+        .cloned()
+        .collect();
+    let supported = rngkit_sources::adapters::RdseedAdapter::is_supported();
+    if devices.is_empty() {
+        if snapshot
+            .collection
+            .family_warning
+            .as_deref()
+            .is_some_and(|warning| warning.contains("Intel RDSEED discovery reported a problem"))
+        {
+            panic!("Intel RDSEED discovery reported a problem; absence is the only skip");
+        }
+        assert!(
+            !supported,
+            "RDSEED reported support but discovery listed no candidate"
+        );
+        eprintln!(
+            "UNVERIFIED: RDSEED unsupported on this process; Checkpoint 11C remains unverified, not passed."
+        );
+        return;
+    }
+    assert!(
+        supported,
+        "discovery listed RDSEED after support was not reported; entropy exhaustion is not a skip"
+    );
+    assert_eq!(devices.len(), 1, "supported RDSEED must be listed once");
+
+    let tokens: HashSet<&str> = devices
+        .iter()
+        .map(|candidate| candidate.token.as_str())
+        .collect();
+    assert_eq!(
+        tokens.len(),
+        devices.len(),
+        "each candidate needs its own token"
+    );
+    for candidate in &devices {
+        assert_eq!(candidate.family_label, "Intel RDSEED");
+        assert!(!candidate.requires_fold);
+        assert!(candidate.variant.is_none());
+        assert!(candidate.ordinal >= 1);
+        eprintln!("discovered RDSEED ordinal={}", candidate.ordinal);
+    }
+
+    let shared = Mutex::new(coordinator);
+    for candidate in &devices {
+        collect_rdseed(&shared, candidate);
+    }
+}
+
+#[test]
+#[ignore]
+fn unified_discovery_lists_present_candidates_without_opening() {
+    let _guard = HARDWARE
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let mut coordinator = AppCoordinator::new();
+    let snapshot = coordinator
+        .refresh_with(&LiveDiscovery)
+        .expect("live discover");
+    assert!(
+        snapshot.collection.selected_token.is_none(),
+        "discovery must not silently select a source"
+    );
+    assert_eq!(snapshot.collection.state, CollectionState::Idle);
+    if let Some(warning) = snapshot.collection.family_warning.as_deref() {
+        panic!("family discovery reported a problem; absence is the only skip: {warning}");
+    }
+
+    let tokens: HashSet<&str> = snapshot
+        .collection
+        .candidates
+        .iter()
+        .map(|candidate| candidate.token.as_str())
+        .collect();
+    assert_eq!(
+        tokens.len(),
+        snapshot.collection.candidates.len(),
+        "each candidate needs its own token"
+    );
+
+    let mut rdseed_n = 0u32;
+    let mut pseudo_n = 0u32;
+    for candidate in &snapshot.collection.candidates {
+        assert!(candidate.ordinal >= 1);
+        match candidate.source_id.as_str() {
+            "bitb" => {
+                assert_eq!(candidate.family_label, "BitBabbler");
+                assert!(candidate.requires_fold);
+                assert!(
+                    candidate
+                        .variant
+                        .as_deref()
+                        .is_some_and(|value| !value.is_empty())
+                );
+            }
+            "trng" => {
+                assert_eq!(candidate.family_label, "TrueRNG v1/v2/v3");
+                assert!(!candidate.requires_fold);
+                assert!(candidate.variant.is_none());
+            }
+            "rdseed" => {
+                rdseed_n += 1;
+                assert_eq!(candidate.family_label, "Intel RDSEED");
+                assert!(!candidate.requires_fold);
+                assert!(candidate.variant.is_none());
+            }
+            "pseudo" => {
+                pseudo_n += 1;
+                assert_eq!(candidate.family_label, "PseudoRNG");
+                assert!(!candidate.requires_fold);
+                assert!(candidate.variant.is_none());
+            }
+            other => panic!("unexpected source id {other}"),
+        }
+        eprintln!(
+            "discovered {} ordinal={}",
+            candidate.source_id, candidate.ordinal
+        );
+    }
+
+    assert_eq!(pseudo_n, 1, "compiled PseudoRNG must be listed once");
+    assert_eq!(
+        rdseed_n == 1,
+        rngkit_sources::adapters::RdseedAdapter::is_supported(),
+        "RDSEED listing must match process support without opening"
+    );
+    assert_safe_json(&serde_json::to_string(&snapshot).expect("snap"));
+    eprintln!(
+        "UNIFIED: listed {} candidates without opening",
+        snapshot.collection.candidates.len()
+    );
 }

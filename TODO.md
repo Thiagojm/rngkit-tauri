@@ -15,22 +15,25 @@
   unverified.
 - Checkpoint 11B: ignored serial TrueRNG app smoke. This Windows host ran one
   ordinal-1 device (variant TrueRNG, 3 samples, fake clock, native bundle ok).
-  Unplug-during-read, extra ports, RDSEED, and the Collect UI path remain
-  unverified.
+  Unplug-during-read, extra ports, and the Collect UI path remain unverified.
+- Checkpoint 11C: ignored RDSEED and unified discovery smokes. This Windows
+  host ran RDSEED ordinal 1 (variant RDSEED, 3 samples, fake clock, native
+  bundle ok) and listed BitBabbler, TrueRNG, RDSEED, and PseudoRNG without
+  opening. Collect UI on hardware remains unverified.
 
 ## In progress
 
-- Checkpoint 11B user approval. No later checkpoint is authorized.
+- Checkpoint 11C user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 11B, then authorize Checkpoint 11C (RDSEED and unified
-   discovery) only if the host can report support; otherwise record unverified.
+1. Approve Checkpoint 11C, then authorize Checkpoint 12 (native report
+   inspection and generation).
 
 ## Backlog
 
-- Checkpoints 11C–18: RDSEED, reports, Combine,
-  hardening, CI, installer, and final audit.
+- Checkpoints 12–18: reports, Combine, hardening, CI, installer, and final
+  audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
