@@ -22,18 +22,21 @@
   adversarial tests, keyboard/contrast/reduced-motion coverage, data-only 100k/1M
   chart retention, and a no-bundle Tauri release build on Windows. Native canvas,
   OS 100%/150%/200% scaling, and screen-reader sampling remain unverified.
+- Checkpoint 16: Windows/Ubuntu CI workflow with locked installs, no ignored
+  hardware jobs, and local no-bundle Tauri compile parity. Remote CI is
+  unverified until an authorized push.
 
 ## In progress
 
-- Checkpoint 15 user approval. No later checkpoint is authorized.
+- Checkpoint 16 user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 15, then authorize Checkpoint 16 (CI).
+1. Approve Checkpoint 16, then authorize Checkpoint 17 (unsigned NSIS).
 
 ## Backlog
 
-- Checkpoints 16–18: CI, installer, and final audit.
+- Checkpoints 17–18: installer and final audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical

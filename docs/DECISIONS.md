@@ -100,7 +100,7 @@ All decisions are accepted. Material changes return to design review.
 - Statistical Z and `+/-1.96` are descriptive visual references only: no
   p-values, certification, or pass/fail randomness conclusion.
 
-## Dependencies and delivery (2026-08-22 through 2026-08-23)
+## Dependencies and delivery (2026-08-22 through 2026-08-24)
 
 - Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm
   `>=10`, Rust edition 2024/MSRV 1.85. Dependency upgrades require separate
@@ -116,3 +116,8 @@ All decisions are accepted. Material changes return to design review.
 - v1 delivery is an unsigned per-user English NSIS installer with bundled
   offline WebView2. Signing, binary publication, updater, release, and
   deployment require separate approval. Source is public under MIT.
+- CI (`windows-latest` and `ubuntu-22.04`) uses `npm ci` and `cargo --locked`,
+  installs only the documented Ubuntu Tauri Debian packages, compiles with
+  `tauri build --no-bundle`, and never runs ignored hardware tests. Ubuntu CI
+  is not Linux desktop support. Remote green is claimed only after an authorized
+  push is observed.

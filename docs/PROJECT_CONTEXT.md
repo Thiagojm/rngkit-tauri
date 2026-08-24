@@ -27,7 +27,10 @@ the frontend poll authoritative state until terminal reconciliation. Copy
 diagnostics returns a redacted in-memory history. Ignored `hardware.rs` smokes require explicit tokens;
 this Windows host passed BitBabbler White fold-0, TrueRNG, and RDSEED ordinal 1 (3 fake-clock samples each), then listed those families and PseudoRNG without opening.
 Reports inspect a chosen native directory, read-only legacy v3 BIN/CSV, or derived concatenation bundle in Rust, expose recorded/estimated timestamp provenance, reject live/corrupt/unsupported inputs, and generate same-stem XLSX through `write_report()`; Cancel/Replace are separate requests, and artifacts open only when ready and idle. Combine previews compatible legacy v3 CSV files, creates a no-overwrite derived CSV/manifest bundle, and never stores absolute input paths.
-Capabilities remain `core:default` and `dialog:default`. Production CSP excludes development endpoints; open/reveal IPC takes no frontend path and Windows artifact launching bypasses command interpreters. Adversarial tests cover malformed derived manifests, no-overwrite XLSX, and Windows junctions; file-symlink creation needs a privilege and is unverified. A release Tauri build without bundling passed on this host.
+Capabilities remain `core:default` and `dialog:default`. Production CSP excludes development endpoints; open/reveal IPC takes no frontend path and Windows artifact launching bypasses command interpreters. Adversarial tests cover malformed derived manifests, no-overwrite XLSX, and Windows junctions; file-symlink creation needs a privilege and is unverified. A release Tauri build without bundling passed on this host. `.github/workflows/ci.yml`
+mirrors the deterministic Windows/Ubuntu command set with locked resolution; local
+Windows parity is Checkpoint 16 evidence. A configured workflow without an observed
+run is not passing remote CI.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which

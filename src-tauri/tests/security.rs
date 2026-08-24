@@ -21,6 +21,7 @@ const OPEN_SESSION: &str = include_str!("../src/commands/collection.rs");
 const OPEN_REPORTS: &str = include_str!("../src/commands/reports.rs");
 const OPEN_COMBINE: &str = include_str!("../src/commands/combine.rs");
 const REPORTS_IMPL: &str = include_str!("../src/reports/mod.rs");
+const CI_WORKFLOW: &str = include_str!("../../.github/workflows/ci.yml");
 
 struct TempRoot(PathBuf);
 
@@ -341,6 +342,21 @@ fn malformed_derived_manifest_fails_without_partial_xlsx() {
         .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "xlsx"))
         .collect();
     assert!(xlsx.is_empty(), "partial xlsx {:?}", xlsx);
+}
+
+#[test]
+fn ci_is_locked_and_skips_hardware_and_installer() {
+    assert!(CI_WORKFLOW.contains("npm ci"), "{CI_WORKFLOW}");
+    assert!(CI_WORKFLOW.contains("--locked"), "{CI_WORKFLOW}");
+    assert!(CI_WORKFLOW.contains("windows-latest"), "{CI_WORKFLOW}");
+    assert!(CI_WORKFLOW.contains("ubuntu-22.04"), "{CI_WORKFLOW}");
+    assert!(
+        CI_WORKFLOW.contains("libwebkit2gtk-4.1-dev"),
+        "{CI_WORKFLOW}"
+    );
+    assert!(CI_WORKFLOW.contains("build --no-bundle"), "{CI_WORKFLOW}");
+    assert!(!CI_WORKFLOW.contains("--ignored"), "{CI_WORKFLOW}");
+    assert!(!CI_WORKFLOW.contains("--bundles"), "{CI_WORKFLOW}");
 }
 
 #[test]

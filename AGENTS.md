@@ -24,19 +24,25 @@ npm run test:unit -- --run
 npm run test:e2e
 npm run build
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
-cargo check --manifest-path src-tauri/Cargo.toml --all-targets
-cargo test --manifest-path src-tauri/Cargo.toml --all-targets
-cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
-cargo test --manifest-path src-tauri/Cargo.toml --doc
-cargo +1.85.0 check --manifest-path src-tauri/Cargo.toml --all-targets
-cargo +1.85.0 test --manifest-path src-tauri/Cargo.toml --all-targets
+cargo check --locked --manifest-path src-tauri/Cargo.toml --all-targets
+cargo test --locked --manifest-path src-tauri/Cargo.toml --all-targets
+cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --locked --manifest-path src-tauri/Cargo.toml --doc
+cargo +1.85.0 check --locked --manifest-path src-tauri/Cargo.toml --all-targets
+cargo +1.85.0 test --locked --manifest-path src-tauri/Cargo.toml --all-targets
+npm run tauri -- build --no-bundle
 git status --short --branch
 git diff --check
 ```
 
+`.github/workflows/ci.yml` runs that suite on `windows-latest` and `ubuntu-22.04`
+with `npm ci` and `cargo --locked`. It does not run ignored hardware tests or
+build an installer. Ubuntu is compile evidence, not Linux desktop support.
+Do not claim a remote CI result until an authorized push is observed.
+
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes:
 `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`
-or replace `bitb` with `trng`, `rdseed`, or `discover`. Do not claim CI, installer,
+or replace `bitb` with `trng`, `rdseed`, or `discover`. Do not claim installer
 or native long-session chart render/interaction evidence. Data-only 100k/1M retention was measured on this Windows host in Checkpoint 15.
 
 ## Repository conventions

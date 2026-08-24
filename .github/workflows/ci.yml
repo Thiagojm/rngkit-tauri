@@ -1,0 +1,84 @@
+# Deterministic checks only. No ignored hardware tests, no installer.
+# Ubuntu compiles the app; it is not Linux desktop support.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  ci:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@1.85.0
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install Ubuntu Tauri prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - run: npm ci
+
+      - run: npm run format:check
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run test:unit -- --run
+
+      - name: Install Playwright Chromium
+        if: runner.os == 'Linux'
+        run: npx playwright install --with-deps chromium
+
+      - run: npm run test:e2e
+      - run: npm run build
+
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo check --locked --manifest-path src-tauri/Cargo.toml --all-targets
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml --all-targets
+      - run: cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml --doc
+      - run: cargo +1.85.0 check --locked --manifest-path src-tauri/Cargo.toml --all-targets
+      - run: cargo +1.85.0 test --locked --manifest-path src-tauri/Cargo.toml --all-targets
+
+      - run: npm run tauri -- build --no-bundle
+
+      - run: git diff --check
