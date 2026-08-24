@@ -694,10 +694,16 @@ mod tests {
 
     #[test]
     fn output_root_label_never_includes_a_path() {
-        let path = PathBuf::from("C:\\Users\\dev\\Sessions");
+        let path = PathBuf::from("Users").join("dev").join("Sessions");
         assert_eq!(output_root_label(&path), "Sessions");
-        let dump = format!("{:?}", path);
-        assert!(dump.contains(":\\") || dump.contains("Users"));
-        assert_eq!(output_root_label(Path::new("D:\\")), "Selected folder");
+        let windows_shaped = output_root_label(Path::new(r"C:\Users\dev\Sessions"));
+        assert!(!windows_shaped.contains(":\\"));
+        assert!(!windows_shaped.contains('\\'));
+        assert_eq!(output_root_label(Path::new("/")), "Selected folder");
+        #[cfg(windows)]
+        {
+            assert_eq!(windows_shaped, "Sessions");
+            assert_eq!(output_root_label(Path::new("D:\\")), "Selected folder");
+        }
     }
 }
