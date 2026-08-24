@@ -1,20 +1,20 @@
-//! Native report inspection, generation, and backend-known artifact opening.
+//! Native and legacy v3 report inspection, generation, and backend-known artifact opening.
 
 mod inspect;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use rngkit_recording::NativeSession;
-use rngkit_xlsx::{Overwrite, native_report_path, write_report};
+use rngkit_recording::{NativeSession, open_legacy};
+use rngkit_xlsx::{Overwrite, legacy_report_path, native_report_path, write_report};
 
-use crate::coordinator::AppCoordinator;
+use crate::coordinator::{AppCoordinator, ReportKind};
 use crate::dto::{AppStateDto, CollectionState, FileJobState};
 use crate::errors::SafeError;
 
-pub use inspect::{InspectedNative, inspect_native};
+pub use inspect::{InspectedReport, inspect_input, inspect_legacy, inspect_native};
 
-use inspect::map_xlsx;
+use inspect::{map_legacy, map_legacy_xlsx, map_xlsx};
 
 pub trait ArtifactOpener: Send + Sync {
     fn open_folder(&self, path: &Path) -> Result<(), SafeError>;
@@ -122,11 +122,17 @@ pub fn inspect_picked(
     let live = coordinator
         .live_recording_directory()
         .map(Path::to_path_buf);
-    let result = inspect_native(dir, live.as_deref());
+    let result = inspect_input(dir, live.as_deref());
     let _ = coordinator.finish_file_job();
     match result {
         Ok(inspected) => {
-            coordinator.set_native_report(inspected.preview, inspected.directory, inspected.dest);
+            coordinator.set_inspected_report(
+                inspected.preview,
+                inspected.directory,
+                inspected.dest,
+                inspected.input,
+                inspected.kind,
+            );
             Ok(coordinator.snapshot())
         }
         Err(error) => {
@@ -141,13 +147,16 @@ pub fn generate_inspected(
     replace: bool,
 ) -> Result<AppStateDto, SafeError> {
     coordinator.begin_file_job(FileJobState::GeneratingReport)?;
-    let Some(dir) = coordinator.report_directory().map(Path::to_path_buf) else {
+    let (Some(input), Some(kind)) = (
+        coordinator.report_input().map(Path::to_path_buf),
+        coordinator.report_kind(),
+    ) else {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
             "Inspect a session or file before generating a report.",
         ));
     };
-    let result = write_native_report(&dir, replace);
+    let result = write_inspected_report(&input, kind, replace);
     let _ = coordinator.finish_file_job();
     match result {
         Ok(_) => {
@@ -165,15 +174,35 @@ pub fn generate_inspected(
     }
 }
 
+pub fn write_inspected_report(
+    input: &Path,
+    kind: ReportKind,
+    replace: bool,
+) -> Result<PathBuf, SafeError> {
+    match kind {
+        ReportKind::Native => write_native_report(input, replace),
+        ReportKind::Legacy => write_legacy_report(input, replace),
+    }
+}
+
 pub fn write_native_report(dir: &Path, replace: bool) -> Result<PathBuf, SafeError> {
     let native = NativeSession::open(dir).map_err(inspect::map_recording)?;
     let dest = native_report_path(native.directory(), native.session_stem()).map_err(map_xlsx)?;
-    let overwrite = if replace {
+    write_report(&native.normalized(), &dest, overwrite_mode(replace)).map_err(map_xlsx)
+}
+
+pub fn write_legacy_report(selected: &Path, replace: bool) -> Result<PathBuf, SafeError> {
+    let session = open_legacy(selected).map_err(map_legacy)?;
+    let dest = legacy_report_path(selected);
+    write_report(&session, &dest, overwrite_mode(replace)).map_err(map_legacy_xlsx)
+}
+
+fn overwrite_mode(replace: bool) -> Overwrite {
+    if replace {
         Overwrite::Replace
     } else {
         Overwrite::ErrorIfExists
-    };
-    write_report(&native.normalized(), &dest, overwrite).map_err(map_xlsx)
+    }
 }
 
 struct LiveArtifactOpener;

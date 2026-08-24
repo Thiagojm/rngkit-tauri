@@ -8,8 +8,8 @@
 <div class="flex max-w-3xl flex-col gap-4">
   <h1 class="text-2xl font-semibold">{copy.destinations.reports}</h1>
   <p class="text-text-muted">
-    Inspect a native session, legacy v3 BIN or CSV, or a derived concatenation
-    bundle, then generate a same-stem XLSX report.
+    Inspect a native session directory or legacy v3 BIN/CSV, then generate a
+    same-stem XLSX report.
   </p>
   <ReportInput />
   <ReportPreview />

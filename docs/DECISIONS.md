@@ -90,9 +90,9 @@ All decisions are accepted. Material changes return to design review.
 
 ## Reports and derived data (2026-08-22)
 
-- XLSX reports use normalized library readers for native sessions, RngKitPSG v3
-  BIN/CSV, and validated derived bundles. Existing output requires an explicit
-  Cancel/Replace round trip.
+- XLSX reports use normalized readers for native sessions, read-only RngKitPSG
+  v3 BIN/CSV with recorded/estimated timestamp provenance, and validated derived
+  bundles. Existing output requires an explicit Cancel/Replace round trip.
 - Strict concatenation accepts distinct compatible legacy v3 CSV inputs,
   rejects ambiguous overlap including equal boundaries, revalidates after
   preview, streams creation, records hashes/provenance, and never modifies

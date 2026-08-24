@@ -193,9 +193,11 @@ export async function openSessionFolder(): Promise<AppSnapshot> {
   return getAppState();
 }
 
-export async function chooseReportInput(): Promise<AppSnapshot> {
+export async function chooseReportInput(
+  pickFile = false,
+): Promise<AppSnapshot> {
   if (isTauri()) {
-    return invoke<AppSnapshot>('choose_report_input');
+    return invoke<AppSnapshot>('choose_report_input', { pickFile });
   }
   return getAppState();
 }

@@ -15,6 +15,7 @@ use super::update_and_persist_session_draft;
 
 pub trait FolderPicker: Send + Sync {
     fn pick_folder(&self, title: &str, current: Option<&Path>) -> Option<PathBuf>;
+    fn pick_file(&self, title: &str, current: Option<&Path>) -> Option<PathBuf>;
 }
 
 pub struct LiveFolderPicker<R: Runtime> {
@@ -35,6 +36,19 @@ impl<R: Runtime> FolderPicker for LiveFolderPicker<R> {
             builder = builder.set_directory(directory);
         }
         builder.blocking_pick_folder()?.into_path().ok()
+    }
+
+    fn pick_file(&self, title: &str, current: Option<&Path>) -> Option<PathBuf> {
+        let mut builder = self
+            .app
+            .dialog()
+            .file()
+            .set_title(title)
+            .add_filter("RngKitPSG v3", &["bin", "csv"]);
+        if let Some(directory) = current.filter(|path| path.is_dir()) {
+            builder = builder.set_directory(directory);
+        }
+        builder.blocking_pick_file()?.into_path().ok()
     }
 }
 
@@ -61,6 +75,11 @@ impl DialogHandle {
     #[must_use]
     pub fn pick_folder(&self, title: &str, current: Option<&Path>) -> Option<PathBuf> {
         self.inner.pick_folder(title, current)
+    }
+
+    #[must_use]
+    pub fn pick_file(&self, title: &str, current: Option<&Path>) -> Option<PathBuf> {
+        self.inner.pick_file(title, current)
     }
 }
 
@@ -91,6 +110,10 @@ impl FolderPicker for FakeFolderPicker {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .take()
+    }
+
+    fn pick_file(&self, title: &str, current: Option<&Path>) -> Option<PathBuf> {
+        self.pick_folder(title, current)
     }
 }
 

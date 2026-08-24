@@ -12,6 +12,31 @@ describe('ReportsPage', () => {
       screen.getByRole('button', { name: copy.generateReport }),
     ).toHaveProperty('disabled', true);
     expect(screen.getByText(copy.noReportInput)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.chooseLegacyInput }),
+    ).toBeTruthy();
+  });
+
+  it('shows legacy preview metadata', () => {
+    appState.applyScenario('reportsPreview');
+    appState.snapshot.reports.preview = {
+      kindLabel: 'Legacy v3',
+      origin: 'CSV only',
+      source: 'TrueRNG v1/v2/v3',
+      sampleBits: 16,
+      intervalSeconds: 1,
+      fold: null,
+      status: 'Completed',
+      rowCount: 1,
+      warning: 'Timestamps are recorded in the CSV input.',
+      conflict: false,
+    };
+    render(ReportsPage);
+    expect(screen.getByText('Legacy v3')).toBeTruthy();
+    expect(screen.getByText('CSV only')).toBeTruthy();
+    expect(
+      screen.getByText('Timestamps are recorded in the CSV input.'),
+    ).toBeTruthy();
   });
 
   it('shows native preview metadata', () => {

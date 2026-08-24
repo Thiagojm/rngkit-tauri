@@ -78,6 +78,10 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   await expect(
     page.getByRole('heading', { name: copy.destinations.reports }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.chooseLegacyInput }),
+  ).toBeVisible();
+  await expect(page.getByText(copy.noReportInput)).toBeVisible();
 
   await page.getByRole('button', { name: copy.destinations.combine }).click();
   await expect(
@@ -90,6 +94,9 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   ).toBeVisible();
   await expect(page.getByText(copy.fold.raw)).toBeVisible();
   await expect(page.getByText(copy.statsWarning)).toBeVisible();
+  await expect(
+    page.getByText(/Legacy v3 BIN and CSV files stay read-only/),
+  ).toBeVisible();
 
   await page.getByLabel(copy.theme.legend).selectOption('dark');
   await expect.poll(() => bodyBackground(page)).toBe(DARK_SURFACE);

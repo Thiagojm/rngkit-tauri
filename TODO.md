@@ -14,23 +14,24 @@
   bundle ok); unified discovery also listed PseudoRNG without opening. Other
   folds/devices, unplug behavior, hardware UI collection, and Linux physical
   behavior remain unverified.
-- Checkpoint 12: native report inspection and generation. Completed and
-  interrupted committed-prefix sessions inspect; live/corrupt/unsupported
-  inputs fail safely; existing XLSX needs explicit Replace; artifact opening is
-  idle-only. Legacy/derived inputs and the native desktop workbook walkthrough
-  remain unverified.
+- Checkpoints 12–13: native and legacy v3 report inspection/generation.
+  Completed/interrupted native sessions and CSV-only, BIN-only, or paired legacy
+  inputs write same-stem XLSX; invalid inputs fail safely, legacy files remain
+  unchanged, existing output needs explicit Replace, and artifact opening is
+  idle-only. Native/legacy desktop walkthroughs remain unverified; derived
+  inputs and Combine remain unexposed.
 
 ## In progress
 
-- Checkpoint 12 user approval. No later checkpoint is authorized.
+- Checkpoint 13 user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 12, then authorize Checkpoint 13 (legacy v3 reports).
+1. Approve Checkpoint 13, then authorize Checkpoint 14 (Combine and derived reports).
 
 ## Backlog
 
-- Checkpoints 13–18: legacy/derived reports, Combine, hardening, CI, installer, and final
+- Checkpoints 14–18: Combine/derived reports, hardening, CI, installer, and final
   audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.

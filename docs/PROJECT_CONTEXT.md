@@ -26,7 +26,7 @@ while stopping waits for cooperative finalization. Active sessions reloaded in
 the frontend poll authoritative state until terminal reconciliation. Copy
 diagnostics returns a redacted in-memory history. Ignored `hardware.rs` smokes require explicit tokens;
 this Windows host passed BitBabbler White fold-0, TrueRNG, and RDSEED ordinal 1 (3 fake-clock samples each), then listed those families and PseudoRNG without opening.
-Reports inspect a chosen native session directory in Rust, reject live/corrupt/unsupported inputs, and generate a same-stem XLSX through `write_report()`; Cancel/Replace are separate requests, and artifacts open only when ready and idle. Legacy and derived report inputs are not accepted yet.
+Reports inspect a chosen native directory or read-only legacy v3 BIN/CSV in Rust, expose recorded/estimated timestamp provenance, reject live/corrupt/unsupported inputs, and generate same-stem XLSX through `write_report()`; Cancel/Replace are separate requests, and artifacts open only when ready and idle. Derived report inputs are not accepted yet.
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which

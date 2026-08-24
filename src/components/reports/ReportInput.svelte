@@ -7,11 +7,20 @@
   const controls = $derived(appState.controls);
 </script>
 
-<Button
-  disabled={!controls.reports.enabled}
-  disabledReason={controls.reports.reason}
-  onclick={() => appState.chooseReportInput()}>{copy.chooseReportInput}</Button
->
+<div class="flex flex-wrap gap-2">
+  <Button
+    disabled={!controls.reports.enabled}
+    disabledReason={controls.reports.reason}
+    onclick={() => appState.chooseReportInput()}
+    >{copy.chooseReportInput}</Button
+  >
+  <Button
+    disabled={!controls.reports.enabled}
+    disabledReason={controls.reports.reason}
+    onclick={() => appState.chooseReportInput(true)}
+    >{copy.chooseLegacyInput}</Button
+  >
+</div>
 {#if appState.snapshot.preferencesWarning}
   <p class="text-sm text-text-muted" role="alert">
     {appState.snapshot.preferencesWarning}

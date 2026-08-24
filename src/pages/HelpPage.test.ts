@@ -15,5 +15,9 @@ describe('HelpPage', () => {
     expect(screen.getByText(copy.statsWarning)).toBeTruthy();
     expect(screen.getByText(RNGKIT_CORE_REVISION)).toBeTruthy();
     expect(screen.getByText(/one explicitly selected/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Legacy v3 BIN and CSV files stay read-only/i),
+    ).toBeTruthy();
+    expect(screen.getByText(/Derived inputs remain unavailable/i)).toBeTruthy();
   });
 });

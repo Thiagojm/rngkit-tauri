@@ -42,6 +42,13 @@ impl fmt::Debug for CollectionStart {
     }
 }
 
+/// Backend-only inspected report kind. Paths stay off the DTO.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReportKind {
+    Native,
+    Legacy,
+}
+
 /// Internal collection update applied before the frontend event is sent.
 pub enum CollectionUpdate {
     SessionStarted {
@@ -116,6 +123,8 @@ pub struct AppCoordinator {
     reports: ReportsSnapshot,
     report_directory: Option<PathBuf>,
     report_dest: Option<PathBuf>,
+    report_input: Option<PathBuf>,
+    report_kind: Option<ReportKind>,
     combine: CombineSnapshot,
     diagnostics: VecDeque<DiagnosticRecord>,
     next_operation_seq: u64,
@@ -140,6 +149,8 @@ impl fmt::Debug for AppCoordinator {
             .field("preferences_warning", &self.preferences_warning)
             .field("has_session_directory", &self.session_directory.is_some())
             .field("has_report_directory", &self.report_directory.is_some())
+            .field("has_report_input", &self.report_input.is_some())
+            .field("report_kind", &self.report_kind)
             .finish_non_exhaustive()
     }
 }
@@ -185,6 +196,8 @@ impl AppCoordinator {
             reports: ReportsSnapshot::empty(),
             report_directory: None,
             report_dest: None,
+            report_input: None,
+            report_kind: None,
             combine: CombineSnapshot::empty(),
             diagnostics: VecDeque::new(),
             next_operation_seq: 0,
@@ -298,15 +311,34 @@ impl AppCoordinator {
     }
 
     #[must_use]
+    pub fn report_input(&self) -> Option<&Path> {
+        self.report_input.as_deref()
+    }
+
+    #[must_use]
+    pub fn report_kind(&self) -> Option<ReportKind> {
+        self.report_kind
+    }
+
+    #[must_use]
     pub fn report_ready(&self) -> bool {
         self.reports.report_ready
     }
 
-    pub fn set_native_report(&mut self, preview: ReportPreview, directory: PathBuf, dest: PathBuf) {
+    pub fn set_inspected_report(
+        &mut self,
+        preview: ReportPreview,
+        directory: PathBuf,
+        dest: PathBuf,
+        input: PathBuf,
+        kind: ReportKind,
+    ) {
         self.reports.report_ready = preview.conflict;
         self.reports.preview = Some(preview);
         self.report_directory = Some(directory);
         self.report_dest = Some(dest);
+        self.report_input = Some(input);
+        self.report_kind = Some(kind);
     }
 
     pub fn mark_report_written(&mut self) {
@@ -958,6 +990,8 @@ impl AppCoordinator {
         self.reports = snapshot.reports;
         self.report_directory = None;
         self.report_dest = None;
+        self.report_input = None;
+        self.report_kind = None;
         self.combine = snapshot.combine;
         self.theme = snapshot.theme;
         self.preferences_warning = snapshot.preferences_warning;
