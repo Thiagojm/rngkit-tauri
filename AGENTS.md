@@ -35,10 +35,10 @@ git status --short --branch
 git diff --check
 ```
 
-Run the native window with `npm run tauri dev`. Opt-in serial BitBabbler smoke:
-`cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`.
-Do not claim CI, installer, other physical families, or native long-session
-chart render/interaction evidence until a later checkpoint verifies them.
+Run the native window with `npm run tauri dev`. Opt-in serial physical smokes:
+`cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`
+or replace `bitb` with `trng`. Do not claim CI, installer, RDSEED, or native
+long-session chart render/interaction evidence before its checkpoint.
 
 ## Repository conventions
 

@@ -25,8 +25,8 @@ redraws, zoom and theme-change viewport persistence, Reset view, and Return to
 live. Close while collecting confirms Keep collecting or Stop and exit; close
 while stopping waits for cooperative finalization. Active sessions reloaded in
 the frontend poll authoritative state until terminal reconciliation. Copy
-diagnostics returns a redacted in-memory history. The ignored `hardware.rs` smoke requires explicit BitBabbler tokens and a fold-0 bundle;
-this Windows host passed one White ordinal 1 (3 samples, fake clock).
+diagnostics returns a redacted in-memory history. Ignored `hardware.rs` smokes require explicit tokens;
+this Windows host passed BitBabbler White ordinal 1 fold-0 and TrueRNG ordinal 1 (3 samples with a fake clock each).
 
 The reusable library is public at `https://github.com/Thiagojm/rngkit-core`.
 The app pins git revision `183f3c7811f5593b3b42c2558ac726552b86687d`, which

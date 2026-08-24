@@ -11,21 +11,25 @@
   Stop and exit, and redacted Copy diagnostics.
 - Checkpoint 11A: ignored serial BitBabbler app smoke. This Windows host ran
   fold-0 for one White ordinal-1 device (3 samples, fake clock, native bundle
-  ok). Other folds, extra devices, TrueRNG, RDSEED, and the Collect UI path
-  remain unverified.
+  ok). Other folds, extra BitBabbler devices, and the Collect UI path remain
+  unverified.
+- Checkpoint 11B: ignored serial TrueRNG app smoke. This Windows host ran one
+  ordinal-1 device (variant TrueRNG, 3 samples, fake clock, native bundle ok).
+  Unplug-during-read, extra ports, RDSEED, and the Collect UI path remain
+  unverified.
 
 ## In progress
 
-- Checkpoint 11A user approval. No later checkpoint is authorized.
+- Checkpoint 11B user approval. No later checkpoint is authorized.
 
 ## Next steps
 
-1. Approve Checkpoint 11A, then authorize Checkpoint 11B (TrueRNG app
-   integration) only if a device is available; otherwise record unverified.
+1. Approve Checkpoint 11B, then authorize Checkpoint 11C (RDSEED and unified
+   discovery) only if the host can report support; otherwise record unverified.
 
 ## Backlog
 
-- Checkpoints 11B–18: remaining physical families, reports, Combine,
+- Checkpoints 11C–18: RDSEED, reports, Combine,
   hardening, CI, installer, and final audit.
 - Signing, binary releases, updater, Store submission, Linux packaging, and
   deployment remain outside v1 implementation authority.
