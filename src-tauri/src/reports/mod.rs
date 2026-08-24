@@ -5,9 +5,11 @@ mod inspect;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use rngkit_recording::{ConcatenationStem, NativeSession, open_concatenation, open_legacy};
+use rngkit_recording::{
+    ConcatenationStem, NativeSession, open_concatenation, open_legacy, open_standalone,
+};
 use rngkit_xlsx::{
-    Overwrite, derived_report_path, legacy_report_path, native_report_path, write_report,
+    Overwrite, XlsxError, derived_report_path, legacy_report_path, native_report_path, write_report,
 };
 
 use crate::coordinator::{AppCoordinator, ReportKind};
@@ -16,9 +18,12 @@ use crate::errors::SafeError;
 
 pub use inspect::{
     InspectedReport, inspect_derived, inspect_input, inspect_legacy, inspect_native,
+    inspect_standalone,
 };
 
-use inspect::{map_derived, map_derived_xlsx, map_legacy, map_legacy_xlsx, map_xlsx};
+use inspect::{
+    map_derived, map_derived_xlsx, map_legacy, map_legacy_xlsx, map_standalone, map_xlsx,
+};
 
 pub trait ArtifactOpener: Send + Sync {
     fn open_folder(&self, path: &Path) -> Result<(), SafeError>;
@@ -198,6 +203,7 @@ pub fn write_inspected_report(
         ReportKind::Native => write_native_report(input, replace),
         ReportKind::Legacy => write_legacy_report(input, replace),
         ReportKind::Derived => write_derived_report(input, replace),
+        ReportKind::Standalone => write_standalone_report(input, replace),
     }
 }
 
@@ -213,11 +219,24 @@ pub fn write_legacy_report(selected: &Path, replace: bool) -> Result<PathBuf, Sa
     write_report(&session, &dest, overwrite_mode(replace)).map_err(map_legacy_xlsx)
 }
 
+pub fn write_standalone_report(selected: &Path, replace: bool) -> Result<PathBuf, SafeError> {
+    let session = open_standalone(selected).map_err(map_standalone)?;
+    let dest = legacy_report_path(selected);
+    write_report(&session, &dest, overwrite_mode(replace)).map_err(map_standalone_xlsx)
+}
+
 pub fn write_derived_report(dir: &Path, replace: bool) -> Result<PathBuf, SafeError> {
     let session = open_concatenation(dir).map_err(map_derived)?;
     let stem = ConcatenationStem::parse(&session.meta().stem).map_err(map_derived)?;
     let dest = derived_report_path(dir, &stem).map_err(map_xlsx)?;
     write_report(&session, &dest, overwrite_mode(replace)).map_err(map_derived_xlsx)
+}
+
+fn map_standalone_xlsx(error: XlsxError) -> SafeError {
+    match error {
+        XlsxError::Recording(error) => map_standalone(error),
+        other => map_xlsx(other),
+    }
 }
 
 fn overwrite_mode(replace: bool) -> Overwrite {

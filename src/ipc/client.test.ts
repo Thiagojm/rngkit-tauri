@@ -174,9 +174,6 @@ describe('ipc client', () => {
     await expect(chooseReportInput()).resolves.toEqual(
       MOCK_SCENARIOS.reportsPreview,
     );
-    await expect(chooseReportInput(true)).resolves.toEqual(
-      MOCK_SCENARIOS.reportsPreview,
-    );
     await expect(generateReport()).resolves.toEqual(
       MOCK_SCENARIOS.reportsConflict,
     );

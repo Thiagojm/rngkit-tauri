@@ -30,7 +30,6 @@ export const copy = {
   startAnother: 'Start another session',
   openSessionFolder: 'Open session folder',
   chooseReportInput: 'Choose input',
-  chooseLegacyInput: 'Choose BIN or CSV',
   generateReport: 'Generate report',
   openReport: 'Open report',
   openContainingFolder: 'Open containing folder',

@@ -1,4 +1,4 @@
-//! Native and legacy v3 report inspection, generation, and open IPC.
+//! Report inspection, generation, and open IPC.
 
 use std::path::Path;
 use std::sync::Mutex;
@@ -15,7 +15,6 @@ use crate::reports::{ReportsHandle, inspect_input, write_inspected_report};
 pub async fn choose_report_input(
     coordinator: State<'_, Mutex<AppCoordinator>>,
     dialogs: State<'_, DialogHandle>,
-    pick_file: Option<bool>,
 ) -> Result<AppStateDto, SafeError> {
     let current = {
         let mut coordinator = coordinator
@@ -25,13 +24,8 @@ pub async fn choose_report_input(
         coordinator.output_root().map(Path::to_path_buf)
     };
     let handle = (*dialogs).clone();
-    let pick_file = pick_file.unwrap_or(false);
     let picked = tauri::async_runtime::spawn_blocking(move || {
-        if pick_file {
-            handle.pick_file("Choose BIN or CSV", current.as_deref())
-        } else {
-            handle.pick_folder("Choose session folder", current.as_deref())
-        }
+        handle.pick_file("Choose input", current.as_deref())
     })
     .await;
     let picked = match picked {

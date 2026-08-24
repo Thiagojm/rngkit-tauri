@@ -30,9 +30,9 @@ unverified. No required original-v1 product work is stubbed.
 The follow-on workflow-improvements design and phased plan dated 2026-08-24
 are approved and readable under `docs/specs/` and `docs/plans/`. Phase 1 is
 complete and published in `rngkit-core`; Phase 2 is complete and validated
-automatically in this app. Phase 3 is implemented in the current worktree and
-has passed automated validation; its native manual test is the active gate and
-Phase 4 is not authorized.
+automatically in this app. Phase 3 and Phase 4 are complete and published.
+Phase 4 passed automated and browser-integrated validation; its native Reports
+manual test is the active gate and Phase 5 is not authorized.
 
 The library is `https://github.com/Thiagojm/rngkit-core` at
 `2cdf311dd206cb5e7320ee520ef1e7a5139cc146` (git, never a local path).
@@ -41,8 +41,8 @@ The library is `https://github.com/Thiagojm/rngkit-core` at
 
 1. **Collect:** discover candidates, require explicit selection, collect until
    cooperative stop, record a native bundle, and plot every committed Z point.
-2. **Reports:** inspect native, legacy v3, or derived inputs and write same-stem
-   XLSX with explicit Replace.
+2. **Reports:** inspect native or derived bundles, current standalone CSV/BIN,
+   or legacy v3 CSV and write same-stem XLSX with explicit Replace.
 3. **Combine:** preview compatible legacy v3 CSVs and create a no-overwrite
    derived CSV/manifest bundle without modifying inputs.
 4. **Help:** sources, folds, formats, troubleshooting, and descriptive limits.
@@ -142,3 +142,30 @@ session-data preservation; SmartScreen behavior, signing, and publication.
   usable. The audit also serialized Combine integration tests because their
   library failpoint and inspect hook are process-global. Native window
   interaction remains unverified and is the user gate.
+
+## Evidence (2026-08-24, workflow improvements Phase 4)
+
+- Reports now has one `Choose input` file dialog filtered to CSV, BIN, and JSON.
+  A selected manifest or bundle artifact resolves to its parent bundle, while
+  a file without a manifest uses the published `rngkit-core` standalone reader.
+  A present manifest is classified and validated authoritatively; corruption
+  does not fall back to standalone parsing.
+- Previews distinguish native session, derived bundle, current standalone CSV,
+  standalone BIN, and legacy v3 CSV. Report generation preserves same-stem
+  destinations, Cancel/Replace behavior, backend-known open actions, and input
+  bytes.
+- The compact timestamp shape from the supplied
+  `20260824T145947_bitb_s2048_i1_f0.csv` is covered by a generated temporary
+  regression without modifying the original. Unknown kinds and non-file
+  manifest entries fail closed as corrupt bundles.
+- Deterministic validation passed: format check, Svelte/TypeScript check, lint,
+  Vitest 100/100, Playwright 5/5, production Vite build, focused Reports tests
+  (11 native, 5 legacy, 5 Combine), locked cargo fmt/check/test/clippy/doc, Rust
+  1.85 check/test, and `git diff --check`.
+- Browser-integrated validation confirmed one chooser, preview metadata,
+  Cancel/Replace interaction, responsive layout, and a clean console. Report
+  test temporary roots include a process-local counter to prevent parallel
+  Windows collisions.
+- Native window selection and generation for legacy CSV, current CSV/BIN,
+  native bundle artifacts, and derived manifests remain unverified and form the
+  user-validation gate.

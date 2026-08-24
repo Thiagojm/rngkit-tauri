@@ -142,6 +142,23 @@ All decisions are accepted. Material changes return to design review.
   Native manual interaction remains the active user-validation gate before
   Phase 4.
 
+## Phase 4 implementation status (2026-08-24)
+
+- Reports uses one file chooser for CSV, BIN, and JSON. A selected bundle
+  artifact or manifest resolves to its parent native or derived bundle. A
+  present manifest is authoritative and malformed manifests do not fall back
+  to standalone parsing.
+- Files without a manifest use `rngkit-core` standalone normalization. The
+  preview distinguishes current standalone CSV, standalone BIN, and legacy v3
+  CSV while keeping paths and parser chains out of DTOs and diagnostics.
+- Compact legacy timestamps matching the supplied CSV are covered explicitly.
+  Unknown manifest kinds and non-file manifest entries fail closed as corrupt
+  bundles instead of being routed to a reader heuristically.
+- Same-stem XLSX output, explicit Cancel/Replace, backend-known open actions,
+  active-session rejection, and input immutability remain unchanged. Automated
+  and browser-integrated validation passed; native Reports interaction is the
+  active gate before Phase 5.
+
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 
 - Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm

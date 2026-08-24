@@ -48,6 +48,7 @@ pub enum ReportKind {
     Native,
     Legacy,
     Derived,
+    Standalone,
 }
 
 /// Internal collection update applied before the frontend event is sent.

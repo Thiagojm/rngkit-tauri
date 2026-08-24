@@ -40,8 +40,10 @@ A follow-on workflow-improvements design and six-phase implementation plan
 dated 2026-08-24 are approved. Phase 1 is complete in `rngkit-core`, and Phase
 2 is complete and validated automatically in this app. Phase 3 is complete and
 published: the Collect chart has one `Fit all` action and the instrument-style
-layout, with automated and browser-integrated validation complete. Native
-manual validation remains pending, and Phase 4 is not authorized.
+layout. Phase 4 is complete and published: Reports has one `Choose input`
+action for bundles and standalone CSV/BIN inputs, with automated and
+browser-integrated validation complete. Native Reports manual validation
+remains pending, and Phase 5 is not authorized.
 
 ## Sources of truth
 

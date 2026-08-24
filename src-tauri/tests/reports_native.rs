@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use rngkit_lib::collection::{CollectionHandle, VecSender};
 use rngkit_lib::coordinator::{AppCoordinator, pseudo_candidate};
@@ -15,14 +16,17 @@ use rngkit_xlsx::{
     REF_MINUS, REF_PLUS, SAMPLES_SHEET, SUMMARY_SHEET, native_report_path, with_report_promote_hook,
 };
 
+static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
+
 fn temp_root() -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "rngkit-reports-{}-{}",
+        "rngkit-reports-{}-{}-{}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|duration| duration.as_nanos())
-            .unwrap_or(0)
+            .unwrap_or(0),
+        TEMP_ROOT_COUNTER.fetch_add(1, Ordering::Relaxed),
     ));
     fs::create_dir_all(&dir).expect("temp");
     dir
@@ -104,6 +108,82 @@ fn completed_native_session_inspects_and_generates() {
 }
 
 #[test]
+fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
+    let (root, directory) = completed_session();
+    let native = NativeSession::open(&directory).expect("native");
+
+    let mut bundle_file = AppCoordinator::new();
+    inspect_picked(&mut bundle_file, native.csv_path()).expect("bundle csv");
+    assert_eq!(
+        bundle_file
+            .snapshot()
+            .reports
+            .preview
+            .expect("preview")
+            .kind_label,
+        "Native session"
+    );
+    let mut manifest_file = AppCoordinator::new();
+    inspect_picked(&mut manifest_file, &directory.join("manifest.json")).expect("bundle manifest");
+    assert_eq!(
+        manifest_file
+            .snapshot()
+            .reports
+            .preview
+            .expect("manifest preview")
+            .kind_label,
+        "Native session"
+    );
+
+    let standalone_root = root.join("standalone");
+    fs::create_dir_all(&standalone_root).expect("standalone root");
+    let standalone_csv = standalone_root.join(native.csv_path().file_name().expect("csv name"));
+    fs::copy(native.csv_path(), &standalone_csv).expect("copy csv");
+    let csv_before = fs::read(&standalone_csv).expect("csv bytes");
+
+    let mut current_csv = AppCoordinator::new();
+    inspect_picked(&mut current_csv, &standalone_csv).expect("standalone csv");
+    let preview = current_csv.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.kind_label, "Current standalone CSV");
+    assert_eq!(preview.origin, "Standalone current CSV");
+    generate_inspected(&mut current_csv, false).expect("csv report");
+    assert_eq!(
+        &fs::read(current_csv.report_dest().expect("dest")).expect("xlsx")[..2],
+        b"PK"
+    );
+    assert_eq!(
+        fs::read(&standalone_csv).expect("csv unchanged"),
+        csv_before
+    );
+    fs::remove_file(current_csv.report_dest().expect("csv report dest")).expect("remove csv xlsx");
+    fs::remove_file(&standalone_csv).expect("remove csv sibling");
+
+    let standalone_bin = standalone_root.join(native.bin_path().file_name().expect("bin name"));
+    fs::copy(native.bin_path(), &standalone_bin).expect("copy bin");
+    let bin_before = fs::read(&standalone_bin).expect("bin bytes");
+    let mut current_bin = AppCoordinator::new();
+    inspect_picked(&mut current_bin, &standalone_bin).expect("standalone bin");
+    let preview = current_bin.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.kind_label, "Standalone BIN");
+    assert_eq!(preview.origin, "Standalone binary input");
+    assert_eq!(
+        preview.warning.as_deref(),
+        Some("Timestamps are estimated from the filename start and interval.")
+    );
+    generate_inspected(&mut current_bin, false).expect("bin report");
+    assert_eq!(
+        &fs::read(current_bin.report_dest().expect("dest")).expect("xlsx")[..2],
+        b"PK"
+    );
+    assert_eq!(
+        fs::read(&standalone_bin).expect("bin unchanged"),
+        bin_before
+    );
+
+    fs::remove_dir_all(&root).expect("cleanup");
+}
+
+#[test]
 fn interrupted_committed_prefix_inspects() {
     let (root, directory) = completed_session();
     let manifest = directory.join("manifest.json");
@@ -179,6 +259,33 @@ fn corrupt_and_unsupported_inputs_fail_safely() {
     fs::write(corrupt_dir.join("manifest.json"), b"{not-json").expect("junk");
     let corrupt = inspect_native(&corrupt_dir, None).expect_err("corrupt");
     assert_eq!(corrupt.code, ErrorCode::CorruptInput);
+    let corrupt_selected = corrupt_dir.join("20260821T183000_pseudo_s16_i1.csv");
+    fs::write(&corrupt_selected, "20260821T18:30:00,8\n").expect("csv");
+    let mut coordinator = AppCoordinator::new();
+    let error =
+        inspect_picked(&mut coordinator, &corrupt_selected).expect_err("corrupt parent manifest");
+    assert_eq!(error.code, ErrorCode::CorruptInput);
+
+    let unknown_kind_dir = root.join("unknown-kind");
+    fs::create_dir_all(&unknown_kind_dir).expect("unknown kind dir");
+    fs::write(
+        unknown_kind_dir.join("manifest.json"),
+        br#"{"kind":"future_bundle","schema_version":1}"#,
+    )
+    .expect("unknown kind manifest");
+    let selected = unknown_kind_dir.join("input.csv");
+    fs::write(&selected, "20260821T18:30:00,8\n").expect("selected file");
+    let mut coordinator = AppCoordinator::new();
+    let error = inspect_picked(&mut coordinator, &selected).expect_err("unknown manifest kind");
+    assert_eq!(error.code, ErrorCode::CorruptInput);
+
+    let invalid_entry_dir = root.join("invalid-manifest-entry");
+    fs::create_dir_all(invalid_entry_dir.join("manifest.json")).expect("manifest directory");
+    let selected = invalid_entry_dir.join("20260821T183000_trng_s16_i1.csv");
+    fs::write(&selected, "20260821T18:30:00,8\n").expect("selected standalone shape");
+    let mut coordinator = AppCoordinator::new();
+    let error = inspect_picked(&mut coordinator, &selected).expect_err("manifest directory");
+    assert_eq!(error.code, ErrorCode::CorruptInput);
 
     let dump = serde_json::to_string(&corrupt).expect("json");
     assert_safe_json(&dump);

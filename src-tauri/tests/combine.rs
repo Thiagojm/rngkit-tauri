@@ -264,6 +264,19 @@ fn derived_report_matches_ordered_rows_and_existing_xlsx_needs_replace() {
     );
     assert!(!preview.conflict);
 
+    let manifest = directory.join("manifest.json");
+    let mut manifest_coordinator = AppCoordinator::new();
+    inspect_picked(&mut manifest_coordinator, &manifest).expect("inspect manifest");
+    assert_eq!(
+        manifest_coordinator
+            .snapshot()
+            .reports
+            .preview
+            .expect("manifest preview")
+            .kind_label,
+        "Derived bundle"
+    );
+
     generate_derived_report(&mut coordinator, false).expect("xlsx");
     let dest = coordinator.report_dest().expect("dest").to_path_buf();
     assert_eq!(

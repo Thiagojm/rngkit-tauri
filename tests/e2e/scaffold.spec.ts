@@ -83,8 +83,11 @@ test('renders the four-destination shell without hardware or mock-scenario contr
     page.getByRole('heading', { name: copy.destinations.reports }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: copy.chooseLegacyInput }),
+    page.getByRole('button', { name: copy.chooseReportInput }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.chooseReportInput }),
+  ).toHaveCount(1);
   await expect(page.getByText(copy.noReportInput)).toBeVisible();
 
   await page.getByRole('button', { name: copy.destinations.combine }).click();

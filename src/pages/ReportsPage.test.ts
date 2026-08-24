@@ -13,8 +13,8 @@ describe('ReportsPage', () => {
     ).toHaveProperty('disabled', true);
     expect(screen.getByText(copy.noReportInput)).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: copy.chooseLegacyInput }),
-    ).toBeTruthy();
+      screen.getAllByRole('button', { name: copy.chooseReportInput }),
+    ).toHaveLength(1);
   });
 
   it('shows legacy preview metadata', () => {

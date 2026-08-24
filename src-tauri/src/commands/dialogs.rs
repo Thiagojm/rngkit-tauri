@@ -1,4 +1,4 @@
-//! Native directory dialog. The selected path stays in Rust.
+//! Native file and directory dialogs. The selected path stays in Rust.
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -45,7 +45,7 @@ impl<R: Runtime> FolderPicker for LiveFolderPicker<R> {
             .dialog()
             .file()
             .set_title(title)
-            .add_filter("RngKitPSG v3", &["bin", "csv"]);
+            .add_filter("RngKit input", &["csv", "bin", "json"]);
         if let Some(directory) = current.filter(|path| path.is_dir()) {
             builder = builder.set_directory(directory);
         }

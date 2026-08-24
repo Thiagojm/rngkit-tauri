@@ -660,10 +660,10 @@ export class AppViewState {
     }
   }
 
-  chooseReportInput(pickFile = false): void {
+  chooseReportInput(): void {
     if (isTauri()) {
       void this.runDraftCommand(
-        () => chooseReportInput(pickFile),
+        () => chooseReportInput(),
         (snapshot) => snapshot,
       );
     }

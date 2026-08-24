@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use rngkit_lib::coordinator::AppCoordinator;
 use rngkit_lib::dto::ErrorCode;
@@ -10,14 +11,17 @@ use rngkit_lib::reports::{
 };
 use rngkit_xlsx::{REF_MINUS, REF_PLUS, SAMPLES_SHEET, SUMMARY_SHEET, with_workbook_write_failure};
 
+static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
+
 fn temp_root() -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "rngkit-legacy-{}-{}",
+        "rngkit-legacy-{}-{}-{}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|duration| duration.as_nanos())
-            .unwrap_or(0)
+            .unwrap_or(0),
+        TEMP_ROOT_COUNTER.fetch_add(1, Ordering::Relaxed),
     ));
     fs::create_dir_all(&dir).expect("temp");
     dir
@@ -57,7 +61,7 @@ fn csv_only_bin_only_and_paired_generate_without_mutation() {
     let mut coordinator = AppCoordinator::new();
     inspect_picked(&mut coordinator, &csv_path).expect("paired inspect");
     let preview = coordinator.snapshot().reports.preview.expect("preview");
-    assert_eq!(preview.kind_label, "Legacy v3");
+    assert_eq!(preview.kind_label, "Legacy v3 CSV");
     assert_eq!(preview.origin, "Paired BIN and CSV");
     assert_eq!(preview.source, "TrueRNG v1/v2/v3");
     assert_eq!(preview.sample_bits, 16);
@@ -115,6 +119,42 @@ fn csv_only_bin_only_and_paired_generate_without_mutation() {
 }
 
 #[test]
+fn supplied_compact_timestamp_shape_generates_without_mutation() {
+    let root = temp_root();
+    let input = root.join("20260824T145947_bitb_s2048_i1_f0.csv");
+    fs::write(
+        &input,
+        concat!(
+            "20260824T145948,1014\n",
+            "20260824T145949,1025\n",
+            "20260824T145950,1044\n",
+            "20260824T145951,1056\n",
+            "20260824T145952,1026\n",
+        ),
+    )
+    .expect("compact fixture");
+    let before = hash(&input);
+
+    let mut coordinator = AppCoordinator::new();
+    inspect_picked(&mut coordinator, &input).expect("inspect compact legacy csv");
+    let preview = coordinator.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.kind_label, "Legacy v3 CSV");
+    assert_eq!(preview.origin, "CSV only");
+    assert_eq!(preview.source, "BitBabbler");
+    assert_eq!(preview.sample_bits, 2048);
+    assert_eq!(preview.interval_seconds, 1);
+    assert_eq!(preview.fold, Some(0));
+    assert_eq!(preview.row_count, 5);
+
+    generate_inspected(&mut coordinator, false).expect("generate compact report");
+    let dest = coordinator.report_dest().expect("dest");
+    assert_eq!(&fs::read(dest).expect("xlsx")[..2], b"PK");
+    assert_eq!(hash(&input), before);
+
+    fs::remove_dir_all(&root).expect("cleanup");
+}
+
+#[test]
 fn invalid_legacy_fixtures_fail_without_partial_xlsx() {
     let root = temp_root();
 
@@ -147,6 +187,18 @@ fn invalid_legacy_fixtures_fail_without_partial_xlsx() {
     fs::write(&space, "20260821T18:30:02 8\n").expect("space");
     let error = inspect_legacy(&space).expect_err("space csv");
     assert_eq!(error.code, ErrorCode::UnsupportedInput);
+
+    let malformed_current = root.join("20260821T183004_trng_s16_i1.csv");
+    fs::write(
+        &malformed_current,
+        "sample_index,timestamp,elapsed_ms\n1,2026-08-21T18:30:04Z,0\n",
+    )
+    .expect("malformed current");
+    let mut coordinator = AppCoordinator::new();
+    let error =
+        inspect_picked(&mut coordinator, &malformed_current).expect_err("malformed current header");
+    assert_eq!(error.code, ErrorCode::CorruptInput);
+    assert!(!root.join("20260821T183004_trng_s16_i1.xlsx").exists());
 
     let derived = root.join("20260821T183003_concat_trng_s16_i1.csv");
     fs::write(&derived, "20260821T18:30:03,8\n").expect("derived");

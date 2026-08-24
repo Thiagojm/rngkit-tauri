@@ -19,16 +19,20 @@
 - Phase 3: chart following/viewport race fix, single `Fit all` control, and
   instrument-style Collect card completed, reviewed, corrected, and published.
   Browser-integrated validation passed; native user validation remains pending.
+- Phase 4: unified Reports chooser, authoritative bundle resolution, and
+  standalone current/legacy CSV/BIN report support completed, reviewed,
+  corrected, and published. Automated and browser-integrated validation passed;
+  native Reports user validation remains pending.
 
 ## In progress
 
-- Phase 3 native user validation gate. Do not begin Phase 4 without a new
-  explicit request.
+- Phase 4 native Reports user validation gate. Do not begin Phase 5 without a
+  new explicit request.
 
 ## Next steps
 
-1. Run the Phase 3 native manual validation from the approved plan.
-2. Begin Phase 4 only after explicit authorization.
+1. Run the Phase 4 native manual validation from the approved plan.
+2. Begin Phase 5 only after explicit authorization.
 
 ## Backlog
 

@@ -1,12 +1,13 @@
 //! Native, legacy v3, and derived concatenation inspection.
 
-use std::fs;
-use std::io::ErrorKind;
+use std::fs::{self, File};
+use std::io::{BufRead, BufReader, ErrorKind};
 use std::path::{Path, PathBuf};
 
 use rngkit_core::{SessionStatus, TimestampProvenance};
 use rngkit_recording::{
-    ConcatenationStem, NativeSession, RecordingError, open_concatenation, open_legacy,
+    CONCATENATION_KIND, CSV_CONCATENATION_KIND, ConcatenationStem, NATIVE_CSV_COLUMNS,
+    NativeSession, RecordingError, open_concatenation, open_legacy, open_standalone,
 };
 use rngkit_xlsx::{XlsxError, derived_report_path, legacy_report_path, native_report_path};
 
@@ -16,7 +17,9 @@ use crate::errors::SafeError;
 
 const KIND_LABEL: &str = "Native session";
 const ORIGIN: &str = "Collected session";
-const LEGACY_KIND: &str = "Legacy v3";
+const LEGACY_KIND: &str = "Legacy v3 CSV";
+const CURRENT_CSV_KIND: &str = "Current standalone CSV";
+const STANDALONE_BIN_KIND: &str = "Standalone BIN";
 const DERIVED_KIND: &str = "Derived bundle";
 const DERIVED_ORIGIN: &str = "Concatenated legacy v3 CSV";
 const DERIVED_NOTE: &str = "Timestamps are copied from the concatenated inputs.";
@@ -38,19 +41,127 @@ pub fn inspect_input(
     path: &Path,
     live_recording: Option<&Path>,
 ) -> Result<InspectedReport, SafeError> {
-    if path.is_dir() {
-        let name = path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("");
-        if ConcatenationStem::parse(name).is_ok() {
-            inspect_derived(path)
-        } else {
-            inspect_native(path, live_recording)
-        }
-    } else {
-        inspect_legacy(path)
+    if let Some(directory) = bundle_directory(path)? {
+        return inspect_bundle(&directory, live_recording);
     }
+    if path.is_file() {
+        return inspect_standalone(path);
+    }
+    Err(SafeError::unsupported_input(
+        "That input is not a supported RngKit report source.",
+    ))
+}
+
+fn inspect_bundle(
+    directory: &Path,
+    live_recording: Option<&Path>,
+) -> Result<InspectedReport, SafeError> {
+    match bundle_kind(directory)? {
+        BundleKind::Native => inspect_native(directory, live_recording),
+        BundleKind::Derived => inspect_derived(directory),
+    }
+}
+
+fn bundle_directory(path: &Path) -> Result<Option<PathBuf>, SafeError> {
+    if path.is_dir() && manifest_entry_exists(path)? {
+        return Ok(Some(path.to_path_buf()));
+    }
+    if !path.is_file() {
+        return Ok(None);
+    }
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty());
+    match parent {
+        Some(parent) if manifest_entry_exists(parent)? => Ok(Some(parent.to_path_buf())),
+        _ => Ok(None),
+    }
+}
+
+fn manifest_entry_exists(directory: &Path) -> Result<bool, SafeError> {
+    match fs::symlink_metadata(directory.join("manifest.json")) {
+        Ok(_) => Ok(true),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(false),
+        Err(error) if error.kind() == ErrorKind::PermissionDenied => Err(
+            SafeError::permission_denied("The selected bundle could not be inspected."),
+        ),
+        Err(_) => Err(SafeError::corrupt_input(
+            "The selected bundle manifest could not be inspected.",
+        )),
+    }
+}
+
+enum BundleKind {
+    Native,
+    Derived,
+}
+
+fn bundle_kind(directory: &Path) -> Result<BundleKind, SafeError> {
+    let manifest = directory.join("manifest.json");
+    let metadata = fs::symlink_metadata(&manifest)
+        .map_err(|_| SafeError::corrupt_input("The selected bundle manifest is corrupt."))?;
+    if !metadata.file_type().is_file() {
+        return Err(SafeError::corrupt_input(
+            "The selected bundle manifest is not a regular file.",
+        ));
+    }
+    let bytes = fs::read(&manifest).map_err(|error| {
+        if error.kind() == ErrorKind::PermissionDenied {
+            SafeError::permission_denied("The selected bundle could not be read.")
+        } else {
+            SafeError::corrupt_input("The selected bundle manifest is corrupt.")
+        }
+    })?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)
+        .map_err(|_| SafeError::corrupt_input("The selected bundle manifest is corrupt."))?;
+    match value.get("kind").and_then(serde_json::Value::as_str) {
+        Some(kind) if kind == CONCATENATION_KIND || kind == CSV_CONCATENATION_KIND => {
+            Ok(BundleKind::Derived)
+        }
+        Some(_) => Err(SafeError::corrupt_input(
+            "The selected bundle manifest has an unsupported kind.",
+        )),
+        None => Ok(BundleKind::Native),
+    }
+}
+
+pub fn inspect_standalone(path: &Path) -> Result<InspectedReport, SafeError> {
+    let session = open_standalone(path).map_err(map_standalone)?;
+    let meta = session.meta();
+    let kind_label = standalone_kind_label(path)?;
+    let origin = if kind_label == CURRENT_CSV_KIND {
+        "Standalone current CSV"
+    } else {
+        standalone_origin(path)
+    };
+    let dest = legacy_report_path(path);
+    let warning = match meta.provenance {
+        TimestampProvenance::Estimated => Some(ESTIMATED_WARNING.to_owned()),
+        TimestampProvenance::Recorded => Some(RECORDED_NOTE.to_owned()),
+    };
+    let directory = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
+        .to_path_buf();
+    Ok(InspectedReport {
+        preview: ReportPreview {
+            kind_label,
+            origin: origin.into(),
+            source: meta.source_label.clone(),
+            sample_bits: meta.sample_bits.get(),
+            interval_seconds: meta.interval.get(),
+            fold: meta.fold.map(|fold| u32::from(fold.get())),
+            status: status_label(meta.status).into(),
+            row_count: session.records().len() as u64,
+            warning,
+            conflict: dest.exists(),
+        },
+        dest,
+        input: path.to_path_buf(),
+        directory,
+        kind: ReportKind::Standalone,
+    })
 }
 
 pub fn inspect_native(
@@ -165,6 +276,35 @@ fn legacy_origin(path: &Path) -> &'static str {
     }
 }
 
+fn standalone_origin(path: &Path) -> &'static str {
+    match path.extension().and_then(|extension| extension.to_str()) {
+        Some("bin") => "Standalone binary input",
+        _ => legacy_origin(path),
+    }
+}
+
+fn standalone_kind_label(path: &Path) -> Result<String, SafeError> {
+    if path.extension().and_then(|extension| extension.to_str()) == Some("bin") {
+        return Ok(STANDALONE_BIN_KIND.into());
+    }
+    let file = File::open(path).map_err(map_standalone_io)?;
+    let reader = BufReader::new(file);
+    let expected = NATIVE_CSV_COLUMNS.join(",");
+    for line in reader.lines() {
+        let line = line.map_err(map_standalone_io)?;
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        return Ok(if trimmed == expected {
+            CURRENT_CSV_KIND.into()
+        } else {
+            LEGACY_KIND.into()
+        });
+    }
+    Ok(LEGACY_KIND.into())
+}
+
 pub(super) fn map_recording(error: RecordingError) -> SafeError {
     match error {
         RecordingError::Corrupt { .. } | RecordingError::Json(_) | RecordingError::Csv(_) => {
@@ -201,6 +341,38 @@ pub(super) fn map_legacy(error: RecordingError) -> SafeError {
             SafeError::unsupported_input("That file is not a supported RngKitPSG v3 input.")
         }
         _ => SafeError::unsupported_input("That file is not a supported RngKitPSG v3 input."),
+    }
+}
+
+pub(super) fn map_standalone(error: RecordingError) -> SafeError {
+    match error {
+        RecordingError::OnesExceedSampleBits { .. } => {
+            SafeError::invalid_configuration("A one-count exceeds the sample size.")
+        }
+        RecordingError::Corrupt { .. }
+        | RecordingError::Json(_)
+        | RecordingError::Csv(_)
+        | RecordingError::InvalidNativeCsvHeader { .. } => {
+            SafeError::corrupt_input("The selected standalone input is corrupt.")
+        }
+        RecordingError::Io(io) if io.kind() == ErrorKind::PermissionDenied => {
+            SafeError::permission_denied("The selected standalone input could not be read.")
+        }
+        RecordingError::UnsupportedVersion { .. }
+        | RecordingError::InvalidName { .. }
+        | RecordingError::Io(_)
+        | RecordingError::Core(_) => {
+            SafeError::unsupported_input("That file is not a supported standalone input.")
+        }
+        _ => SafeError::unsupported_input("That file is not a supported standalone input."),
+    }
+}
+
+fn map_standalone_io(error: std::io::Error) -> SafeError {
+    if error.kind() == ErrorKind::PermissionDenied {
+        SafeError::permission_denied("The selected standalone input could not be read.")
+    } else {
+        SafeError::corrupt_input("The selected standalone input is corrupt.")
     }
 }
 
