@@ -2,6 +2,7 @@
 
 use std::collections::VecDeque;
 use std::fmt;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use rngkit_core::{Fold, IntervalSeconds, SampleBits};
@@ -12,7 +13,8 @@ use crate::diagnostics::redact_detail;
 use crate::discovery::{DiscoveryOutcome, MappedCandidate};
 use crate::dto::{
     AppStateDto, CollectionEventDto, CollectionSnapshot, CollectionState, CombineResult,
-    CombineSnapshot, DiagnosticRecord, ErrorCode, FileJobState, ReportPreview, ReportsSnapshot,
+    CombineSnapshot, DiagnosticRecord, ErrorCode, FileJobState, OutcomeActionId, OutcomeNotice,
+    OutcomeOperation, OutcomePathRow, OutcomeSeverity, ReportPreview, ReportsSnapshot,
     SourceCandidateDto, ThemePreference,
 };
 use crate::errors::SafeError;
@@ -130,6 +132,8 @@ pub struct AppCoordinator {
     report_input: Option<PathBuf>,
     report_kind: Option<ReportKind>,
     report_options: Option<ReportOptions>,
+    pending_outcome: Option<OutcomeNotice>,
+    next_outcome_id: u64,
     combine: CombineSnapshot,
     combine_inputs: Vec<PathBuf>,
     combine_input_ids: Vec<String>,
@@ -161,6 +165,10 @@ impl fmt::Debug for AppCoordinator {
             .field("has_report_directory", &self.report_directory.is_some())
             .field("has_report_input", &self.report_input.is_some())
             .field("report_kind", &self.report_kind)
+            .field(
+                "pending_outcome_id",
+                &self.pending_outcome.as_ref().map(|notice| notice.id),
+            )
             .field("has_combine_inputs", &!self.combine_inputs.is_empty())
             .field("combine_input_count", &self.combine_inputs.len())
             .field(
@@ -216,6 +224,8 @@ impl AppCoordinator {
             report_input: None,
             report_kind: None,
             report_options: None,
+            pending_outcome: None,
+            next_outcome_id: 0,
             combine: CombineSnapshot::empty(),
             combine_inputs: Vec::new(),
             combine_input_ids: Vec::new(),
@@ -263,6 +273,7 @@ impl AppCoordinator {
             theme: self.theme,
             preferences_warning: self.preferences_warning.clone(),
             diagnostics: self.diagnostics.iter().cloned().collect(),
+            pending_outcome: self.pending_outcome.clone(),
         }
     }
 
@@ -349,6 +360,26 @@ impl AppCoordinator {
     }
 
     #[must_use]
+    pub fn pending_outcome(&self) -> Option<&OutcomeNotice> {
+        self.pending_outcome.as_ref()
+    }
+
+    pub fn acknowledge_outcome(&mut self, notice_id: u64) -> Result<(), SafeError> {
+        match self.pending_outcome.as_ref().map(|notice| notice.id) {
+            Some(current) if current == notice_id => {
+                self.pending_outcome = None;
+                Ok(())
+            }
+            Some(_) => Err(SafeError::invalid_transition(
+                "That outcome is no longer current.",
+            )),
+            None => Err(SafeError::invalid_transition(
+                "There is no pending outcome to acknowledge.",
+            )),
+        }
+    }
+
+    #[must_use]
     pub fn report_ready(&self) -> bool {
         self.reports.report_ready
     }
@@ -371,17 +402,195 @@ impl AppCoordinator {
         self.report_options = Some(options);
     }
 
-    pub fn mark_report_written(&mut self) {
+    pub fn mark_report_written(&mut self, replaced: bool) {
         if let Some(preview) = self.reports.preview.as_mut() {
             preview.conflict = true;
         }
         self.reports.report_ready = true;
+        self.note_report_success(replaced);
     }
 
     pub fn mark_report_conflict(&mut self) {
         if let Some(preview) = self.reports.preview.as_mut() {
             preview.conflict = true;
         }
+    }
+
+    pub fn note_report_failure(&mut self, message: &str) {
+        let paths = self
+            .report_dest
+            .as_deref()
+            .filter(|path| is_regular_file(path))
+            .into_iter()
+            .filter_map(|path| outcome_path("Existing XLSX report", path))
+            .collect();
+        self.replace_outcome(
+            OutcomeSeverity::Error,
+            OutcomeOperation::Report,
+            "Report not completed",
+            message.to_owned(),
+            paths,
+            Vec::new(),
+        );
+    }
+
+    pub fn note_derived_created(&mut self, directory: &Path) {
+        let stem = self
+            .combine
+            .result
+            .as_ref()
+            .map(|result| result.stem.as_str())
+            .unwrap_or("derived");
+        let mut paths = Vec::new();
+        if let Some(path) = outcome_path("Derived folder", directory) {
+            paths.push(path);
+        }
+        if let Some(path) = outcome_path("Derived CSV", &directory.join(format!("{stem}.csv"))) {
+            paths.push(path);
+        }
+        if let Some(path) = outcome_path("Derived manifest", &directory.join("manifest.json")) {
+            paths.push(path);
+        }
+        self.replace_outcome(
+            OutcomeSeverity::Success,
+            OutcomeOperation::Combine,
+            "Derived bundle created",
+            "The derived bundle was created successfully.".into(),
+            paths,
+            vec![OutcomeActionId::OpenDerivedFolder],
+        );
+    }
+
+    pub fn note_combine_failure(&mut self, message: &str) {
+        let paths = self
+            .output_root
+            .as_deref()
+            .filter(|path| is_directory(path))
+            .into_iter()
+            .filter_map(|path| outcome_path("Combine output folder", path))
+            .collect();
+        self.replace_outcome(
+            OutcomeSeverity::Error,
+            OutcomeOperation::Combine,
+            "Derived bundle not created",
+            message.to_owned(),
+            paths,
+            Vec::new(),
+        );
+    }
+
+    fn note_report_success(&mut self, replaced: bool) {
+        let paths = self
+            .report_dest
+            .as_deref()
+            .filter(|path| is_regular_file(path))
+            .into_iter()
+            .filter_map(|path| outcome_path("XLSX report", path))
+            .collect();
+        let (title, message) = if replaced {
+            (
+                "Report replaced",
+                "The XLSX report was replaced successfully.",
+            )
+        } else {
+            (
+                "Report generated",
+                "The XLSX report was generated successfully.",
+            )
+        };
+        self.replace_outcome(
+            OutcomeSeverity::Success,
+            OutcomeOperation::Report,
+            title,
+            message.into(),
+            paths,
+            vec![
+                OutcomeActionId::OpenReport,
+                OutcomeActionId::OpenReportFolder,
+            ],
+        );
+    }
+
+    fn note_collection_success(&mut self) {
+        let paths = self.collection_artifact_paths();
+        let message = format!(
+            "Collection completed with {} committed samples.",
+            self.sample_count
+        );
+        self.replace_outcome(
+            OutcomeSeverity::Success,
+            OutcomeOperation::Collection,
+            "Collection completed",
+            message,
+            paths,
+            vec![OutcomeActionId::OpenSessionFolder],
+        );
+    }
+
+    fn note_collection_failure(&mut self, error: &SafeError) {
+        let mut message = error.message().to_owned();
+        if let Some(recovery) = error.recovery() {
+            message.push(' ');
+            message.push_str(recovery);
+        }
+        let actions = self
+            .session_directory
+            .as_deref()
+            .filter(|path| is_directory(path))
+            .map(|_| vec![OutcomeActionId::OpenSessionFolder])
+            .unwrap_or_default();
+        self.replace_outcome(
+            OutcomeSeverity::Error,
+            OutcomeOperation::Collection,
+            "Collection failed",
+            message,
+            self.collection_artifact_paths(),
+            actions,
+        );
+    }
+
+    fn collection_artifact_paths(&self) -> Vec<OutcomePathRow> {
+        let Some(directory) = self.session_directory.as_deref() else {
+            return Vec::new();
+        };
+        let mut paths = Vec::new();
+        if let Some(path) = outcome_path("Session folder", directory) {
+            paths.push(path);
+        }
+        if let Some(stem) = self.session_stem.as_deref() {
+            for (label, extension) in [("Session CSV", "csv"), ("Session BIN", "bin")] {
+                if let Some(path) =
+                    outcome_path(label, &directory.join(format!("{stem}.{extension}")))
+                {
+                    paths.push(path);
+                }
+            }
+            if let Some(path) = outcome_path("Session manifest", &directory.join("manifest.json")) {
+                paths.push(path);
+            }
+        }
+        paths
+    }
+
+    fn replace_outcome(
+        &mut self,
+        severity: OutcomeSeverity,
+        operation: OutcomeOperation,
+        title: impl Into<String>,
+        message: String,
+        paths: Vec<OutcomePathRow>,
+        actions: Vec<OutcomeActionId>,
+    ) {
+        self.next_outcome_id = self.next_outcome_id.saturating_add(1);
+        self.pending_outcome = Some(OutcomeNotice {
+            id: self.next_outcome_id,
+            severity,
+            operation,
+            title: title.into(),
+            message,
+            paths,
+            actions,
+        });
     }
 
     #[must_use]
@@ -932,6 +1141,7 @@ impl AppCoordinator {
                     message: error.message().to_owned(),
                     recovery: error.recovery().map(str::to_owned),
                 };
+                self.note_collection_failure(&error);
                 self.apply_failed_error(error);
                 self.collection = CollectionState::Failed;
                 Ok(dto)
@@ -958,12 +1168,14 @@ impl AppCoordinator {
         self.error_message = None;
         self.error_recovery = None;
         self.collection = CollectionState::Completed;
+        self.note_collection_success();
         Ok(())
     }
 
     pub fn finish_failed(&mut self, error: SafeError) -> Result<(), SafeError> {
         self.require_active_session()?;
         self.record_diagnostic(error.code, error.message());
+        self.note_collection_failure(&error);
         self.apply_failed_error(error);
         self.collection = CollectionState::Failed;
         Ok(())
@@ -993,6 +1205,7 @@ impl AppCoordinator {
             ));
         }
         self.record_diagnostic(error.code, error.message());
+        self.note_collection_failure(&error);
         self.apply_failed_error(error);
         self.collection = CollectionState::Failed;
         Ok(())
@@ -1102,6 +1315,12 @@ impl AppCoordinator {
         self.theme = snapshot.theme;
         self.preferences_warning = snapshot.preferences_warning;
         self.diagnostics = snapshot.diagnostics.into();
+        self.next_outcome_id = snapshot
+            .pending_outcome
+            .as_ref()
+            .map(|notice| notice.id)
+            .unwrap_or(self.next_outcome_id);
+        self.pending_outcome = snapshot.pending_outcome;
     }
 
     pub(crate) fn ensure_configurable(&self) -> Result<(), SafeError> {
@@ -1226,6 +1445,32 @@ impl AppCoordinator {
         self.cumulative_z_label = "—".into();
         self.overrun_count = 0;
     }
+}
+
+fn outcome_path(label: &str, path: &Path) -> Option<OutcomePathRow> {
+    let metadata = fs::symlink_metadata(path).ok()?;
+    if !path.is_absolute()
+        || metadata.file_type().is_symlink()
+        || (!metadata.file_type().is_file() && !metadata.file_type().is_dir())
+    {
+        return None;
+    }
+    Some(OutcomePathRow {
+        label: label.to_owned(),
+        path: path.to_str()?.to_owned(),
+    })
+}
+
+fn is_regular_file(path: &Path) -> bool {
+    fs::symlink_metadata(path)
+        .map(|metadata| metadata.file_type().is_file())
+        .unwrap_or(false)
+}
+
+fn is_directory(path: &Path) -> bool {
+    fs::symlink_metadata(path)
+        .map(|metadata| metadata.file_type().is_dir())
+        .unwrap_or(false)
 }
 
 fn status_label(state: CollectionState) -> &'static str {

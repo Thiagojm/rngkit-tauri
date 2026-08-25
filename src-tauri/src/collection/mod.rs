@@ -229,6 +229,37 @@ impl CollectionHandle {
         Ok(())
     }
 
+    pub fn open_known_output_root(&self, coordinator: &AppCoordinator) -> Result<(), SafeError> {
+        let snapshot = coordinator.snapshot();
+        if matches!(
+            snapshot.collection.state,
+            CollectionState::Collecting | CollectionState::Stopping
+        ) {
+            return Err(SafeError::operation_conflict(
+                "The collection folder cannot open while a session is active.",
+            ));
+        }
+        if snapshot.file_job != crate::dto::FileJobState::Idle {
+            return Err(SafeError::operation_conflict(
+                "The collection folder cannot open while a file job is running.",
+            ));
+        }
+        let path = coordinator
+            .output_root()
+            .ok_or_else(|| SafeError::invalid_transition("Choose an output folder first."))?;
+        if !path.is_dir() {
+            return Err(SafeError::invalid_transition(
+                "The collection output folder is no longer available.",
+            ));
+        }
+        self.folder.open_folder(path)?;
+        self.opened_folders
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .push(path.to_path_buf());
+        Ok(())
+    }
+
     #[must_use]
     pub fn opened_folders(&self) -> Vec<PathBuf> {
         self.opened_folders

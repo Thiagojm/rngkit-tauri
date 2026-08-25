@@ -193,6 +193,22 @@ export async function openSessionFolder(): Promise<AppSnapshot> {
   return getAppState();
 }
 
+export async function openCollectionWorkingFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_collection_working_folder');
+  }
+  return getAppState();
+}
+
+export async function acknowledgeOutcome(
+  noticeId: number,
+): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('acknowledge_outcome', { noticeId });
+  }
+  return getAppState();
+}
+
 export async function chooseReportInput(): Promise<AppSnapshot> {
   if (isTauri()) {
     return invoke<AppSnapshot>('choose_report_input');
@@ -224,6 +240,13 @@ export async function openReport(): Promise<AppSnapshot> {
 export async function openReportFolder(): Promise<AppSnapshot> {
   if (isTauri()) {
     return invoke<AppSnapshot>('open_report_folder');
+  }
+  return getAppState();
+}
+
+export async function openReportWorkingFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_report_working_folder');
   }
   return getAppState();
 }
@@ -268,6 +291,13 @@ export async function generateDerived(replace = false): Promise<AppSnapshot> {
 export async function openDerivedFolder(): Promise<AppSnapshot> {
   if (isTauri()) {
     return invoke<AppSnapshot>('open_derived_folder');
+  }
+  return getAppState();
+}
+
+export async function openCombineWorkingFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_combine_working_folder');
   }
   return getAppState();
 }

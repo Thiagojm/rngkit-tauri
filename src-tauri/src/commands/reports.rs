@@ -121,6 +121,18 @@ pub fn open_report_folder(
     Ok(coordinator.snapshot())
 }
 
+#[tauri::command]
+pub fn open_report_working_folder(
+    coordinator: State<'_, Mutex<AppCoordinator>>,
+    reports: State<'_, ReportsHandle>,
+) -> Result<AppStateDto, SafeError> {
+    let coordinator = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reports.open_known_working_folder(&coordinator)?;
+    Ok(coordinator.snapshot())
+}
+
 async fn run_generate(
     coordinator: &Mutex<AppCoordinator>,
     replace: bool,
@@ -155,14 +167,16 @@ async fn run_generate(
     let _ = coordinator.finish_file_job();
     match written {
         Ok(Ok(_)) => {
-            coordinator.mark_report_written();
+            coordinator.mark_report_written(replace);
             Ok(coordinator.snapshot())
         }
         Ok(Err(error)) if error.code == crate::dto::ErrorCode::OutputExists => {
             coordinator.mark_report_conflict();
+            coordinator.note_report_failure(error.message());
             Err(error)
         }
         Ok(Err(error)) => {
+            coordinator.note_report_failure(error.message());
             coordinator.record_diagnostic(error.code, error.message());
             Err(error)
         }

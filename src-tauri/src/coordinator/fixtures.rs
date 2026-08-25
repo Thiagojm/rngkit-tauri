@@ -194,6 +194,7 @@ fn snapshot(
         theme: ThemePreference::System,
         preferences_warning: None,
         diagnostics: Vec::new(),
+        pending_outcome: None,
     }
 }
 

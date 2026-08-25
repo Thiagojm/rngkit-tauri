@@ -24,18 +24,21 @@
   and published.
 - 2026-08-25 Phase 2: flat legacy concatenation Reports integration, explicit
   chart-axis/source context retention, exact library pin, and locked app
-  validation completed locally.
+  validation completed and published at app commit `b946c4d`.
+- 2026-08-25 Phase 3: transient typed artifact outcome notices, acknowledgement,
+  backend-known working-folder commands, safe artifact path allowlisting, and
+  locked app validation completed locally; no UI was changed.
 
 ## In progress
 
-- 2026-08-25 Phase 2 user-validation gate: copied flat concatenation preview,
-  XLSX generation/opening, Replace behavior, input immutability, and BIN-only
-  sample-number-axis behavior remain unverified in the native window.
+- 2026-08-25 Phase 3 user-validation gate: backend outcome notices,
+  acknowledgement behavior, and backend-known working-folder recovery are
+  implemented and validated by tests; Phase 4 UI work remains unauthorized.
 
 ## Next steps
 
-1. Run the 2026-08-25 Phase 2 native manual validation from the approved plan.
-2. Record explicit user approval before any Phase 3 work or app commit/push.
+1. Validate the 2026-08-25 Phase 3 backend behavior and approve the next gate.
+2. Separately authorize any Phase 3 commit/push and Phase 4 UI implementation.
 
 ## Backlog
 

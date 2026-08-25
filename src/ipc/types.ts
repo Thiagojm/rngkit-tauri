@@ -165,6 +165,32 @@ export interface CombineSnapshot {
   result: CombineResult | null;
 }
 
+export type OutcomeSeverity = 'success' | 'warning' | 'error';
+export type OutcomeOperation = 'collection' | 'report' | 'combine';
+export type OutcomeActionId =
+  | 'openSessionFolder'
+  | 'openReport'
+  | 'openReportFolder'
+  | 'openDerivedFolder'
+  | 'openCollectionWorkingFolder'
+  | 'openReportWorkingFolder'
+  | 'openCombineWorkingFolder';
+
+export interface OutcomePathRow {
+  label: string;
+  path: string;
+}
+
+export interface OutcomeNotice {
+  id: number;
+  severity: OutcomeSeverity;
+  operation: OutcomeOperation;
+  title: string;
+  message: string;
+  paths: OutcomePathRow[];
+  actions: OutcomeActionId[];
+}
+
 export type ClosePromptMode = 'confirm' | 'finalizing';
 
 export const THEME_PREFERENCES = ['system', 'light', 'dark'] as const;
@@ -179,4 +205,5 @@ export interface AppSnapshot {
   theme: ThemePreference;
   preferencesWarning: string | null;
   diagnostics: DiagnosticRecord[];
+  pendingOutcome: OutcomeNotice | null;
 }

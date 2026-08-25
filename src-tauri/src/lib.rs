@@ -23,7 +23,7 @@ use reports::ReportsHandle;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
-pub const RNGKIT_CORE_REVISION: &str = "2cdf311dd206cb5e7320ee520ef1e7a5139cc146";
+pub const RNGKIT_CORE_REVISION: &str = "7c798146eddbcb9443c84adc236c0f7c09bd7789";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -106,6 +106,7 @@ pub fn run() {
     #[cfg(debug_assertions)]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::state::get_app_state,
+        commands::state::acknowledge_outcome,
         commands::discovery::refresh_sources,
         commands::discovery::select_source,
         commands::preferences::set_sample_bits,
@@ -117,6 +118,7 @@ pub fn run() {
         commands::collection::stop_collection,
         commands::collection::start_another_session,
         commands::collection::open_session_folder,
+        commands::collection::open_collection_working_folder,
         commands::lifecycle::copy_diagnostics,
         commands::lifecycle::stop_and_exit,
         commands::reports::choose_report_input,
@@ -124,18 +126,21 @@ pub fn run() {
         commands::reports::replace_report,
         commands::reports::open_report,
         commands::reports::open_report_folder,
+        commands::reports::open_report_working_folder,
         commands::combine::choose_csv_inputs,
         commands::combine::remove_combine_input,
         commands::combine::clear_combine_inputs,
         commands::combine::create_derived,
         commands::combine::generate_derived,
         commands::combine::open_derived_folder,
+        commands::combine::open_combine_working_folder,
         commands::dev::apply_dev_scenario,
     ]);
 
     #[cfg(not(debug_assertions))]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::state::get_app_state,
+        commands::state::acknowledge_outcome,
         commands::discovery::refresh_sources,
         commands::discovery::select_source,
         commands::preferences::set_sample_bits,
@@ -147,6 +152,7 @@ pub fn run() {
         commands::collection::stop_collection,
         commands::collection::start_another_session,
         commands::collection::open_session_folder,
+        commands::collection::open_collection_working_folder,
         commands::lifecycle::copy_diagnostics,
         commands::lifecycle::stop_and_exit,
         commands::reports::choose_report_input,
@@ -154,12 +160,14 @@ pub fn run() {
         commands::reports::replace_report,
         commands::reports::open_report,
         commands::reports::open_report_folder,
+        commands::reports::open_report_working_folder,
         commands::combine::choose_csv_inputs,
         commands::combine::remove_combine_input,
         commands::combine::clear_combine_inputs,
         commands::combine::create_derived,
         commands::combine::generate_derived,
         commands::combine::open_derived_folder,
+        commands::combine::open_combine_working_folder,
     ]);
 
     builder
@@ -203,7 +211,7 @@ mod tests {
     fn pins_gate_a_library_revision() {
         assert_eq!(
             RNGKIT_CORE_REVISION,
-            "2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+            "7c798146eddbcb9443c84adc236c0f7c09bd7789"
         );
     }
 

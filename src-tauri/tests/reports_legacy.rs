@@ -87,6 +87,15 @@ fn csv_only_bin_only_and_paired_generate_without_mutation() {
     assert_eq!(SAMPLES_SHEET, "Samples");
     assert_eq!(REF_PLUS, "Reference +1.96");
     assert_eq!(REF_MINUS, "Reference -1.96");
+    let outcome = coordinator.pending_outcome().expect("report outcome");
+    assert_eq!(outcome.title, "Report generated");
+    assert_eq!(outcome.operation, rngkit_lib::dto::OutcomeOperation::Report);
+    assert!(
+        outcome
+            .actions
+            .contains(&rngkit_lib::dto::OutcomeActionId::OpenReport)
+    );
+    assert_eq!(outcome.paths.len(), 1);
     assert_eq!(hash(&csv_path), before_csv);
     assert_eq!(hash(&bin_path), before_bin);
 
@@ -255,10 +264,24 @@ fn existing_xlsx_is_not_replaced_without_explicit_request() {
 
     let error = generate_inspected(&mut coordinator, false).expect_err("conflict");
     assert_eq!(error.code, ErrorCode::OutputExists);
+    assert_eq!(
+        coordinator
+            .pending_outcome()
+            .expect("failure outcome")
+            .title,
+        "Report not completed"
+    );
     assert_eq!(fs::read(&dest).expect("unchanged"), original);
     assert_eq!(hash(&csv_path), b"20260821T18:30:00,8\n".to_vec());
 
     generate_inspected(&mut coordinator, true).expect("replace");
+    assert_eq!(
+        coordinator
+            .pending_outcome()
+            .expect("replace outcome")
+            .title,
+        "Report replaced"
+    );
     let replaced = fs::read(&dest).expect("replaced");
     assert_eq!(&replaced[..2], b"PK");
     fs::remove_dir_all(&root).expect("cleanup");

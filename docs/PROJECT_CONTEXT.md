@@ -16,10 +16,10 @@ without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
 `main` includes the published workflow improvements through Phase 6. The
-2026-08-25 Phase 2 artifact-feedback/report-charts integration is implemented
-locally against reachable `rngkit-core` revision
-`7c798146eddbcb9443c84adc236c0f7c09bd7789`; its native validation gate remains
-open and the app changes are not yet committed.
+2026-08-25 artifact-feedback/report-charts work is implemented locally through
+Phase 3 against reachable `rngkit-core` revision
+`7c798146eddbcb9443c84adc236c0f7c09bd7789`; Phase 3 remains uncommitted at its
+user-validation gate and Phase 4 UI work is not authorized.
 
 ## Main product flows
 
@@ -80,6 +80,10 @@ open and the app changes are not yet committed.
   report/combine tests, frontend checks/unit/E2E/build, locked Rust
   check/test/clippy/doc, Rust 1.85 check/test, and `git diff --check` passed.
   The four physical tests remained ignored.
+- **2026-08-25 Phase 3 deterministic validation (Windows host):** locked Rust
+  all-target tests, clippy, doc tests, Rust 1.85 check/test, frontend
+  format/check/lint/unit validation, and `git diff --check` passed. The four
+  physical tests remained ignored. No frontend page UI was changed.
 - **Browser-integrated:** production-asset Edge tests passed for destination
   navigation, Help headings/copy, accessibility, reduced motion/contrast, and
   minimum-window layout. These tests use no real Tauri IPC or hardware.

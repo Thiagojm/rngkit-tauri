@@ -46,6 +46,12 @@ fn assert_copy_is_safe(text: &str) {
     assert!(!lower.contains("selector"), "{text}");
 }
 
+fn assert_snapshot_is_safe(snapshot: &rngkit_lib::dto::AppStateDto) {
+    let mut value = serde_json::to_value(snapshot).expect("snapshot json");
+    value["pendingOutcome"] = serde_json::Value::Null;
+    assert_copy_is_safe(&value.to_string());
+}
+
 #[test]
 fn close_policy_never_abandons_an_active_session() {
     assert_eq!(
@@ -130,8 +136,7 @@ fn channel_loss_is_terminal_and_queryable() {
     let copy = format_copy(&coordinator.diagnostics());
     assert_copy_is_safe(&copy);
     assert!(copy.contains("op-"));
-    let dump = serde_json::to_string(&snapshot).expect("json");
-    assert_copy_is_safe(&dump);
+    assert_snapshot_is_safe(&snapshot);
     let _ = fs::remove_dir_all(&root);
 }
 

@@ -208,6 +208,53 @@ pub struct CombineSnapshot {
     pub result: Option<CombineResult>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OutcomeSeverity {
+    Success,
+    Warning,
+    Error,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OutcomeOperation {
+    Collection,
+    Report,
+    Combine,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OutcomeActionId {
+    OpenSessionFolder,
+    OpenReport,
+    OpenReportFolder,
+    OpenDerivedFolder,
+    OpenCollectionWorkingFolder,
+    OpenReportWorkingFolder,
+    OpenCombineWorkingFolder,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomePathRow {
+    pub label: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeNotice {
+    pub id: u64,
+    pub severity: OutcomeSeverity,
+    pub operation: OutcomeOperation,
+    pub title: String,
+    pub message: String,
+    pub paths: Vec<OutcomePathRow>,
+    pub actions: Vec<OutcomeActionId>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppStateDto {
@@ -218,6 +265,7 @@ pub struct AppStateDto {
     pub theme: ThemePreference,
     pub preferences_warning: Option<String>,
     pub diagnostics: Vec<DiagnosticRecord>,
+    pub pending_outcome: Option<OutcomeNotice>,
 }
 
 impl ReportsSnapshot {
@@ -303,6 +351,7 @@ mod tests {
             theme: ThemePreference::System,
             preferences_warning: None,
             diagnostics: Vec::new(),
+            pending_outcome: None,
         };
         let value = serde_json::to_value(&dto).expect("json");
         assert!(value.get("fileJob").is_some());

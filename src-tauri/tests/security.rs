@@ -64,6 +64,32 @@ fn assert_safe_json(dump: &str) {
     assert!(!lower.contains("serial="), "{dump}");
 }
 
+fn assert_safe_snapshot(snapshot: &rngkit_lib::dto::AppStateDto, allowed_root: &Path) {
+    let mut value = serde_json::to_value(snapshot).expect("snapshot json");
+    let outcome = value
+        .get_mut("pendingOutcome")
+        .and_then(serde_json::Value::as_object_mut)
+        .expect("outcome");
+    let root = allowed_root.to_string_lossy();
+    let canonical = fs::canonicalize(allowed_root)
+        .unwrap_or_else(|_| allowed_root.to_path_buf())
+        .to_string_lossy()
+        .into_owned();
+    for row in outcome
+        .get("paths")
+        .and_then(serde_json::Value::as_array)
+        .expect("outcome paths")
+    {
+        let path = row["path"].as_str().expect("outcome path");
+        assert!(
+            path.starts_with(&*root) || path.starts_with(&canonical),
+            "{path}"
+        );
+    }
+    value["pendingOutcome"] = serde_json::Value::Null;
+    assert_safe_json(&value.to_string());
+}
+
 fn completed_session() -> (TempRoot, PathBuf) {
     let root = temp_root();
     let mut coordinator = AppCoordinator::new();
@@ -193,6 +219,9 @@ fn open_commands_accept_no_frontend_path() {
             "open_report",
             "open_report_folder",
             "open_derived_folder",
+            "open_collection_working_folder",
+            "open_report_working_folder",
+            "open_combine_working_folder",
         ] {
             if !source.contains(&format!("pub fn {name}")) {
                 continue;
@@ -242,6 +271,13 @@ fn open_targets_are_backend_known_only() {
         ErrorCode::InvalidTransition
     );
     assert_eq!(
+        collection
+            .open_known_output_root(&empty)
+            .expect_err("no output root")
+            .code,
+        ErrorCode::InvalidTransition
+    );
+    assert_eq!(
         reports
             .open_existing_folder(root.join("missing").as_path())
             .expect_err("missing")
@@ -250,7 +286,17 @@ fn open_targets_are_backend_known_only() {
     );
 
     let mut coordinator = AppCoordinator::new();
+    coordinator.set_output_root(&root).expect("root");
+    collection
+        .open_known_output_root(&coordinator)
+        .expect("open collection working folder");
     inspect_picked(&mut coordinator, &directory).expect("inspect");
+    reports
+        .open_known_working_folder(&coordinator)
+        .expect("open report working folder");
+    reports
+        .open_known_combine_working_folder(&coordinator)
+        .expect("open combine working folder");
     generate_inspected(&mut coordinator, false).expect("xlsx");
     reports
         .open_known_report(&coordinator)
@@ -258,8 +304,7 @@ fn open_targets_are_backend_known_only() {
     reports
         .open_known_folder(&coordinator)
         .expect("open folder");
-    let dump = serde_json::to_string(&coordinator.snapshot()).expect("json");
-    assert_safe_json(&dump);
+    assert_safe_snapshot(&coordinator.snapshot(), &root);
 }
 
 #[test]

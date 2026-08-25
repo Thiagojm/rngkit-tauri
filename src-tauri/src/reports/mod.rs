@@ -91,6 +91,40 @@ impl ReportsHandle {
         Ok(())
     }
 
+    pub fn open_known_working_folder(&self, coordinator: &AppCoordinator) -> Result<(), SafeError> {
+        ensure_artifact_open_allowed(coordinator)?;
+        let path = coordinator.report_directory().ok_or_else(|| {
+            SafeError::invalid_transition("Inspect a report input before opening its folder.")
+        })?;
+        if !path.is_dir() {
+            return Err(SafeError::invalid_transition(
+                "The report working folder is no longer available.",
+            ));
+        }
+        self.opener.open_folder(path)?;
+        self.record(path);
+        Ok(())
+    }
+
+    pub fn open_known_combine_working_folder(
+        &self,
+        coordinator: &AppCoordinator,
+    ) -> Result<(), SafeError> {
+        ensure_artifact_open_allowed(coordinator)?;
+        let path = coordinator
+            .combine_directory()
+            .or_else(|| coordinator.output_root())
+            .ok_or_else(|| SafeError::invalid_transition("Choose an output folder first."))?;
+        if !path.is_dir() {
+            return Err(SafeError::invalid_transition(
+                "The Combine working folder is no longer available.",
+            ));
+        }
+        self.opener.open_folder(path)?;
+        self.record(path);
+        Ok(())
+    }
+
     #[must_use]
     pub fn opened(&self) -> Vec<PathBuf> {
         self.opened
@@ -184,14 +218,16 @@ pub fn generate_inspected(
     let _ = coordinator.finish_file_job();
     match result {
         Ok(_) => {
-            coordinator.mark_report_written();
+            coordinator.mark_report_written(replace);
             Ok(coordinator.snapshot())
         }
         Err(error) if error.code == crate::dto::ErrorCode::OutputExists => {
             coordinator.mark_report_conflict();
+            coordinator.note_report_failure(error.message());
             Err(error)
         }
         Err(error) => {
+            coordinator.note_report_failure(error.message());
             coordinator.record_diagnostic(error.code, error.message());
             Err(error)
         }

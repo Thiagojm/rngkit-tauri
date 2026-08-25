@@ -91,6 +91,32 @@ fn assert_safe_json(dump: &str) {
     assert!(!lower.contains("serial="), "{dump}");
 }
 
+fn assert_safe_snapshot(snapshot: &rngkit_lib::dto::AppStateDto, allowed_root: &Path) {
+    let mut value = serde_json::to_value(snapshot).expect("snapshot json");
+    let outcome = value
+        .get_mut("pendingOutcome")
+        .and_then(serde_json::Value::as_object_mut)
+        .expect("outcome");
+    let root = allowed_root.to_string_lossy();
+    let canonical = fs::canonicalize(allowed_root)
+        .unwrap_or_else(|_| allowed_root.to_path_buf())
+        .to_string_lossy()
+        .into_owned();
+    for row in outcome
+        .get("paths")
+        .and_then(serde_json::Value::as_array)
+        .expect("outcome paths")
+    {
+        let path = row["path"].as_str().expect("outcome path");
+        assert!(
+            path.starts_with(&*root) || path.starts_with(&canonical),
+            "{path}"
+        );
+    }
+    value["pendingOutcome"] = serde_json::Value::Null;
+    assert_safe_json(&value.to_string());
+}
+
 fn ready_combine(root: &Path, paths: &[PathBuf]) -> AppCoordinator {
     let mut coordinator = AppCoordinator::new();
     coordinator.set_output_root(root).expect("root");
@@ -123,6 +149,21 @@ fn compatible_csvs_create_bundle_without_mutation() {
     assert_eq!(result.input_count, 2);
     assert_eq!(result.total_rows, 4);
     let directory = coordinator.combine_directory().expect("dir").to_path_buf();
+    let outcome = coordinator.pending_outcome().expect("combine outcome");
+    assert_eq!(outcome.title, "Derived bundle created");
+    assert_eq!(
+        outcome.operation,
+        rngkit_lib::dto::OutcomeOperation::Combine
+    );
+    assert_eq!(outcome.paths.len(), 3);
+    assert!(
+        outcome
+            .actions
+            .contains(&rngkit_lib::dto::OutcomeActionId::OpenDerivedFolder)
+    );
+    let outcome_json = serde_json::to_string(&outcome).expect("outcome json");
+    assert!(!outcome_json.contains(&a.to_string_lossy().to_string()));
+    assert!(!outcome_json.contains(&b.to_string_lossy().to_string()));
     assert!(directory.join(format!("{}.csv", result.stem)).is_file());
     assert!(directory.join("manifest.json").is_file());
     assert!(!directory.join(format!("{}.bin", result.stem)).exists());
@@ -135,9 +176,12 @@ fn compatible_csvs_create_bundle_without_mutation() {
     assert_eq!(hash(&a), before_a);
     assert_eq!(hash(&b), before_b);
 
-    let dump = serde_json::to_string(&coordinator.snapshot()).expect("json");
-    assert_safe_json(&dump);
-    assert!(!dump.contains(&root.display().to_string()));
+    assert_safe_snapshot(&coordinator.snapshot(), &root);
+    assert!(
+        !serde_json::to_string(&coordinator.snapshot())
+            .expect("json")
+            .contains(&root.display().to_string())
+    );
 }
 
 #[test]
@@ -321,6 +365,13 @@ fn changed_after_preview_and_write_failure_leave_inputs_and_no_bundle() {
     )
     .expect_err("changed");
     assert_eq!(error.code, ErrorCode::OperationConflict);
+    assert_eq!(
+        coordinator
+            .pending_outcome()
+            .expect("failure outcome")
+            .title,
+        "Derived bundle not created"
+    );
     assert!(coordinator.snapshot().combine.result.is_none());
     assert_ne!(hash(&a), before_a);
     fs::write(&a, FILE_A).expect("restore");
@@ -332,6 +383,10 @@ fn changed_after_preview_and_write_failure_leave_inputs_and_no_bundle() {
     })
     .expect_err("write");
     assert_eq!(error.code, ErrorCode::UnexpectedFailure);
+    assert_eq!(
+        coordinator.pending_outcome().expect("write outcome").title,
+        "Derived bundle not created"
+    );
     let created: Vec<_> = fs::read_dir(&root)
         .expect("list")
         .filter_map(|entry| entry.ok())

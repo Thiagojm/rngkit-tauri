@@ -73,6 +73,7 @@ function snapshot(
     theme: extras.theme ?? ('system' satisfies ThemePreference),
     preferencesWarning: null,
     diagnostics: extras.diagnostics ?? [],
+    pendingOutcome: null,
   };
 }
 

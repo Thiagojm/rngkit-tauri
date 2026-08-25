@@ -182,10 +182,15 @@ pub async fn create_derived(
         Ok(Ok(directory)) => finish_created(&mut coordinator, directory),
         Ok(Err(error)) => {
             let mapped = map_combine(error);
+            coordinator.note_combine_failure(mapped.message());
             coordinator.record_diagnostic(mapped.code, mapped.message());
             Err(mapped)
         }
-        Err(_) => Err(SafeError::unexpected_failure()),
+        Err(_) => {
+            let error = SafeError::unexpected_failure();
+            coordinator.note_combine_failure(error.message());
+            Err(error)
+        }
     }
 }
 
@@ -230,14 +235,16 @@ pub async fn generate_derived(
     let _ = coordinator.finish_file_job();
     match written {
         Ok(Ok(_)) => {
-            coordinator.mark_report_written();
+            coordinator.mark_report_written(replace);
             Ok(coordinator.snapshot())
         }
         Ok(Err(error)) if error.code == crate::dto::ErrorCode::OutputExists => {
             coordinator.mark_report_conflict();
+            coordinator.note_report_failure(error.message());
             Err(error)
         }
         Ok(Err(error)) => {
+            coordinator.note_report_failure(error.message());
             coordinator.record_diagnostic(error.code, error.message());
             Err(error)
         }
@@ -258,6 +265,18 @@ pub fn open_derived_folder(
         SafeError::invalid_transition("Create a derived bundle before opening its folder.")
     })?;
     reports.open_existing_folder(path)?;
+    Ok(coordinator.snapshot())
+}
+
+#[tauri::command]
+pub fn open_combine_working_folder(
+    coordinator: State<'_, Mutex<AppCoordinator>>,
+    reports: State<'_, ReportsHandle>,
+) -> Result<AppStateDto, SafeError> {
+    let coordinator = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reports.open_known_combine_working_folder(&coordinator)?;
     Ok(coordinator.snapshot())
 }
 

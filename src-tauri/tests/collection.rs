@@ -1,7 +1,7 @@
 //! Fake source/clock/channel collection tests. Default tests open no hardware.
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use rngkit_core::SourceErrorKind;
@@ -73,6 +73,24 @@ fn assert_safe_json(dump: &str) {
     assert!(!lower.contains("seed="), "{dump}");
     assert!(!lower.contains("serial="), "{dump}");
     assert!(!lower.contains("selector"), "{dump}");
+}
+
+fn assert_safe_snapshot(snapshot: &rngkit_lib::dto::AppStateDto, allowed_root: &Path) {
+    let mut value = serde_json::to_value(snapshot).expect("snapshot json");
+    let outcome = value
+        .get_mut("pendingOutcome")
+        .and_then(serde_json::Value::as_object_mut)
+        .expect("outcome");
+    let paths = outcome
+        .get("paths")
+        .and_then(serde_json::Value::as_array)
+        .expect("outcome paths");
+    for row in paths {
+        let path = row["path"].as_str().expect("outcome path");
+        assert!(path.starts_with(&*allowed_root.to_string_lossy()), "{path}");
+    }
+    value["pendingOutcome"] = serde_json::Value::Null;
+    assert_safe_json(&value.to_string());
 }
 
 #[test]
@@ -147,7 +165,56 @@ fn fake_session_writes_native_bundle_and_finalizes() {
     );
     let dump = serde_json::to_string(&events).expect("json");
     assert_safe_json(&dump);
-    assert_safe_json(&serde_json::to_string(&snapshot).expect("snap"));
+    assert_safe_snapshot(&snapshot, &root);
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn outcome_acknowledgement_rejects_stale_ids_and_clears_current_notice() {
+    let root = temp_root();
+    let coordinator = Mutex::new(ready_with_root(&root, "mock-pseudo-1"));
+    let plan = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .begin_collection()
+        .expect("start");
+    CollectionHandle::fake().run_blocking(&coordinator, &VecSender::new(), plan);
+    let mut coordinator = coordinator.into_inner().expect("coordinator");
+    let notice = coordinator
+        .pending_outcome()
+        .expect("completion notice")
+        .clone();
+    assert_eq!(
+        notice.operation,
+        rngkit_lib::dto::OutcomeOperation::Collection
+    );
+    assert_eq!(notice.severity, rngkit_lib::dto::OutcomeSeverity::Success);
+    assert_eq!(notice.paths.len(), 4);
+    assert!(
+        notice
+            .actions
+            .contains(&rngkit_lib::dto::OutcomeActionId::OpenSessionFolder)
+    );
+
+    assert_eq!(
+        coordinator
+            .acknowledge_outcome(notice.id + 1)
+            .expect_err("stale notice")
+            .code,
+        ErrorCode::InvalidTransition
+    );
+    assert!(coordinator.pending_outcome().is_some());
+    coordinator
+        .acknowledge_outcome(notice.id)
+        .expect("acknowledge current");
+    assert!(coordinator.pending_outcome().is_none());
+    assert_eq!(
+        coordinator
+            .acknowledge_outcome(notice.id)
+            .expect_err("already acknowledged")
+            .code,
+        ErrorCode::InvalidTransition
+    );
     let _ = fs::remove_dir_all(&root);
 }
 
@@ -196,8 +263,7 @@ fn channel_failure_finalizes_failed_state() {
         snapshot.collection.error_code,
         Some(ErrorCode::UnexpectedFailure)
     );
-    let dump = serde_json::to_string(&snapshot).expect("json");
-    assert_safe_json(&dump);
+    assert_safe_snapshot(&snapshot, &root);
     assert_safe_json(&serde_json::to_string(&sender.events()).expect("events"));
     let _ = fs::remove_dir_all(&root);
 }
@@ -325,8 +391,7 @@ fn open_session_folder_uses_backend_known_path_only() {
             .open_known_session_folder(&coordinator)
             .expect("open");
         let snapshot = coordinator.snapshot();
-        let dump = serde_json::to_string(&snapshot).expect("json");
-        assert_safe_json(&dump);
+        assert_safe_snapshot(&snapshot, &root);
         let debug = format!("{coordinator:?}");
         let dir = coordinator
             .session_directory()
@@ -361,6 +426,10 @@ fn source_open_failure_finishes_failed() {
         snapshot.collection.error_code,
         Some(ErrorCode::SourceUnavailable)
     );
+    let outcome = snapshot.pending_outcome.expect("failure outcome");
+    assert_eq!(outcome.title, "Collection failed");
+    assert!(outcome.paths.is_empty());
+    assert!(outcome.actions.is_empty());
     assert!(sender.events().iter().any(|event| matches!(
         event,
         CollectionEventDto::TerminalFailure {

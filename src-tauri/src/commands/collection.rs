@@ -93,3 +93,15 @@ pub fn open_session_folder(
     collection.open_known_session_folder(&coordinator)?;
     Ok(coordinator.snapshot())
 }
+
+#[tauri::command]
+pub fn open_collection_working_folder(
+    coordinator: State<'_, Mutex<AppCoordinator>>,
+    collection: State<'_, CollectionHandle>,
+) -> Result<AppStateDto, SafeError> {
+    let coordinator = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    collection.open_known_output_root(&coordinator)?;
+    Ok(coordinator.snapshot())
+}

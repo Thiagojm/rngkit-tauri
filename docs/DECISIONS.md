@@ -73,7 +73,13 @@ All decisions are accepted. Material changes return to design review.
 
 - The 2026-08-25 library Phase 1 is published at reachable revision
   `7c798146eddbcb9443c84adc236c0f7c09bd7789`; the app Phase 2 integration is
-  implemented locally and remains uncommitted pending its user gate.
+  published at app commit `b946c4d`; Phase 3 remains uncommitted pending its
+  user gate.
+- The 2026-08-25 app Phase 3 keeps artifact feedback transient and typed: one
+  monotonic-ID notice is pending at a time, stale acknowledgements fail, and
+  only confirmed regular files/directories under backend-known roots may be
+  exposed or opened. Phase 3 is locally validated but remains uncommitted at
+  its user gate; no Phase 4 UI is authorized.
 - Flat canonical `_concat_` CSVs are a distinct Reports kind without a
   manifest. Inspected reports retain the library's source basename and chart
   axis mode in backend-only state; generation revalidates that context before

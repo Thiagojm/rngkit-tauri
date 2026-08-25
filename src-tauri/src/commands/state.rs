@@ -17,3 +17,15 @@ pub fn get_app_state(
         .unwrap_or_else(std::sync::PoisonError::into_inner)
         .snapshot())
 }
+
+#[tauri::command]
+pub fn acknowledge_outcome(
+    coordinator: State<'_, Mutex<AppCoordinator>>,
+    notice_id: u64,
+) -> Result<AppStateDto, SafeError> {
+    let mut coordinator = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    coordinator.acknowledge_outcome(notice_id)?;
+    Ok(coordinator.snapshot())
+}

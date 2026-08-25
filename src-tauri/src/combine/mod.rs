@@ -46,6 +46,7 @@ pub fn create_previewed(coordinator: &mut AppCoordinator) -> Result<AppStateDto,
         Ok(directory) => finish_created(coordinator, directory),
         Err(error) => {
             let mapped = map_combine(error);
+            coordinator.note_combine_failure(mapped.message());
             coordinator.record_diagnostic(mapped.code, mapped.message());
             Err(mapped)
         }
@@ -87,14 +88,16 @@ pub fn generate_derived_report(
     let _ = coordinator.finish_file_job();
     match written {
         Ok(_) => {
-            coordinator.mark_report_written();
+            coordinator.mark_report_written(replace);
             Ok(coordinator.snapshot())
         }
         Err(error) if error.code == crate::dto::ErrorCode::OutputExists => {
             coordinator.mark_report_conflict();
+            coordinator.note_report_failure(error.message());
             Err(error)
         }
         Err(error) => {
+            coordinator.note_report_failure(error.message());
             coordinator.record_diagnostic(error.code, error.message());
             Err(error)
         }
@@ -290,6 +293,7 @@ pub(crate) fn finish_created(
         .unwrap_or("derived")
         .to_owned();
     let input_count = coordinator.combine_inputs().len() as u32;
+    let notice_directory = directory.clone();
     coordinator.set_combine_result(
         CombineResult {
             stem,
@@ -306,6 +310,7 @@ pub(crate) fn finish_created(
         inspected.kind,
         inspected.options,
     );
+    coordinator.note_derived_created(&notice_directory);
     Ok(coordinator.snapshot())
 }
 
