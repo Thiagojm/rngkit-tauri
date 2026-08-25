@@ -2,196 +2,92 @@
 
 ## Purpose and current state
 
-RngKit is a Windows-first desktop application that collects fixed-size entropy
-samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG;
-monitors descriptive statistics; records native sessions; generates XLSX; and
-safely combines compatible current and RngKitPSG v3 CSV files.
+RngKit is a Windows-first desktop application for collecting fixed-size samples
+from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG source;
+monitoring descriptive cumulative statistics; recording native sessions;
+generating XLSX reports; and combining compatible current and RngKitPSG v3 CSVs.
 
-This repository is a locked Tauri 2 + client-only Svelte 5 + TypeScript + Vite +
-Tailwind CSS 4 app. Rust owns the coordinator
-(`idle|discovering|ready|collecting|stopping|completed|failed`), file jobs,
-discovery tokens, collection worker, reports, Combine, close policy, and
-redacted diagnostics. Startup prepares `Documents/RngKit` when no valid saved
-root exists, defaults new users to 2048 bits, and performs one asynchronous
-discovery after frontend hydration without selecting a source.
-Production IPC matches the approved command list; `apply_dev_scenario` is
-debug-only. Capabilities are `core:default` and `dialog:default`. The live
-chart retains every committed `(sample_index, cumulative_z)` point. v1
-packaging is an unsigned per-user English NSIS installer with offline WebView2.
+The app is a locked Tauri 2 + client-only Svelte 5 + TypeScript + Vite +
+Tailwind CSS 4 application. Rust owns coordinator state, discovery tokens,
+workers, file jobs, reports, Combine, close policy, preferences, and redacted
+diagnostics. Startup prepares `Documents/RngKit` when needed, defaults new
+users to 2048 bits, and performs one asynchronous discovery after hydration
+without opening or selecting a source. The live chart retains every committed
+point and native sessions contain BIN, CSV, and manifest artifacts.
 
-The product-code and installer baseline remains `061f66a`; current `main` also
-contains the completed Phase 2 implementation. The Checkpoint 18 audit is
-complete.
-Original design acceptance criteria 1–17 and 19–20 are evidenced. Criterion 18
-is partial: offline installation, first launch, and basic app functionality
-passed by user report; uninstall and session-data preservation remain
-unverified. No required original-v1 product work is stubbed.
-
-The follow-on workflow-improvements design and phased plan dated 2026-08-24
-are approved and readable under `docs/specs/` and `docs/plans/`. Phase 1 is
-complete and published in `rngkit-core`; Phase 2, Phase 3, and Phase 4 are
-complete and published in this app. Phase 5 is complete and published and
-passed automated and browser-integrated validation; native Combine manual
-validation is the active gate and Phase 6 is not authorized.
-
-The library is `https://github.com/Thiagojm/rngkit-core` at
-`2cdf311dd206cb5e7320ee520ef1e7a5139cc146` (git, never a local path).
+`main` includes the published Phase 5 app at `de1f338`. Phase 6 Help is
+implemented and validated in the current worktree; native integrated workflow
+validation and the Phase 6 user-approval gate remain open. No Phase 6 commit or
+push is authorized by this state. The reusable library is pinned to reachable
+`rngkit-core` revision `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`.
 
 ## Main product flows
 
 1. **Collect:** discover candidates, require explicit selection, collect until
    cooperative stop, record a native bundle, and plot every committed Z point.
 2. **Reports:** inspect native or derived bundles, current standalone CSV/BIN,
-   or legacy v3 CSV and write same-stem XLSX with explicit Replace.
+   or legacy v3 CSV/BIN and write same-stem XLSX with explicit Replace.
 3. **Combine:** accumulate compatible current, legacy, or mixed CSVs across
-   folders and create a no-overwrite schema-2 derived CSV/manifest bundle
-   without modifying inputs.
-4. **Help:** sources, folds, formats, troubleshooting, and descriptive limits.
+   folders and create a no-overwrite schema-2 derived bundle without changing
+   inputs.
+4. **Help:** Quick start, source choice, safe collection, reports, Combine,
+   chart interpretation, common problems, and file/version details.
 
-## Architecture boundary
+## Architecture and stable constraints
 
-- Tauri owns lifecycle, coordinator, workers, IPC, dialogs, preferences, and
-  artifact opening.
-- `rngkit-core` crates own adapters, collection, recording, statistics, readers,
+- Tauri owns lifecycle, coordinator, IPC, dialogs, preferences, and artifact
+  opening; `rngkit-core` owns adapters, recording, statistics, readers,
   concatenation, and XLSX contents.
-- Svelte consumes camel-case DTOs and is never authoritative for collection,
-  filesystem safety, or statistics.
+- The frontend uses only `core:default` and `dialog:default`; production CSP is
+  restricted. Open actions use backend-known paths, never frontend paths.
+- One source per session; no silent selection, fallback, live XOR, reconnect,
+  or resume. Physical tests are ignored, opt-in, and serial.
+- Entropy, seeds, selectors, serials, device paths, and arbitrary diagnostic
+  chains never cross IPC or persist. Statistical Z and `+/-1.96` are descriptive
+  visual guides, never inference or pass/fail evidence.
+- Exact locked floors are Node `^20.19.0 || >=22.12.0`, npm `>=10`, Rust
+  edition 2024/MSRV 1.85. Commit, push, release, signing, publication, and
+  deployment remain separate approvals.
 
-## Domain terms
+## Durable file and workflow contracts
 
-- **Native session:** same-stem BIN/CSV plus `manifest.json`; CSV is the commit
-  marker.
-- **Derived concatenation:** distinct same-stem CSV plus manifest; not a
-  collected session.
-- **Cumulative Z:** descriptive `(2*C - N) / sqrt(N)`.
-- **Reference +/-1.96:** visual guides only, never a significance result.
-- **Candidate token:** transient opaque backend id; invalidated by refresh.
+- A native session is same-stem BIN/CSV plus `manifest.json`; CSV is the commit
+  marker. A derived bundle is a distinct CSV plus manifest, not a session.
+- Reports use one chooser. A present manifest is authoritative; without one,
+  standalone current/legacy CSV/BIN metadata is validated from filename and
+  contents. Inputs are read-only and existing XLSX requires Replace.
+- Combine is CSV-only, accepts compatible current/legacy/mixed inputs, keeps
+  ordered backend paths behind opaque IDs, supports Add/Remove/Clear, rejects
+  overlap/incompatibility/BIN, preserves schema-1 reading, and writes schema 2
+  `csv_concatenation` output with no absolute input paths.
+- Help preserves the approved boundary: `Z shows balance over time; it does not
+  certify randomness.` It documents the default folder, discovery behavior,
+  Fit all, standalone inputs, timestamp provenance, mixed Combine, and recovery
+  actions in direct task order.
 
-## Stable constraints
+## Evidence and open validation
 
-- Windows 10/11 x64 is the v1 desktop target; Ubuntu CI is compile evidence.
-- Locked stack: Tauri 2.11.5, Svelte 5.56.10, TypeScript 6.0.3, Vite 8.2.2,
-  Tailwind CSS 4.3.3, uPlot 1.6.32, Playwright 1.62.1. Node
-  `^20.19.0 || >=22.12.0`; npm `>=10`. Rust edition 2024, MSRV 1.85.
-- Frontend capabilities stay `core:default` and `dialog:default`.
-- One source per session; no live XOR, fallback, reconnect, resume, or silent
-  first-device selection.
-- Diagnostics and preferences exclude entropy, seeds, selectors, serials,
-  device paths, and absolute legacy input paths.
-- Statistical Z and `+/-1.96` stay descriptive, never inferential.
-- Signing, publication, updater, release, and deployment need separate
-  approval.
+- **Deterministic Phase 6 validation (Windows host):** `npm ci`, Prettier,
+  Svelte/TypeScript check, ESLint, Vitest 26 files/100 tests, Playwright 5/5,
+  Vite build, cargo fmt/check/test/clippy/doc with locked dependencies, Rust
+  1.85 check/test, locked no-bundle Tauri release build, and `git diff --check`
+  passed. The four physical tests remained ignored.
+- **Browser-integrated:** production-asset Edge tests passed for destination
+  navigation, Help headings/copy, accessibility, reduced motion/contrast, and
+  minimum-window layout. These tests use no real Tauri IPC or hardware.
+- **Native user gate (not passed here):** clean-start defaults/discovery;
+  PseudoRNG collection and chart Fit all; standalone legacy/current Reports;
+  cross-folder mixed Combine and derived report; Help navigation, theme,
+  keyboard use, and minimum window.
+- **Still unverified:** native hardware/unplug behavior, native 100k/1M chart
+  rendering, scaling/screen-reader sampling, NSIS uninstall/session-data
+  preservation, signing/publication, and remote CI. Physical hardware and NSIS
+  are outside this Phase 6 authorization.
 
-## Evidence (2026-08-24, Checkpoint 18)
+## Sources of truth
 
-- **Deterministic (this Windows host):** `format:check`, `check`, `lint`,
-  Vitest 91/91, Playwright 5/5, `vite build`, cargo fmt/check/test/clippy/doc
-  and `+1.85.0` check/test, all locked, `git diff --check`. Hardware tests
-  compiled and stayed ignored. Chart data-only harness: 100,001 points (0.28 ms
-  replace, 0.43 ms append, 7.7 MiB heap delta) and 1,000,001 points (1.70 ms
-  replace, 7.14 ms append, 31.7 MiB). Tracked tree has no installer, session
-  data, secret, or `path=` crate pin.
-- **CI:** `windows-latest` and `ubuntu-22.04` for `061f66a` at
-  https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549 (no
-  hardware jobs, no installer). Ubuntu is not Linux desktop support.
-- **Physical (Windows, ignored, serial, 3 fake-clock samples):** BitBabbler
-  White fold-0, TrueRNG, RDSEED ordinal 1; unified discovery then listed those
-  families and PseudoRNG without opening.
-- **Installer:** local unsigned
-  `src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe` (208.4 MiB,
-  SHA-256 `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`),
-  not tracked. The user reported offline installation, first launch, and basic
-  app functionality on Windows. Uninstall, session-data preservation, and
-  SmartScreen behavior remain unverified.
-
-## Unverified (not passed)
-
-Native Collect on hardware, unplug-during-read, other folds/devices, Linux
-physical; native 100k/1M chart canvas render/interaction; native
-Reports/Combine dialogs; Windows 100%/150%/200% scaling and screen-reader
-sampling; Windows file-symlink inspect (privilege 1314); NSIS uninstall and
-session-data preservation; SmartScreen behavior, signing, and publication.
-
-## Evidence (2026-08-24, workflow improvements Phase 2)
-
-- **Deterministic (this Windows host):** locked npm install, format, Svelte and
-  TypeScript checks, lint, Vitest 92/92, Playwright 5/5, production Vite build,
-  locked cargo fmt/check/test/clippy/doc, and Rust 1.85 check/test passed.
-- Default tests compiled four physical smokes and kept them ignored. No native
-  window, physical source, installer, or remote CI check was run for Phase 2.
-- Focused recovery tests cover clean default creation, preservation of a valid
-  custom root and sample size, missing-root fallback, unavailable Documents,
-  the combined failure case, and clearing a stale warning after choosing a
-  valid folder. Security temp roots use a process-local counter to avoid
-  parallel Windows test collisions.
-
-## Evidence (2026-08-24, workflow improvements Phase 3)
-
-- The chart now has one `Fit all` action, adapter-owned following state,
-  supersedable animation-frame updates, and pointer zoom/pan pause behavior.
-  The instrument-style card is taller; the concise descriptive boundary stays
-  in Help rather than Collect, and retention remains every committed point.
-- Deterministic validation passed: format check, Svelte/TypeScript check, lint,
-  Vitest 100/100, Playwright 5/5, production Vite build, chart stress 100k/1M,
-  cargo fmt/check/test/clippy/doc, Rust 1.85 check/test, and `git diff --check`.
-- Chart stress measurements were 100,000 points: 0.40 ms replace, 0.567 ms
-  append, 7.9 MiB heap delta; 1,000,000 points: 2.21 ms replace, 8.002 ms
-  append, 30.9 MiB heap delta.
-- Browser-integrated snapshot/screenshot evidence confirmed that an already
-  mounted chart reacts to incoming points, `Fit all` remains singular and
-  follows while collecting, terminal state pauses, and narrow layout remains
-  usable. The audit also serialized Combine integration tests because their
-  library failpoint and inspect hook are process-global. Native window
-  interaction remains unverified and is the user gate.
-
-## Evidence (2026-08-24, workflow improvements Phase 4)
-
-- Reports now has one `Choose input` file dialog filtered to CSV, BIN, and JSON.
-  A selected manifest or bundle artifact resolves to its parent bundle, while
-  a file without a manifest uses the published `rngkit-core` standalone reader.
-  A present manifest is classified and validated authoritatively; corruption
-  does not fall back to standalone parsing.
-- Previews distinguish native session, derived bundle, current standalone CSV,
-  standalone BIN, and legacy v3 CSV. Report generation preserves same-stem
-  destinations, Cancel/Replace behavior, backend-known open actions, and input
-  bytes.
-- The compact timestamp shape from the supplied
-  `20260824T145947_bitb_s2048_i1_f0.csv` is covered by a generated temporary
-  regression without modifying the original. Unknown kinds and non-file
-  manifest entries fail closed as corrupt bundles.
-- Deterministic validation passed: format check, Svelte/TypeScript check, lint,
-  Vitest 100/100, Playwright 5/5, production Vite build, focused Reports tests
-  (11 native, 5 legacy, 5 Combine), locked cargo fmt/check/test/clippy/doc, Rust
-  1.85 check/test, and `git diff --check`.
-- Browser-integrated validation confirmed one chooser, preview metadata,
-  Cancel/Replace interaction, responsive layout, and a clean console. Report
-  test temporary roots include a process-local counter to prevent parallel
-  Windows collisions.
-- Native window selection and generation for legacy CSV, current CSV/BIN,
-  native bundle artifacts, and derived manifests remain unverified and form the
-  user-validation gate.
-
-## Evidence (2026-08-24, workflow improvements Phase 5)
-
-- Combine now keeps ordered backend-only canonical input paths behind transient
-  opaque IDs. Add appends selections across folders; Remove targets one row;
-  Clear all resets the selection, preview, and derived result. The DTO exposes
-  only safe basename, ordinal, format, compatibility metadata, and validation
-  messages.
-- Combine uses the pinned generic `rngkit_recording` CSV APIs. Legacy-only,
-  current-only, and mixed compatible CSV sets create schema-2 bundles with
-  `kind` `csv_concatenation` and per-input format labels. Schema-1 bundles
-  remain readable through the existing report path. BIN inputs remain rejected;
-  duplicate, incompatible, overlap, changed, corrupt, and path-redaction
-  coverage remains backend-owned.
-- Deterministic validation passed: format check, Svelte/TypeScript check, lint,
-  Vitest 100/100, Playwright 5/5, production Vite build, focused Combine tests
-  9/9, locked cargo fmt/check/test/clippy/doc, Rust 1.85 check/test, locked
-  no-bundle Tauri build, local unsigned NSIS build, and `git diff --check`.
-- Browser-integrated review passed for compatible, incompatible, and
-  collecting states at desktop and minimum-window sizes. It verified readable
-  format labels, distinct Remove actions and ordinals, disabled-state behavior,
-  table-local horizontal scrolling, and clean browser logs.
-- Native Combine workflow validation remains unverified and is the active user
-  gate before Phase 6. Phase 5 is committed and published; Phase 6 remains
-  unauthorized.
+- Approved contract: `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
+- Approved execution: `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
+- Original design/plan: `docs/specs/2026-08-22-rngkit-tauri-design.md` and
+  `docs/plans/2026-08-22-rngkit-tauri-plan.md`
+- Durable decisions: `docs/DECISIONS.md`; backlog: `TODO.md`

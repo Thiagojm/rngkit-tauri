@@ -3,50 +3,41 @@
 ## Done
 
 - Approved Windows-first design/plan and `rngkit-core` Gate A at `2cdf311`.
-- Checkpoints 3–17: locked Tauri/Svelte shell, coordinator, collection, chart,
-  close policy, physical smokes, reports, Combine, security/a11y, CI, unsigned
-  NSIS. HEAD `061f66a`.
-- Checkpoint 18: design-to-evidence trace, deterministic suite, tracked-file
-  scan, context update, and user-reported offline install/basic app smoke. No
-  required product work was silently deferred.
+- Original v1 checkpoints 3–18: locked Tauri/Svelte shell, coordinator,
+  collection, chart, close policy, reports, Combine, security/a11y, CI, and
+  unsigned NSIS baseline. Checkpoint 18 evidence and limitations are recorded
+  in `docs/PROJECT_CONTEXT.md`.
 - Approved 2026-08-24 workflow-improvements design and six-phase plan.
-- Phase 1: generalized standalone readers and CSV concatenation completed and
-  published in `rngkit-core`.
-- Phase 2: app pin/default-root/2048-bit/automatic-discovery implementation
-  completed and validated automatically; recovery warnings and parallel
-  security fixtures were corrected during review. Native user test remains
-  unverified.
-- Phase 3: chart following/viewport race fix, single `Fit all` control, and
-  instrument-style Collect card completed, reviewed, corrected, and published.
-  Browser-integrated validation passed; native user validation remains pending.
-- Phase 4: unified Reports chooser, authoritative bundle resolution, and
-  standalone current/legacy CSV/BIN report support completed, reviewed,
-  corrected, and published. Automated and browser-integrated validation passed;
-  native Reports user validation remains pending.
-- Phase 5: incremental mixed-format Combine selection, opaque-ID Remove/Clear,
-  and schema-2 current/legacy CSV concatenation completed, reviewed, corrected,
-  and published. Automated and browser-integrated validation passed; native
-  Combine user validation is pending.
+- Phase 1: generalized standalone readers and CSV concatenation in
+  `rngkit-core`, published at the exact reachable revision.
+- Phase 2: default root, 2048-bit defaults, asynchronous discovery, and safe
+  recovery behavior, automatically validated.
+- Phase 3: instrument-style chart, one `Fit all` action, and following/viewport
+  race fix, automatically and browser-integrated validated.
+- Phase 4: unified Reports chooser and standalone current/legacy CSV/BIN
+  reports, automatically and browser-integrated validated.
+- Phase 5: incremental mixed-format Combine, opaque-ID Remove/Clear, and
+  schema-2 derived bundles, automatically and browser-integrated validated and
+  published.
+- Phase 6 implementation: task-oriented Help in approved order, production-copy
+  audit, focused unit/E2E regression updates, and complete deterministic suite.
 
 ## In progress
 
-- Phase 5 native Combine user validation gate. Do not begin Phase 6 without a
-  new explicit request.
+- Phase 6 user-validation gate: native integrated workflows remain unverified.
 
 ## Next steps
 
-1. Run the Phase 5 native manual validation from the approved plan.
-2. Begin Phase 6 only after explicit authorization.
+1. Run the Phase 6 native manual validation from the approved plan.
+2. Obtain explicit Phase 6 approval before any commit or push authorization.
 
 ## Backlog
 
-- NSIS uninstall and session-data preservation.
-- Native hardware Collect UI, unplug-during-read, other folds/devices, Linux
+- NSIS uninstall and session-data preservation; signing, releases, updater,
+  Store, Linux packaging, and deployment remain outside current authority.
+- Native hardware Collect, unplug-during-read, other devices/folds, and Linux
   physical behavior.
-- Native uPlot render/interaction at 100k/1M points; native Reports/Combine
-  dialogs; Windows 100%/150%/200% scaling; screen-reader sampling; Windows
-  file-symlink inspect (privilege 1314).
-- Signing, binary releases, updater, Store, Linux packaging, and deployment
-  remain outside v1 implementation authority.
-- TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and
-  statistical inference remain non-goals or future work.
+- Native 100k/1M chart interaction; native Reports/Combine dialogs; Windows
+  scaling and screen-reader sampling; symlink inspect privilege coverage.
+- TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
+  inference remain non-goals or future work.

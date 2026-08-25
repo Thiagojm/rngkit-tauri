@@ -17,7 +17,7 @@ test('keyboard users can skip to main and reach every destination', async ({
     page.getByRole('heading', { name: copy.destinations.help }),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Accessibility' }),
+    page.getByRole('heading', { name: 'Common problems' }),
   ).toBeVisible();
 
   await nav

@@ -106,12 +106,19 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   ).toBeVisible();
   await expect(page.getByText(copy.fold.raw)).toBeVisible();
   await expect(page.getByText(copy.chart.boundary)).toBeVisible();
-  await expect(
-    page.getByText(/Legacy v3 BIN and CSV files stay read-only/),
-  ).toBeVisible();
-  await expect(
-    page.getByText(/Derived reports copy timestamps from concatenated/),
-  ).toBeVisible();
+  for (const heading of [
+    'Quick start',
+    'Choosing a source',
+    'Collecting and stopping safely',
+    'Creating reports',
+    'Combining files',
+    'Understanding the chart',
+    'Common problems',
+    'File formats and version details',
+  ]) {
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+  }
+  await expect(page.getByText(/new bundles use schema 2/)).toBeVisible();
 
   await page.getByLabel(copy.theme.legend).selectOption('dark');
   await expect.poll(() => bodyBackground(page)).toBe(DARK_SURFACE);

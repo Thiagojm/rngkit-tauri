@@ -50,8 +50,10 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   2026-08-24 workflow improvements is complete and published in `rngkit-core`;
   Phase 2, Phase 3, and Phase 4 are complete and published in this app. Phase 4
   passed automated and browser-integrated validation. Phase 5 is complete and
-  published and passed automated and browser-integrated validation; native
-  Combine validation is the active gate, and Phase 6 is not authorized.
+  published and passed automated and browser-integrated validation. Phase 6
+  Help implementation and deterministic/browser validation are complete in the
+  current worktree; native integrated workflow validation is the active gate.
+  Phase 6 approval, commit, and push remain separate decisions.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or
@@ -68,7 +70,9 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   `start_collection`, `stop_collection`, `start_another_session`,
   `open_session_folder`, `copy_diagnostics`, `stop_and_exit`,
   `choose_report_input`, `generate_report`, `replace_report`, `open_report`, `open_report_folder`,
-  `choose_csv_inputs`, `create_derived`, `generate_derived`, and `open_derived_folder`. Default start does not enumerate hardware. Default
+  `choose_csv_inputs`, `remove_combine_input`, `clear_combine_inputs`,
+  `create_derived`, `generate_derived`, and `open_derived_folder`. Default start
+  does not enumerate hardware. Default
   tests inject fake discovery and fake sources and do not call
   `rngkit_sources::discover()` or open hardware. Native startup performs one
   asynchronous discovery after frontend hydration; it still never selects a

@@ -2,201 +2,91 @@
 
 All decisions are accepted. Material changes return to design review.
 
-## Product, platform, and shell (2026-08-22)
+## Product and platform
 
-- RngKit v1 is an English Windows 10/11 x64 Tauri 2 desktop app with one
-  resizable window and persistent Collect, Reports, Combine, and Help
-  destinations.
+- RngKit v1 is an English Windows 10/11 x64 Tauri 2 desktop app with persistent
+  Collect, Reports, Combine, and Help destinations.
 - The client-only Svelte 5/Vite/Tailwind CSS 4 frontend uses locked stable
-  dependencies, uPlot, and no extra UI framework.
-- Theme is `data-theme` on `html`; Tailwind owns light defaults and plain CSS
-  preserves system dark unless light is forced. Body and muted text meet 4.5:1
-  contrast; reduced-motion disables extra animation; the window minimum is
-  800×600.
-- Browser tests use production assets through Edge without Tauri IPC or
-  hardware. Mock snapshots are browser-only; scenario switching is debug-only.
-- Why/impact: modernize familiar workflows while keeping desktop authority and
-  permissions out of the frontend.
+  dependencies, uPlot, no extra UI framework, `data-theme`, reduced-motion
+  support, 4.5:1 body/muted contrast, and an 800x600 minimum window.
+- Browser tests use production assets through Edge without real Tauri IPC or
+  hardware. Debug scenario switching is not a production capability.
 
-## Authority, collection, and IPC (2026-08-22 through 2026-08-23)
+## Authority, lifecycle, and IPC
 
 - Rust owns coordinator states (`idle`, `discovering`, `ready`, `collecting`,
-  `stopping`, `completed`, `failed`), file-job exclusion, session IDs, and
-  event sequences. It rejects stale discovery/events, double starts, and
-  conflicts.
-- One explicitly selected source and one application worker serve each session.
-  No silent selection, live XOR, fallback, reconnect, or resume is allowed.
-- Start reconstructs `SourceConfig` from a transient token, opens the source on
-  the worker, and calls `run_session`. Stop is cooperative and idempotent.
-  Worker startup, source open, engine, and terminal channel failures finish the
-  matching coordinator session as failed; clean stop finishes it as completed.
-- Per-session channels carry ordered metric DTOs only. Frontend
-  command-response generations do not invalidate terminal channel events.
-- Sample-committed events include numeric `cumulativeZ` plus the display label.
-  Svelte retains every accepted `(sample_index, cumulative_z)` point. uPlot
-  draws zero and dashed ±1.96 references without extra point arrays.
-- Close while collecting is intercepted: Keep collecting cancels the close;
-  Stop and exit cooperatively stops and waits for the worker before destroy.
-  Close while stopping is idempotent. v1 has no force quit.
+  `stopping`, `completed`, `failed`), workers, file-job exclusion, discovery
+  tokens, session IDs, event sequences, preferences, and close policy.
+- One explicitly selected source serves a session. Refresh invalidates tokens;
+  discovery never opens a source; Start reconstructs configuration from a
+  transient token; Stop is cooperative and idempotent. No silent selection,
+  fallback, XOR, reconnect, resume, or force quit.
 - Production IPC is `get_app_state`, `refresh_sources`, `select_source`,
   `set_sample_bits`, `set_interval_seconds`, `set_fold`, `set_theme`,
   `choose_output_folder`, `start_collection`, `stop_collection`,
   `start_another_session`, `open_session_folder`, `copy_diagnostics`,
   `stop_and_exit`, `choose_report_input`, `generate_report`, `replace_report`,
-  `open_report`, `open_report_folder`, `choose_csv_inputs`, `create_derived`,
-  `generate_derived`, `open_derived_folder`, `remove_combine_input`, and
-  `clear_combine_inputs` against backend-known paths only. `apply_dev_scenario`
-  is debug-only.
-- Why/impact: preserve engine durability, deterministic authority, and an
-  entropy-free frontend.
+  `open_report`, `open_report_folder`, `choose_csv_inputs`,
+  `remove_combine_input`, `clear_combine_inputs`, `create_derived`,
+  `generate_derived`, and `open_derived_folder`. `apply_dev_scenario` is
+  debug-only.
+- Per-session events expose numeric cumulative Z and safe labels only. The
+  frontend retains every committed point; zero and `+/-1.96` are visual guides.
 
-## Discovery, draft, and preferences (2026-08-23)
+## Privacy and filesystem authority
 
-- `refresh_sources` runs `rngkit_sources::discover()` in blocking Tauri work.
-  Candidates live behind random opaque tokens. Refresh invalidates prior tokens
-  and selection. Discovery never opens a source.
-- Preferences schema 1 stores output root, sample bits, interval, fold, theme,
-  and physical window geometry only. Writes use a sibling temp plus atomic
-  replace. Invalid files reset wholly with a safe warning.
-- Ready requires valid bits, interval, fold, output root, and explicit
-  selection. Default tests inject fake discovery/sources.
-- Why/impact: explicit multi-device selection and restart-safe drafts without
-  leaking selectors.
+- Capabilities are only `core:default` and `dialog:default`; CSP is restricted.
+  Open actions accept no frontend path and use backend-known destinations.
+- Safe errors and bounded diagnostics redact paths, ports, selectors, serials,
+  seeds, entropy, and arbitrary error chains. Preferences contain only safe
+  settings and physical window geometry.
+- Native and derived artifacts enforce containment, no-follow, no-overwrite,
+  and revalidation after preview. Inputs remain unmodified.
 
-## Privacy, filesystem, and diagnostics (2026-08-22)
+## Reports and Combine
 
-- Frontend capabilities are only `core:default` and `dialog:default`.
-  Production CSP allows only required app/Tauri protocols.
-- Frontend errors are stable `SafeError` DTOs. Diagnostics are bounded,
-  redacted in-memory records. Production persistent logging is disabled.
-- Entropy, seeds, selectors, serials, OS paths, absolute legacy input paths,
-  and arbitrary error chains never cross IPC, preferences, or diagnostics.
-- Native and derived artifacts retain containment and no-follow/no-overwrite
-  behavior. Open commands take no frontend path.
-- Why: keep sensitive material and filesystem authority on the desktop side.
+- Reports has one chooser for CSV, BIN, and JSON. A manifest/bundle is resolved
+  and classified authoritatively; absent manifests use the published core
+  standalone reader for current/legacy CSV/BIN. Same-stem XLSX generation uses
+  explicit Cancel/Replace and preserves input bytes.
+- Combine is CSV-only and accepts distinct compatible current, legacy, or mixed
+  inputs. Ordered canonical paths stay backend-only behind transient opaque
+  input IDs. Add appends, Remove targets one row, Clear resets selection, and
+  changed/duplicate/overlap/incompatible/BIN inputs fail safely.
+- Schema-1 derived bundles remain readable. New output is schema 2,
+  `csv_concatenation`, with per-input format metadata and no absolute paths.
+- Cumulative Z is `(2*C - N) / sqrt(N)` for descriptive monitoring only; no
+  p-values, confidence claims, or statistical pass/fail interpretation.
 
-## Reports and derived data (2026-08-22)
+## Approved workflow improvements
 
-- XLSX reports use normalized readers for native sessions, read-only RngKitPSG
-  v3 BIN/CSV, and validated derived bundles. Existing output needs explicit
-  Replace.
-- Strict concatenation accepts distinct compatible current, legacy, or mixed
-  CSV inputs, rejects ambiguous overlap, revalidates after preview, and never
-  stores absolute input paths in frontend state or persisted preferences.
-- Statistical Z and `+/-1.96` are descriptive visual references only.
+- New users get backend-prepared `Documents/RngKit` and 2048 bits when valid
+  saved preferences do not win. Startup discovery is asynchronous and never
+  selects a source. Collect has one `Fit all`; zoom/pan pauses following and
+  Fit all resumes it only while collecting.
+- Help is task-oriented in this order: Quick start, Choosing a source,
+  Collecting and stopping safely, Creating reports, Combining files,
+  Understanding the chart, Common problems, File formats and version details.
+  It states the exact non-certification boundary and recovery actions.
 
-## Approved workflow improvements (2026-08-24 contract)
+## Phase status and evidence
 
-- Default new collection state uses an auto-created `Documents/RngKit` output
-  root and 2048 sample bits; valid saved custom roots and sample sizes win.
-  Startup performs asynchronous discovery but never opens or selects a source;
-  manual Refresh and explicit selection remain.
-- Collect adopts the instrument-workspace chart direction with one `Fit all`
-  action. It frames retained points and resumes following only during active
-  collection. The two approved low-value Collect messages are removed; Help
-  retains a concise non-certification boundary.
-- Reports uses one file chooser and accepts validated bundle artifacts or
-  standalone current/legacy CSV/BIN. Without a manifest, the filename supplies
-  source/bits/interval/fold; a present parent manifest remains authoritative.
-- Combine stays CSV-only but accepts compatible legacy, current, or mixed
-  inputs. Selection accumulates across folders with opaque-ID Remove/Clear.
-  Existing schema-1 derived bundles remain readable; new output uses schema 2,
-  kind `csv_concatenation`, with per-input format and no absolute paths.
-- Parsing, normalization, compatibility, and derived writing remain owned by
-  `rngkit-core`. A new exact reachable revision is required before app
-  integration. The approved phased plan authorizes no implementation, commit,
-  or push by itself.
-- Why/impact: align the app with observed real legacy data and simpler native
-  workflows without duplicating parsers or weakening backend path/privacy
-  authority.
+- Phase 1 is published in `rngkit-core` at reachable revision
+  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`; app Phases 2–5 are published.
+- Phase 6 Help implementation, copy audit, focused regressions, deterministic
+  validation, browser validation, MSRV validation, and locked no-bundle build
+  passed in the current worktree. Native integrated workflows remain the active
+  user-validation gate. Phase 6 approval, commit, and push are separate.
+- Default tests remain hardware-free; physical smokes are ignored, opt-in, and
+  serial. NSIS, remote CI, signing, publication, release, and deployment are
+  not implied by this phase.
 
-## Phase 2 implementation status (2026-08-24)
+## Delivery boundaries
 
-- Phase 1 is published at reachable `rngkit-core` revision
-  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`. The app pins every `rngkit-*`
-  dependency to that exact revision.
-- The app now prepares the backend-only `Documents/RngKit` root when needed,
-  preserves valid saved roots and sample sizes, falls back safely when a saved
-  root is missing, and remains usable with folder recovery when Documents is
-  unavailable. If both the saved root and default root are unavailable, the
-  recovery warning does not claim that the default is active; choosing a valid
-  folder clears the warning after persistence.
-- Frontend hydration performs one guarded asynchronous discovery for an idle
-  empty snapshot. Candidates remain unselected, and manual Refresh plus
-  explicit selection remain unchanged.
-- Phase 2 automated validation is complete on the Windows host. Native manual
-  validation remains unverified.
-
-## Phase 3 implementation status (2026-08-24)
-
-- The live chart owns one `Fit all` interaction through the adapter. Following
-  is enabled only for active collection; pointer zoom/pan pauses it, and
-  supersedable animation-frame work cannot restore a stale viewport after
-  `Fit all`.
-- The Collect chart uses the approved instrument-workspace card with a taller
-  responsive surface and no Reset/Return controls. The concise descriptive
-  boundary is Help-only. Every committed chart point remains retained, and the
-  point count reacts when a mounted chart receives a newly loaded series.
-- Automated validation and chart stress measurements passed on the Windows
-  host. Browser visual/interaction evidence passed. Combine integration tests
-  are serialized because their library failpoint and inspect hook are global.
-  Native manual interaction remains the active user-validation gate before
-  Phase 4.
-
-## Phase 4 implementation status (2026-08-24)
-
-- Reports uses one file chooser for CSV, BIN, and JSON. A selected bundle
-  artifact or manifest resolves to its parent native or derived bundle. A
-  present manifest is authoritative and malformed manifests do not fall back
-  to standalone parsing.
-- Files without a manifest use `rngkit-core` standalone normalization. The
-  preview distinguishes current standalone CSV, standalone BIN, and legacy v3
-  CSV while keeping paths and parser chains out of DTOs and diagnostics.
-- Compact legacy timestamps matching the supplied CSV are covered explicitly.
-  Unknown manifest kinds and non-file manifest entries fail closed as corrupt
-  bundles instead of being routed to a reader heuristically.
-- Same-stem XLSX output, explicit Cancel/Replace, backend-known open actions,
-  active-session rejection, and input immutability remain unchanged. Automated
-  and browser-integrated validation passed; native Reports interaction remains
-  unverified.
-
-## Phase 5 implementation status (2026-08-24)
-
-- Combine selection is an ordered backend-only collection of canonical paths
-  addressed by transient opaque input IDs. Repeated Add calls append; Remove
-  and Clear all invalidate the preview/result and recompute the remaining
-  generic CSV preview. The last dialog directory is process-only.
-- DTO rows expose safe basenames, display ordinals, current/legacy format
-  labels, compatibility metadata, and per-input validation state. Same
-  basenames from different folders remain separately addressable; canonical
-  duplicates are rejected by the pinned library.
-- New derived bundles use schema 2, kind `csv_concatenation`, with per-input
-  format metadata. Schema-1 reading/report behavior is preserved. Inputs stay
-  read-only, BIN is rejected, and changed-after-preview validation remains
-  authoritative at creation.
-- Automated and browser-integrated validation passed. Native Combine validation
-  is the active user gate; Phase 6 requires separate authorization.
-
-## Dependencies and delivery (2026-08-22 through 2026-08-24)
-
-- Exact versions live in lockfiles. Node floor is `^20.19.0 || >=22.12.0`, npm
-  `>=10`, Rust edition 2024/MSRV 1.85. Prereleases are excluded.
-- `rngkit-*` crates use reachable revision
-  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`, never local paths.
-- Default tests are deterministic and hardware-free. Physical checks are
-  ignored, opt-in, and serial in `src-tauri/tests/hardware.rs`.
-- v1 delivery is an unsigned per-user English NSIS installer with bundled
-  offline WebView2, id `com.rngkit.desktop`, no updater artifacts, and no
-  certificate. Local `RngKit_0.1.0_x64-setup.exe` is 208.4 MiB, SHA-256
-  `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`. The
-  user reported offline installation, first launch, and basic app functionality
-  on Windows; uninstall and session-data preservation remain unverified.
-  Signing, publication, updater, release, and deployment require separate
-  approval.
-- CI (`windows-latest` and `ubuntu-22.04`) uses `npm ci`, `cargo --locked`, and
-  `tauri build --no-bundle -- --locked`; it never runs ignored hardware tests
-  or builds an installer. Observed remote success for `061f66a`:
-  https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
-- Checkpoint 18 (2026-08-24) traced design acceptance criteria 1–20: 1–17 and
-  19–20 evidenced; 18 remains partial pending uninstall/session-data
-  preservation. No contract change.
+- Locked versions live in `package-lock.json` and `src-tauri/Cargo.lock`.
+  Floors are Node `^20.19.0 || >=22.12.0`, npm `>=10`, Rust edition 2024/MSRV
+  1.85; prereleases and local crate paths are forbidden.
+- v1 packaging is an unsigned per-user English NSIS installer with offline
+  WebView2. Uninstall/session-data preservation, SmartScreen, signing,
+  publication, updater, release, and deployment remain unverified or separate
+  approvals.

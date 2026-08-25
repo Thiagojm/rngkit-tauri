@@ -44,8 +44,10 @@ published: the Collect chart has one `Fit all` action and the instrument-style
 layout. Phase 4 is complete and published: Reports has one `Choose input`
 action for bundles and standalone CSV/BIN inputs, with automated and
 browser-integrated validation complete. Phase 5 is complete and published with
-automated and browser-integrated validation complete; native Combine manual
-validation remains pending, and Phase 6 is not authorized.
+automated and browser-integrated validation complete. Phase 6 task-oriented
+Help is implemented in the current worktree and its deterministic/browser
+validation is complete; native integrated workflow validation remains the
+active user gate. Phase 6 approval, commit, and push are separate decisions.
 
 ## Sources of truth
 
