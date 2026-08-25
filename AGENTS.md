@@ -54,13 +54,17 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   Help is complete and published and passed deterministic and production-asset
   browser validation; native integrated workflow validation is the active
   user gate.
+- The 2026-08-25 artifact-feedback/report-charts Phase 2 implementation is
+  complete locally against `rngkit-core` revision
+  `7c798146eddbcb9443c84adc236c0f7c09bd7789`; its native report validation is
+  the active user gate.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or
   hardware. On Windows they use the installed Edge channel. Vitest component
   tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.
 - Final `rngkit-*` dependencies must use the exact reachable Git revision
-  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`. Never a local path.
+  `7c798146eddbcb9443c84adc236c0f7c09bd7789`. Never a local path.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.

@@ -9,7 +9,9 @@ use rngkit_recording::{
     CONCATENATION_KIND, CSV_CONCATENATION_KIND, ConcatenationStem, NATIVE_CSV_COLUMNS,
     NativeSession, RecordingError, open_concatenation, open_legacy, open_standalone,
 };
-use rngkit_xlsx::{XlsxError, derived_report_path, legacy_report_path, native_report_path};
+use rngkit_xlsx::{
+    ReportOptions, XlsxError, derived_report_path, legacy_report_path, native_report_path,
+};
 
 use crate::coordinator::ReportKind;
 use crate::dto::ReportPreview;
@@ -20,9 +22,12 @@ const ORIGIN: &str = "Collected session";
 const LEGACY_KIND: &str = "Legacy v3 CSV";
 const CURRENT_CSV_KIND: &str = "Current standalone CSV";
 const STANDALONE_BIN_KIND: &str = "Standalone BIN";
+const FLAT_CONCAT_KIND: &str = "Legacy concatenated CSV";
 const DERIVED_KIND: &str = "Derived bundle";
 const DERIVED_ORIGIN: &str = "Concatenated legacy v3 CSV";
 const DERIVED_NOTE: &str = "Timestamps are copied from the concatenated inputs.";
+const FLAT_CONCAT_ORIGIN: &str = "Flat legacy concatenation without a manifest";
+const FLAT_CONCAT_NOTE: &str = "This flat concatenation has no provenance manifest.";
 const ESTIMATED_WARNING: &str = "Timestamps are estimated from the filename start and interval.";
 const RECORDED_NOTE: &str = "Timestamps are recorded in the CSV input.";
 const TAIL_WARNING: &str =
@@ -35,6 +40,7 @@ pub struct InspectedReport {
     pub dest: PathBuf,
     pub input: PathBuf,
     pub kind: ReportKind,
+    pub options: ReportOptions,
 }
 
 pub fn inspect_input(
@@ -128,16 +134,27 @@ fn bundle_kind(directory: &Path) -> Result<BundleKind, SafeError> {
 pub fn inspect_standalone(path: &Path) -> Result<InspectedReport, SafeError> {
     let session = open_standalone(path).map_err(map_standalone)?;
     let meta = session.meta();
-    let kind_label = standalone_kind_label(path)?;
-    let origin = if kind_label == CURRENT_CSV_KIND {
+    let flat = is_flat_legacy_concatenation(path);
+    let kind_label = if flat {
+        FLAT_CONCAT_KIND.to_owned()
+    } else {
+        standalone_kind_label(path)?
+    };
+    let origin = if flat {
+        FLAT_CONCAT_ORIGIN
+    } else if kind_label == CURRENT_CSV_KIND {
         "Standalone current CSV"
     } else {
         standalone_origin(path)
     };
     let dest = legacy_report_path(path);
-    let warning = match meta.provenance {
-        TimestampProvenance::Estimated => Some(ESTIMATED_WARNING.to_owned()),
-        TimestampProvenance::Recorded => Some(RECORDED_NOTE.to_owned()),
+    let warning = if flat {
+        Some(FLAT_CONCAT_NOTE.to_owned())
+    } else {
+        match meta.provenance {
+            TimestampProvenance::Estimated => Some(ESTIMATED_WARNING.to_owned()),
+            TimestampProvenance::Recorded => Some(RECORDED_NOTE.to_owned()),
+        }
     };
     let directory = path
         .parent()
@@ -160,7 +177,12 @@ pub fn inspect_standalone(path: &Path) -> Result<InspectedReport, SafeError> {
         dest,
         input: path.to_path_buf(),
         directory,
-        kind: ReportKind::Standalone,
+        kind: if flat {
+            ReportKind::FlatLegacyConcatenation
+        } else {
+            ReportKind::Standalone
+        },
+        options: ReportOptions::for_session(&session).map_err(map_xlsx)?,
     })
 }
 
@@ -199,6 +221,7 @@ pub fn inspect_native(
         input: directory.clone(),
         directory,
         kind: ReportKind::Native,
+        options: ReportOptions::for_session(&native.normalized()).map_err(map_xlsx)?,
     })
 }
 
@@ -232,6 +255,7 @@ pub fn inspect_legacy(path: &Path) -> Result<InspectedReport, SafeError> {
         input: path.to_path_buf(),
         directory,
         kind: ReportKind::Legacy,
+        options: ReportOptions::for_session(&session).map_err(map_xlsx)?,
     })
 }
 
@@ -257,6 +281,7 @@ pub fn inspect_derived(path: &Path) -> Result<InspectedReport, SafeError> {
         input: directory.clone(),
         directory,
         kind: ReportKind::Derived,
+        options: ReportOptions::for_session(&session).map_err(map_xlsx)?,
     })
 }
 
@@ -281,6 +306,14 @@ fn standalone_origin(path: &Path) -> &'static str {
         Some("bin") => "Standalone binary input",
         _ => legacy_origin(path),
     }
+}
+
+fn is_flat_legacy_concatenation(path: &Path) -> bool {
+    path.extension().and_then(|extension| extension.to_str()) == Some("csv")
+        && path
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .is_some_and(|stem| ConcatenationStem::parse(stem).is_ok())
 }
 
 fn standalone_kind_label(path: &Path) -> Result<String, SafeError> {
@@ -352,7 +385,9 @@ pub(super) fn map_standalone(error: RecordingError) -> SafeError {
         RecordingError::Corrupt { .. }
         | RecordingError::Json(_)
         | RecordingError::Csv(_)
-        | RecordingError::InvalidNativeCsvHeader { .. } => {
+        | RecordingError::InvalidNativeCsvHeader { .. }
+        | RecordingError::EmptyConcatenationInput { .. }
+        | RecordingError::DecreasingConcatenationTimestamp { .. } => {
             SafeError::corrupt_input("The selected standalone input is corrupt.")
         }
         RecordingError::Io(io) if io.kind() == ErrorKind::PermissionDenied => {

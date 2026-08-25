@@ -6,10 +6,12 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use rngkit_recording::{
-    ConcatenationStem, NativeSession, open_concatenation, open_legacy, open_standalone,
+    ConcatenationStem, NativeSession, open_concatenation, open_flat_legacy_concatenation,
+    open_legacy, open_standalone,
 };
 use rngkit_xlsx::{
-    Overwrite, XlsxError, derived_report_path, legacy_report_path, native_report_path, write_report,
+    Overwrite, ReportOptions, XlsxError, derived_report_path, legacy_report_path,
+    native_report_path, write_report_with_options,
 };
 
 use crate::coordinator::{AppCoordinator, ReportKind};
@@ -152,6 +154,7 @@ pub fn inspect_picked(
                 inspected.dest,
                 inspected.input,
                 inspected.kind,
+                inspected.options,
             );
             Ok(coordinator.snapshot())
         }
@@ -167,16 +170,17 @@ pub fn generate_inspected(
     replace: bool,
 ) -> Result<AppStateDto, SafeError> {
     coordinator.begin_file_job(FileJobState::GeneratingReport)?;
-    let (Some(input), Some(kind)) = (
+    let (Some(input), Some(kind), Some(options)) = (
         coordinator.report_input().map(Path::to_path_buf),
         coordinator.report_kind(),
+        coordinator.report_options().cloned(),
     ) else {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
             "Inspect a session, file, or derived bundle before generating a report.",
         ));
     };
-    let result = write_inspected_report(&input, kind, replace);
+    let result = write_inspected_report(&input, kind, replace, &options);
     let _ = coordinator.finish_file_job();
     match result {
         Ok(_) => {
@@ -198,38 +202,116 @@ pub fn write_inspected_report(
     input: &Path,
     kind: ReportKind,
     replace: bool,
+    options: &ReportOptions,
 ) -> Result<PathBuf, SafeError> {
     match kind {
-        ReportKind::Native => write_native_report(input, replace),
-        ReportKind::Legacy => write_legacy_report(input, replace),
-        ReportKind::Derived => write_derived_report(input, replace),
-        ReportKind::Standalone => write_standalone_report(input, replace),
+        ReportKind::Native => write_native_report_with_options(input, replace, options),
+        ReportKind::Legacy => write_legacy_report_with_options(input, replace, options),
+        ReportKind::Derived => write_derived_report_with_options(input, replace, options),
+        ReportKind::Standalone => write_standalone_report_with_options(input, replace, options),
+        ReportKind::FlatLegacyConcatenation => {
+            write_flat_legacy_report_with_options(input, replace, options)
+        }
     }
 }
 
 pub fn write_native_report(dir: &Path, replace: bool) -> Result<PathBuf, SafeError> {
     let native = NativeSession::open(dir).map_err(inspect::map_recording)?;
+    let options = ReportOptions::for_session(&native.normalized()).map_err(map_xlsx)?;
+    write_native_report_with_options(dir, replace, &options)
+}
+
+fn write_native_report_with_options(
+    dir: &Path,
+    replace: bool,
+    options: &ReportOptions,
+) -> Result<PathBuf, SafeError> {
+    let native = NativeSession::open(dir).map_err(inspect::map_recording)?;
+    let session = native.normalized();
+    ensure_report_options(&session, options)?;
     let dest = native_report_path(native.directory(), native.session_stem()).map_err(map_xlsx)?;
-    write_report(&native.normalized(), &dest, overwrite_mode(replace)).map_err(map_xlsx)
+    write_report_with_options(&session, &dest, overwrite_mode(replace), options).map_err(map_xlsx)
 }
 
 pub fn write_legacy_report(selected: &Path, replace: bool) -> Result<PathBuf, SafeError> {
     let session = open_legacy(selected).map_err(map_legacy)?;
+    let options = ReportOptions::for_session(&session).map_err(map_legacy_xlsx)?;
+    write_legacy_report_with_options(selected, replace, &options)
+}
+
+fn write_legacy_report_with_options(
+    selected: &Path,
+    replace: bool,
+    options: &ReportOptions,
+) -> Result<PathBuf, SafeError> {
+    let session = open_legacy(selected).map_err(map_legacy)?;
+    ensure_report_options(&session, options)?;
     let dest = legacy_report_path(selected);
-    write_report(&session, &dest, overwrite_mode(replace)).map_err(map_legacy_xlsx)
+    write_report_with_options(&session, &dest, overwrite_mode(replace), options)
+        .map_err(map_legacy_xlsx)
 }
 
 pub fn write_standalone_report(selected: &Path, replace: bool) -> Result<PathBuf, SafeError> {
     let session = open_standalone(selected).map_err(map_standalone)?;
+    let options = ReportOptions::for_session(&session).map_err(map_standalone_xlsx)?;
+    write_standalone_report_with_options(selected, replace, &options)
+}
+
+fn write_standalone_report_with_options(
+    selected: &Path,
+    replace: bool,
+    options: &ReportOptions,
+) -> Result<PathBuf, SafeError> {
+    let session = open_standalone(selected).map_err(map_standalone)?;
+    ensure_report_options(&session, options)?;
     let dest = legacy_report_path(selected);
-    write_report(&session, &dest, overwrite_mode(replace)).map_err(map_standalone_xlsx)
+    write_report_with_options(&session, &dest, overwrite_mode(replace), options)
+        .map_err(map_standalone_xlsx)
 }
 
 pub fn write_derived_report(dir: &Path, replace: bool) -> Result<PathBuf, SafeError> {
     let session = open_concatenation(dir).map_err(map_derived)?;
+    let options = ReportOptions::for_session(&session).map_err(map_derived_xlsx)?;
+    write_derived_report_with_options(dir, replace, &options)
+}
+
+fn write_derived_report_with_options(
+    dir: &Path,
+    replace: bool,
+    options: &ReportOptions,
+) -> Result<PathBuf, SafeError> {
+    let session = open_concatenation(dir).map_err(map_derived)?;
+    ensure_report_options(&session, options)?;
     let stem = ConcatenationStem::parse(&session.meta().stem).map_err(map_derived)?;
     let dest = derived_report_path(dir, &stem).map_err(map_xlsx)?;
-    write_report(&session, &dest, overwrite_mode(replace)).map_err(map_derived_xlsx)
+    write_report_with_options(&session, &dest, overwrite_mode(replace), options)
+        .map_err(map_derived_xlsx)
+}
+
+fn write_flat_legacy_report_with_options(
+    selected: &Path,
+    replace: bool,
+    options: &ReportOptions,
+) -> Result<PathBuf, SafeError> {
+    let session = open_flat_legacy_concatenation(selected).map_err(map_standalone)?;
+    ensure_report_options(&session, options)?;
+    let dest = legacy_report_path(selected);
+    write_report_with_options(&session, &dest, overwrite_mode(replace), options)
+        .map_err(map_standalone_xlsx)
+}
+
+fn ensure_report_options(
+    session: &rngkit_recording::NormalizedSession,
+    expected: &ReportOptions,
+) -> Result<(), SafeError> {
+    let actual = ReportOptions::for_session(session).map_err(map_xlsx)?;
+    if actual == *expected {
+        Ok(())
+    } else {
+        Err(SafeError::corrupt_input(
+            "The selected report input changed; inspect it again.",
+        ))
+    }
 }
 
 fn map_standalone_xlsx(error: XlsxError) -> SafeError {

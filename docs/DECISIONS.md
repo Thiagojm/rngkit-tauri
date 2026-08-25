@@ -71,8 +71,13 @@ All decisions are accepted. Material changes return to design review.
 
 ## Phase status and evidence
 
-- Phase 1 is published in `rngkit-core` at reachable revision
-  `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`; app Phases 2–5 are published.
+- The 2026-08-25 library Phase 1 is published at reachable revision
+  `7c798146eddbcb9443c84adc236c0f7c09bd7789`; the app Phase 2 integration is
+  implemented locally and remains uncommitted pending its user gate.
+- Flat canonical `_concat_` CSVs are a distinct Reports kind without a
+  manifest. Inspected reports retain the library's source basename and chart
+  axis mode in backend-only state; generation revalidates that context before
+  writing XLSX.
 - Phase 6 Help, copy audit, focused regressions, deterministic validation,
   production-asset browser validation, MSRV validation, and locked no-bundle
   build are complete and published. Native integrated workflows remain the

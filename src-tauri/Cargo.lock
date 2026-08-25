@@ -2591,7 +2591,7 @@ dependencies = [
 [[package]]
 name = "rngkit-analysis"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=2cdf311dd206cb5e7320ee520ef1e7a5139cc146#2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=7c798146eddbcb9443c84adc236c0f7c09bd7789#7c798146eddbcb9443c84adc236c0f7c09bd7789"
 dependencies = [
  "rngkit-core",
  "thiserror 2.0.20",
@@ -2600,7 +2600,7 @@ dependencies = [
 [[package]]
 name = "rngkit-core"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=2cdf311dd206cb5e7320ee520ef1e7a5139cc146#2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=7c798146eddbcb9443c84adc236c0f7c09bd7789#7c798146eddbcb9443c84adc236c0f7c09bd7789"
 dependencies = [
  "serde",
  "thiserror 2.0.20",
@@ -2610,7 +2610,7 @@ dependencies = [
 [[package]]
 name = "rngkit-engine"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=2cdf311dd206cb5e7320ee520ef1e7a5139cc146#2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=7c798146eddbcb9443c84adc236c0f7c09bd7789#7c798146eddbcb9443c84adc236c0f7c09bd7789"
 dependencies = [
  "rngkit-analysis",
  "rngkit-core",
@@ -2622,7 +2622,7 @@ dependencies = [
 [[package]]
 name = "rngkit-recording"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=2cdf311dd206cb5e7320ee520ef1e7a5139cc146#2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=7c798146eddbcb9443c84adc236c0f7c09bd7789#7c798146eddbcb9443c84adc236c0f7c09bd7789"
 dependencies = [
  "csv",
  "rngkit-core",
@@ -2637,7 +2637,7 @@ dependencies = [
 [[package]]
 name = "rngkit-sources"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=2cdf311dd206cb5e7320ee520ef1e7a5139cc146#2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=7c798146eddbcb9443c84adc236c0f7c09bd7789#7c798146eddbcb9443c84adc236c0f7c09bd7789"
 dependencies = [
  "bitb-rs",
  "intel_seed",
@@ -2650,7 +2650,7 @@ dependencies = [
 [[package]]
 name = "rngkit-xlsx"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=2cdf311dd206cb5e7320ee520ef1e7a5139cc146#2cdf311dd206cb5e7320ee520ef1e7a5139cc146"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=7c798146eddbcb9443c84adc236c0f7c09bd7789#7c798146eddbcb9443c84adc236c0f7c09bd7789"
 dependencies = [
  "rngkit-analysis",
  "rngkit-core",

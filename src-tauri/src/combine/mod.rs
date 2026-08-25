@@ -71,8 +71,16 @@ pub fn generate_derived_report(
                 inspected.dest,
                 inspected.input,
                 inspected.kind,
+                inspected.options,
             );
-            write_inspected_report(&directory, ReportKind::Derived, replace)
+            let options = coordinator.report_options().cloned().ok_or_else(|| {
+                SafeError::invalid_configuration(
+                    "Inspect the derived bundle before generating XLSX.",
+                )
+            });
+            options.and_then(|options| {
+                write_inspected_report(&directory, ReportKind::Derived, replace, &options)
+            })
         }
         Err(error) => Err(error),
     };
@@ -296,6 +304,7 @@ pub(crate) fn finish_created(
         inspected.dest,
         inspected.input,
         inspected.kind,
+        inspected.options,
     );
     Ok(coordinator.snapshot())
 }
@@ -361,6 +370,7 @@ fn format_label(format: StandaloneInputFormat) -> &'static str {
         StandaloneInputFormat::CurrentCsv => "current_csv",
         StandaloneInputFormat::LegacyV3Csv => "legacy_v3_csv",
         StandaloneInputFormat::Bin => "bin",
+        StandaloneInputFormat::FlatLegacyConcatenation => "flat_legacy_concatenation",
     }
 }
 

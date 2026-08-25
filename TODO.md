@@ -2,7 +2,7 @@
 
 ## Done
 
-- Approved Windows-first design/plan and `rngkit-core` Gate A at `2cdf311`.
+- Approved Windows-first design/plan and `rngkit-core` Gate A at `7c79814`.
 - Original v1 checkpoints 3–18: locked Tauri/Svelte shell, coordinator,
   collection, chart, close policy, reports, Combine, security/a11y, CI, and
   unsigned NSIS baseline. Checkpoint 18 evidence and limitations are recorded
@@ -22,15 +22,20 @@
 - Phase 6: task-oriented Help in approved order, production-copy audit, focused
   unit/E2E regressions, and complete deterministic suite reviewed, corrected,
   and published.
+- 2026-08-25 Phase 2: flat legacy concatenation Reports integration, explicit
+  chart-axis/source context retention, exact library pin, and locked app
+  validation completed locally.
 
 ## In progress
 
-- Phase 6 user-validation gate: native integrated workflows remain unverified.
+- 2026-08-25 Phase 2 user-validation gate: copied flat concatenation preview,
+  XLSX generation/opening, Replace behavior, input immutability, and BIN-only
+  sample-number-axis behavior remain unverified in the native window.
 
 ## Next steps
 
-1. Run the Phase 6 native manual validation from the approved plan.
-2. Record explicit user approval after the native integrated workflow review.
+1. Run the 2026-08-25 Phase 2 native manual validation from the approved plan.
+2. Record explicit user approval before any Phase 3 work or app commit/push.
 
 ## Backlog
 

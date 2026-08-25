@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 
 use rngkit_core::{Fold, IntervalSeconds, SampleBits};
 use rngkit_sources::SourceConfig;
+use rngkit_xlsx::ReportOptions;
 
 use crate::diagnostics::redact_detail;
 use crate::discovery::{DiscoveryOutcome, MappedCandidate};
@@ -49,6 +50,7 @@ pub enum ReportKind {
     Legacy,
     Derived,
     Standalone,
+    FlatLegacyConcatenation,
 }
 
 /// Internal collection update applied before the frontend event is sent.
@@ -127,6 +129,7 @@ pub struct AppCoordinator {
     report_dest: Option<PathBuf>,
     report_input: Option<PathBuf>,
     report_kind: Option<ReportKind>,
+    report_options: Option<ReportOptions>,
     combine: CombineSnapshot,
     combine_inputs: Vec<PathBuf>,
     combine_input_ids: Vec<String>,
@@ -212,6 +215,7 @@ impl AppCoordinator {
             report_dest: None,
             report_input: None,
             report_kind: None,
+            report_options: None,
             combine: CombineSnapshot::empty(),
             combine_inputs: Vec::new(),
             combine_input_ids: Vec::new(),
@@ -340,6 +344,11 @@ impl AppCoordinator {
     }
 
     #[must_use]
+    pub fn report_options(&self) -> Option<&ReportOptions> {
+        self.report_options.as_ref()
+    }
+
+    #[must_use]
     pub fn report_ready(&self) -> bool {
         self.reports.report_ready
     }
@@ -351,6 +360,7 @@ impl AppCoordinator {
         dest: PathBuf,
         input: PathBuf,
         kind: ReportKind,
+        options: ReportOptions,
     ) {
         self.reports.report_ready = preview.conflict;
         self.reports.preview = Some(preview);
@@ -358,6 +368,7 @@ impl AppCoordinator {
         self.report_dest = Some(dest);
         self.report_input = Some(input);
         self.report_kind = Some(kind);
+        self.report_options = Some(options);
     }
 
     pub fn mark_report_written(&mut self) {
@@ -1082,6 +1093,7 @@ impl AppCoordinator {
         self.report_dest = None;
         self.report_input = None;
         self.report_kind = None;
+        self.report_options = None;
         self.combine = snapshot.combine;
         self.combine_inputs.clear();
         self.combine_input_ids.clear();

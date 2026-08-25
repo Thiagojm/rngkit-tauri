@@ -15,18 +15,19 @@ users to 2048 bits, and performs one asynchronous discovery after hydration
 without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
-`main` includes the published workflow improvements through Phase 6. Help is
-task-oriented and the deterministic and production-asset browser suites pass;
-native integrated workflow validation and the Phase 6 user-approval gate remain
-open. The reusable library is pinned to reachable
-`rngkit-core` revision `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`.
+`main` includes the published workflow improvements through Phase 6. The
+2026-08-25 Phase 2 artifact-feedback/report-charts integration is implemented
+locally against reachable `rngkit-core` revision
+`7c798146eddbcb9443c84adc236c0f7c09bd7789`; its native validation gate remains
+open and the app changes are not yet committed.
 
 ## Main product flows
 
 1. **Collect:** discover candidates, require explicit selection, collect until
    cooperative stop, record a native bundle, and plot every committed Z point.
 2. **Reports:** inspect native or derived bundles, current standalone CSV/BIN,
-   or legacy v3 CSV/BIN and write same-stem XLSX with explicit Replace.
+   legacy v3 CSV/BIN, or flat canonical legacy concatenation CSVs and write
+   same-stem XLSX with explicit Replace.
 3. **Combine:** accumulate compatible current, legacy, or mixed CSVs across
    folders and create a no-overwrite schema-2 derived bundle without changing
    inputs.
@@ -55,7 +56,10 @@ open. The reusable library is pinned to reachable
   marker. A derived bundle is a distinct CSV plus manifest, not a session.
 - Reports use one chooser. A present manifest is authoritative; without one,
   standalone current/legacy CSV/BIN metadata is validated from filename and
-  contents. Inputs are read-only and existing XLSX requires Replace.
+  contents. Canonical `_concat_` CSVs are a distinct manifest-free legacy
+  concatenation kind. Inputs are read-only and existing XLSX requires Replace;
+  recorded timestamp versus sample-index chart context is retained from
+  inspection and revalidated at generation.
 - Combine is CSV-only, accepts compatible current/legacy/mixed inputs, keeps
   ordered backend paths behind opaque IDs, supports Add/Remove/Clear, rejects
   overlap/incompatibility/BIN, preserves schema-1 reading, and writes schema 2
@@ -72,6 +76,10 @@ open. The reusable library is pinned to reachable
   Vite build, cargo fmt/check/test/clippy/doc with locked dependencies, Rust
   1.85 check/test, locked no-bundle Tauri release build, and `git diff --check`
   passed. The four physical tests remained ignored.
+- **2026-08-25 Phase 2 deterministic validation (Windows host):** focused
+  report/combine tests, frontend checks/unit/E2E/build, locked Rust
+  check/test/clippy/doc, Rust 1.85 check/test, and `git diff --check` passed.
+  The four physical tests remained ignored.
 - **Browser-integrated:** production-asset Edge tests passed for destination
   navigation, Help headings/copy, accessibility, reduced motion/contrast, and
   minimum-window layout. These tests use no real Tauri IPC or hardware.
@@ -79,7 +87,9 @@ open. The reusable library is pinned to reachable
   documents the compact legacy timestamp form, keeps every stable error code at
   the end, and replaces architecture terminology in the primary workflow with
   direct user actions and outcomes.
-- **Native user gate (not passed here):** clean-start defaults/discovery;
+- **Native user gate (not passed here):** copied flat-concatenation Reports
+  preview/generate/open, Replace and input immutability, BIN-only sample-number
+  axis, plus the earlier clean-start defaults/discovery;
   PseudoRNG collection and chart Fit all; standalone legacy/current Reports;
   cross-folder mixed Combine and derived report; Help navigation, theme,
   keyboard use, and minimum window.

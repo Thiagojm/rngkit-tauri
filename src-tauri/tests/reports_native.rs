@@ -196,6 +196,26 @@ fn interrupted_committed_prefix_inspects() {
 }
 
 #[test]
+fn inspected_bin_with_recorded_sibling_fails_if_sibling_disappears() {
+    let root = temp_root();
+    let stem = "20260821T183000_trng_s16_i1";
+    let csv = root.join(format!("{stem}.csv"));
+    let bin = root.join(format!("{stem}.bin"));
+    fs::write(&csv, "20260821T183000,8\n").expect("csv");
+    fs::write(&bin, [0xFFu8, 0x00]).expect("bin");
+
+    let mut coordinator = AppCoordinator::new();
+    inspect_picked(&mut coordinator, &bin).expect("inspect paired bin");
+    fs::remove_file(&csv).expect("remove sibling");
+
+    let error = generate_inspected(&mut coordinator, false).expect_err("changed input");
+    assert_eq!(error.code, ErrorCode::CorruptInput);
+    assert!(!root.join(format!("{stem}.xlsx")).exists());
+
+    fs::remove_dir_all(&root).expect("cleanup");
+}
+
+#[test]
 fn uncommitted_tail_is_a_safe_warning() {
     let (root, directory) = completed_session();
     let native = NativeSession::open(&directory).expect("native");

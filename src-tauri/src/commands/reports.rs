@@ -72,6 +72,7 @@ pub async fn choose_report_input(
                 inspected.dest,
                 inspected.input,
                 inspected.kind,
+                inspected.options,
             );
             Ok(coordinator.snapshot())
         }
@@ -124,7 +125,7 @@ async fn run_generate(
     coordinator: &Mutex<AppCoordinator>,
     replace: bool,
 ) -> Result<AppStateDto, SafeError> {
-    let (input, kind) = {
+    let (input, kind, options) = {
         let mut coordinator = coordinator
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -132,8 +133,9 @@ async fn run_generate(
         match (
             coordinator.report_input().map(Path::to_path_buf),
             coordinator.report_kind(),
+            coordinator.report_options().cloned(),
         ) {
-            (Some(input), Some(kind)) => (input, kind),
+            (Some(input), Some(kind), Some(options)) => (input, kind, options),
             _ => {
                 let _ = coordinator.finish_file_job();
                 return Err(SafeError::invalid_configuration(
@@ -142,10 +144,11 @@ async fn run_generate(
             }
         }
     };
-    let written =
-        tauri::async_runtime::spawn_blocking(move || write_inspected_report(&input, kind, replace))
-            .await
-            .map_err(|_| SafeError::unexpected_failure());
+    let written = tauri::async_runtime::spawn_blocking(move || {
+        write_inspected_report(&input, kind, replace, &options)
+    })
+    .await
+    .map_err(|_| SafeError::unexpected_failure());
     let mut coordinator = coordinator
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);

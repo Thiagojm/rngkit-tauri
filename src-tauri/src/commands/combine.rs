@@ -194,12 +194,12 @@ pub async fn generate_derived(
     coordinator: State<'_, Mutex<AppCoordinator>>,
     replace: Option<bool>,
 ) -> Result<AppStateDto, SafeError> {
-    let directory = {
+    let (directory, options) = {
         let mut coordinator = coordinator
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         coordinator.begin_file_job(FileJobState::GeneratingReport)?;
-        match coordinator.combine_directory().map(Path::to_path_buf) {
+        let directory = match coordinator.combine_directory().map(Path::to_path_buf) {
             Some(directory) => directory,
             None => {
                 let _ = coordinator.finish_file_job();
@@ -207,7 +207,12 @@ pub async fn generate_derived(
                     "Create a derived bundle before generating XLSX.",
                 ));
             }
-        }
+        };
+        let options = coordinator.report_options().cloned().ok_or_else(|| {
+            let _ = coordinator.finish_file_job();
+            SafeError::invalid_configuration("Inspect the derived bundle before generating XLSX.")
+        })?;
+        (directory, options)
     };
     let replace = replace.unwrap_or(false);
     let written = tauri::async_runtime::spawn_blocking(move || {
@@ -215,6 +220,7 @@ pub async fn generate_derived(
             &directory,
             crate::coordinator::ReportKind::Derived,
             replace,
+            &options,
         )
     })
     .await;

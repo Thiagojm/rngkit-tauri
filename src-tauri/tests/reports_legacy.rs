@@ -155,6 +155,40 @@ fn supplied_compact_timestamp_shape_generates_without_mutation() {
 }
 
 #[test]
+fn flat_legacy_concatenation_generates_as_recorded_without_mutation() {
+    let root = temp_root();
+    let input = root.join("20260824T145947_concat_trng_s16_i1.csv");
+    fs::write(&input, "20260824T145948,8\n20260824T145949,9\n").expect("flat csv");
+    let before = hash(&input);
+
+    let mut coordinator = AppCoordinator::new();
+    inspect_picked(&mut coordinator, &input).expect("inspect flat concatenation");
+    let preview = coordinator.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.kind_label, "Legacy concatenated CSV");
+    assert_eq!(
+        preview.origin,
+        "Flat legacy concatenation without a manifest"
+    );
+    assert_eq!(preview.source, "TrueRNG v1/v2/v3");
+    assert_eq!(preview.row_count, 2);
+    assert_eq!(
+        preview.warning.as_deref(),
+        Some("This flat concatenation has no provenance manifest.")
+    );
+
+    generate_inspected(&mut coordinator, false).expect("generate flat report");
+    let dest = coordinator.report_dest().expect("dest");
+    assert_eq!(
+        dest.file_name().and_then(|name| name.to_str()),
+        Some("20260824T145947_concat_trng_s16_i1.xlsx")
+    );
+    assert_eq!(&fs::read(dest).expect("xlsx")[..2], b"PK");
+    assert_eq!(hash(&input), before);
+
+    fs::remove_dir_all(&root).expect("cleanup");
+}
+
+#[test]
 fn invalid_legacy_fixtures_fail_without_partial_xlsx() {
     let root = temp_root();
 
