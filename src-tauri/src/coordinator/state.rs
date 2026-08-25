@@ -1457,8 +1457,22 @@ fn outcome_path(label: &str, path: &Path) -> Option<OutcomePathRow> {
     }
     Some(OutcomePathRow {
         label: label.to_owned(),
-        path: path.to_str()?.to_owned(),
+        path: display_path(path)?,
     })
+}
+
+fn display_path(path: &Path) -> Option<String> {
+    let path = path.to_str()?;
+    #[cfg(windows)]
+    {
+        if let Some(path) = path.strip_prefix(r"\\?\UNC\") {
+            return Some(format!(r"\\{path}"));
+        }
+        if let Some(path) = path.strip_prefix(r"\\?\") {
+            return Some(path.to_owned());
+        }
+    }
+    Some(path.to_owned())
 }
 
 fn is_regular_file(path: &Path) -> bool {
@@ -1514,7 +1528,7 @@ fn source_id_of(config: &SourceConfig) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use super::AppCoordinator;
+    use super::{AppCoordinator, display_path};
     use crate::coordinator::fixtures::{DevScenario, bitb_candidate, pseudo_candidate};
     use crate::dto::{CollectionState, ErrorCode, FileJobState};
     use crate::errors::SafeError;
@@ -1546,6 +1560,23 @@ mod tests {
         assert_eq!(snapshot.theme, crate::dto::ThemePreference::System);
         assert!(snapshot.preferences_warning.is_none());
         assert!(snapshot.collection.selected_token.is_none());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn display_paths_hide_windows_extended_prefixes() {
+        assert_eq!(
+            display_path(std::path::Path::new(r"\\?\D:\Reports\report.xlsx")).as_deref(),
+            Some(r"D:\Reports\report.xlsx")
+        );
+        assert_eq!(
+            display_path(std::path::Path::new(r"\\?\UNC\server\share\report.xlsx")).as_deref(),
+            Some(r"\\server\share\report.xlsx")
+        );
+        assert_eq!(
+            display_path(std::path::Path::new(r"D:\Reports\report.xlsx")).as_deref(),
+            Some(r"D:\Reports\report.xlsx")
+        );
     }
 
     #[test]

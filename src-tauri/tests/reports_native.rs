@@ -95,6 +95,8 @@ fn completed_native_session_inspects_and_generates() {
     );
     let bytes = fs::read(&dest).expect("xlsx");
     assert_eq!(&bytes[..2], b"PK");
+    let outcome_path = &coordinator.pending_outcome().expect("report outcome").paths[0].path;
+    assert!(!outcome_path.starts_with(r"\\?\"), "{outcome_path}");
     assert_eq!(SUMMARY_SHEET, "Summary");
     assert_eq!(SAMPLES_SHEET, "Samples");
     assert_eq!(REF_PLUS, "Reference +1.96");
@@ -178,6 +180,21 @@ fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
     assert_eq!(
         fs::read(&standalone_bin).expect("bin unchanged"),
         bin_before
+    );
+
+    let paired_csv = standalone_root.join(native.csv_path().file_name().expect("csv name"));
+    fs::copy(native.csv_path(), &paired_csv).expect("restore csv sibling");
+    let mut paired_bin = AppCoordinator::new();
+    inspect_picked(&mut paired_bin, &standalone_bin).expect("paired standalone bin");
+    assert_eq!(
+        paired_bin
+            .report_options()
+            .expect("report options")
+            .source_basename(),
+        standalone_bin
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap()
     );
 
     fs::remove_dir_all(&root).expect("cleanup");

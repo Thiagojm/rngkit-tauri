@@ -16,10 +16,10 @@ without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
 `main` includes the published workflow improvements through Phase 6. The
-2026-08-25 artifact-feedback/report-charts work is complete through the
-terminal-outcome/local-clock correction against reachable `rngkit-core`
-revision `495c3f5acdb6960f90e662927e1466aebae7cffd`. Deterministic integration is
-validated; native interaction remains the user acceptance gate.
+artifact-feedback/report-chart work and follow-up outcome, local-clock,
+selected-basename, and Windows display-path corrections are integrated against
+reachable `rngkit-core` revision
+`3dc969d983ffa7c981536c46d19afa223f0c490b`.
 
 ## Main product flows
 
@@ -71,45 +71,21 @@ validated; native interaction remains the user acceptance gate.
 
 ## Evidence and open validation
 
-- **Deterministic Phase 6 validation (Windows host):** `npm ci`, Prettier,
-  Svelte/TypeScript check, ESLint, Vitest 26 files/100 tests, Playwright 5/5,
-  Vite build, cargo fmt/check/test/clippy/doc with locked dependencies, Rust
-  1.85 check/test, locked no-bundle Tauri release build, and `git diff --check`
-  passed. The four physical tests remained ignored.
-- **2026-08-25 Phase 2 deterministic validation (Windows host):** focused
-  report/combine tests, frontend checks/unit/E2E/build, locked Rust
-  check/test/clippy/doc, Rust 1.85 check/test, and `git diff --check` passed.
-  The four physical tests remained ignored.
-- **2026-08-25 Phase 3 deterministic validation (Windows host):** locked Rust
-  all-target tests, clippy, doc tests, Rust 1.85 check/test, frontend
-  format/check/lint/unit validation, and `git diff --check` passed. The four
-  physical tests remained ignored. No frontend page UI was changed.
-- **2026-08-25 Phase 4 deterministic validation (Windows host):** Prettier,
-  Svelte/TypeScript check, ESLint, Vitest 27 files/106 tests, Playwright 5/5,
-  Vite build, and `git diff --check` passed. The dialog and contextual-folder
-  UI use mocked/browser-safe state; no native Tauri, Explorer, Excel, or
-  hardware interaction was claimed. The four physical tests remained ignored.
-- **Terminal outcome correction (2026-08-25):** frontend format/check/lint and
-  all 27 Vitest files/106 tests passed. A focused native-channel mock confirms
-  that CleanStop reloads `pendingOutcome` immediately. The complete locked Rust
-  suite, five production-asset E2E tests, Rust 1.85 check/test, frontend build,
-  and locked no-bundle release build also passed against core revision
-  `495c3f5acdb6960f90e662927e1466aebae7cffd`. Real native timing and Excel
-  inspection still require user validation.
-- **Browser-integrated:** production-asset Edge tests passed for destination
-  navigation, Help headings/copy, accessibility, reduced motion/contrast, and
-  minimum-window layout. These tests use no real Tauri IPC or hardware.
-- **Phase 6 review corrections:** Help now states startup discovery explicitly,
-  documents the compact legacy timestamp form, keeps every stable error code at
-  the end, and replaces architecture terminology in the primary workflow with
-  direct user actions and outcomes.
-- **Native user gate (not passed here):** copied flat-concatenation Reports
-  preview/generate/open, Replace and input immutability, BIN-only sample-number
-  axis, BIN+CSV timestamp provenance, clean-start defaults/discovery, PseudoRNG
-  collection and chart Fit all, standalone legacy/current Reports,
-  cross-folder mixed Combine and derived report, full-path outcome dialogs,
-  acknowledgement/action behavior, every contextual working-folder action,
-  Help navigation, theme, keyboard use, and minimum window.
+- **Complete deterministic validation (2026-08-25, Windows):** npm install,
+  format/check/lint, 27 Vitest files/106 tests, Playwright 5/5, Vite build,
+  locked Rust fmt/check/test/clippy/doc, Rust 1.85 check/test, locked no-bundle
+  release build, and `git diff --check` passed. Four physical tests remained
+  ignored. Production-asset Edge coverage has no real Tauri IPC or hardware.
+- **Native smoke (2026-08-25):** startup discovery and 2048-bit default were
+  visible; PseudoRNG collection plotted committed samples; Stop immediately
+  displayed all saved artifact paths without another UI action. A collected
+  manifest previewed and generated/replaced XLSX, and its outcome displayed a
+  normal `D:\...` path without the internal `\\?\` prefix. The manifest stored
+  local offset `-03:00`. The workbook was not visually inspected in Excel.
+- **Remaining native acceptance:** flat/standalone legacy/current and BIN-only
+  report variants, selected-BIN chart title, cross-folder mixed Combine and
+  derived report, artifact open/folder actions, Help/theme/keyboard/minimum
+  window, hardware/unplug behavior, and native 100k/1M chart interaction.
 - **Still unverified:** native hardware/unplug behavior, native 100k/1M chart
   rendering, scaling/screen-reader sampling, NSIS uninstall/session-data
   preservation, signing/publication, and remote CI. Physical hardware and NSIS
@@ -117,8 +93,6 @@ validated; native interaction remains the user acceptance gate.
 
 ## Sources of truth
 
-- Approved contract: `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
-- Approved execution: `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
-- Original design/plan: `docs/specs/2026-08-22-rngkit-tauri-design.md` and
-  `docs/plans/2026-08-22-rngkit-tauri-plan.md`
-- Durable decisions: `docs/DECISIONS.md`; backlog: `TODO.md`
+- Approved historical artifacts remain under `docs/specs/` and `docs/plans/`;
+  current contracts and remaining gates are summarized here and in
+  `docs/DECISIONS.md` and `TODO.md`.

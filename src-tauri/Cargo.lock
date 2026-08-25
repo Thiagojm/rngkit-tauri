@@ -608,7 +608,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -767,7 +767,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -2591,7 +2591,7 @@ dependencies = [
 [[package]]
 name = "rngkit-analysis"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=495c3f5acdb6960f90e662927e1466aebae7cffd#495c3f5acdb6960f90e662927e1466aebae7cffd"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=3dc969d983ffa7c981536c46d19afa223f0c490b#3dc969d983ffa7c981536c46d19afa223f0c490b"
 dependencies = [
  "rngkit-core",
  "thiserror 2.0.20",
@@ -2600,7 +2600,7 @@ dependencies = [
 [[package]]
 name = "rngkit-core"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=495c3f5acdb6960f90e662927e1466aebae7cffd#495c3f5acdb6960f90e662927e1466aebae7cffd"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=3dc969d983ffa7c981536c46d19afa223f0c490b#3dc969d983ffa7c981536c46d19afa223f0c490b"
 dependencies = [
  "serde",
  "thiserror 2.0.20",
@@ -2610,7 +2610,7 @@ dependencies = [
 [[package]]
 name = "rngkit-engine"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=495c3f5acdb6960f90e662927e1466aebae7cffd#495c3f5acdb6960f90e662927e1466aebae7cffd"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=3dc969d983ffa7c981536c46d19afa223f0c490b#3dc969d983ffa7c981536c46d19afa223f0c490b"
 dependencies = [
  "rngkit-analysis",
  "rngkit-core",
@@ -2622,7 +2622,7 @@ dependencies = [
 [[package]]
 name = "rngkit-recording"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=495c3f5acdb6960f90e662927e1466aebae7cffd#495c3f5acdb6960f90e662927e1466aebae7cffd"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=3dc969d983ffa7c981536c46d19afa223f0c490b#3dc969d983ffa7c981536c46d19afa223f0c490b"
 dependencies = [
  "csv",
  "rngkit-core",
@@ -2637,7 +2637,7 @@ dependencies = [
 [[package]]
 name = "rngkit-sources"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=495c3f5acdb6960f90e662927e1466aebae7cffd#495c3f5acdb6960f90e662927e1466aebae7cffd"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=3dc969d983ffa7c981536c46d19afa223f0c490b#3dc969d983ffa7c981536c46d19afa223f0c490b"
 dependencies = [
  "bitb-rs",
  "intel_seed",
@@ -2650,7 +2650,7 @@ dependencies = [
 [[package]]
 name = "rngkit-xlsx"
 version = "0.1.0"
-source = "git+https://github.com/Thiagojm/rngkit-core?rev=495c3f5acdb6960f90e662927e1466aebae7cffd#495c3f5acdb6960f90e662927e1466aebae7cffd"
+source = "git+https://github.com/Thiagojm/rngkit-core?rev=3dc969d983ffa7c981536c46d19afa223f0c490b#3dc969d983ffa7c981536c46d19afa223f0c490b"
 dependencies = [
  "rngkit-analysis",
  "rngkit-core",
@@ -2704,7 +2704,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -4255,7 +4255,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

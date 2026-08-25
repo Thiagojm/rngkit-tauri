@@ -7,11 +7,7 @@ Read these files before changing the project:
 1. `docs/PROJECT_CONTEXT.md`
 2. `docs/DECISIONS.md`
 3. `TODO.md`
-4. `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
-5. `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
-6. `docs/specs/2026-08-22-rngkit-tauri-design.md`
-7. `docs/plans/2026-08-22-rngkit-tauri-plan.md`
-8. `README.md` and the relevant implementation area
+4. `README.md` and the relevant implementation area
 
 ## Verified commands (Windows host, through 2026-08-24)
 
@@ -46,27 +42,21 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
 
 ## Repository conventions
 
-- Checkpoints 3–18 of the original plan are implemented. Phase 1 of the
-  2026-08-24 workflow improvements is complete and published in `rngkit-core`;
-  Phase 2, Phase 3, and Phase 4 are complete and published in this app. Phase 4
-  passed automated and browser-integrated validation. Phase 5 is complete and
-  published and passed automated and browser-integrated validation. Phase 6
-  Help is complete and published and passed deterministic and production-asset
-  browser validation; native integrated workflow validation is the active
-  user gate.
-- The 2026-08-25 artifact-feedback/report-charts work is complete through the
-  terminal-outcome/local-clock correction. App Phase 2 is `b946c4d`, backend
-  Phase 3 is `44e0d65`, and UI Phase 4 is `b137419`; the current app pins
-  `rngkit-core` revision `495c3f5acdb6960f90e662927e1466aebae7cffd`.
-  Deterministic, browser-integrated, MSRV, and no-bundle release validation
-  passed; native integrated workflow validation remains the user gate.
+- The original app and 2026-08-24 workflow improvements are implemented and
+  published through Help. The 2026-08-25 artifact-feedback/report-chart work,
+  terminal-outcome correction, and selected-basename/path-display corrections
+  are implemented. The app pins `rngkit-core` revision
+  `3dc969d983ffa7c981536c46d19afa223f0c490b`.
+- Deterministic, browser-integrated, MSRV, no-bundle release, and native
+  PseudoRNG Collect/manifest-backed Reports smoke validation passed. Remaining
+  native acceptance boundaries are listed in `docs/PROJECT_CONTEXT.md`.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or
   hardware. On Windows they use the installed Edge channel. Vitest component
   tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.
 - Final `rngkit-*` dependencies must use the exact reachable Git revision
-  `495c3f5acdb6960f90e662927e1466aebae7cffd`. Never a local path.
+  `3dc969d983ffa7c981536c46d19afa223f0c490b`. Never a local path.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.

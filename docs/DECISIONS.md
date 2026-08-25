@@ -48,7 +48,9 @@ All decisions are accepted. Material changes return to design review.
 - Reports has one chooser for CSV, BIN, and JSON. A manifest/bundle is resolved
   and classified authoritatively; absent manifests use the published core
   standalone reader for current/legacy CSV/BIN. Same-stem XLSX generation uses
-  explicit Cancel/Replace and preserves input bytes.
+  explicit Cancel/Replace and preserves input bytes. The selected artifact
+  basename remains authoritative even when a `.bin` uses a valid CSV sibling
+  for recorded timestamps.
 - Combine is CSV-only and accepts distinct compatible current, legacy, or mixed
   inputs. Ordered canonical paths stay backend-only behind transient opaque
   input IDs. Add appends, Remove targets one row, Clear resets selection, and
@@ -69,40 +71,34 @@ All decisions are accepted. Material changes return to design review.
   Understanding the chart, Common problems, File formats and version details.
   It states the exact non-certification boundary and recovery actions.
 
-## Phase status and evidence
+## Artifact feedback and current evidence
 
-- The 2026-08-25 library Phase 1 is published at reachable revision
-  `495c3f5acdb6960f90e662927e1466aebae7cffd`; the app artifact-feedback work
-  is published through Phase 4 at commits `b946c4d`, `44e0d65`, and `b137419`.
-- The 2026-08-25 app Phase 3 keeps artifact feedback transient and typed: one
+- The app pins reachable `rngkit-core` revision
+  `3dc969d983ffa7c981536c46d19afa223f0c490b`.
+- Artifact feedback is transient and typed: one
   monotonic-ID notice is pending at a time, stale acknowledgements fail, and
   only confirmed regular files/directories under backend-known roots may be
-  exposed or opened. Phase 3 and Phase 4 are validated and published; native
-  integrated workflow validation remains the user gate.
-- Phase 4 renders one severity-aware outcome dialog with selectable complete
+  exposed or opened. One severity-aware outcome dialog renders selectable complete
   paths and only backend-approved actions. It suppresses repeated IDs across
   acknowledgement, polling, hydration, and navigation, while Replace and
-  close-collection dialogs retain precedence. Contextual working folders use
-  no frontend path arguments.
+  close-collection dialogs retain precedence. User-visible Windows paths omit
+  internal extended-length prefixes; internal canonical paths are unchanged.
 - A terminal collection channel event immediately reloads backend state so the
   already-created success/failure outcome is rendered without waiting for a
   later UI command. Session ID, channel generation, and event sequence guards
   prevent stale terminal reloads from replacing a newer collection.
 - Recorded-time report charts use the local clock contract published in
-  `rngkit-core` revision `495c3f5acdb6960f90e662927e1466aebae7cffd`:
+  the pinned core revision:
   native manifests provide the offset, manifest-free current CSVs infer it from
   the canonical filename, and legacy CSV clocks are not shifted twice.
 - Flat canonical `_concat_` CSVs are a distinct Reports kind without a
   manifest. Inspected reports retain the library's source basename and chart
   axis mode in backend-only state; generation revalidates that context before
   writing XLSX.
-- Phase 6 Help, copy audit, focused regressions, deterministic validation,
-  production-asset browser validation, MSRV validation, and locked no-bundle
-  build are complete and published. Native integrated workflows remain the
-  active user-validation gate.
-- Default tests remain hardware-free; physical smokes are ignored, opt-in, and
-  serial. NSIS, remote CI, signing, publication, release, and deployment are
-  not implied by this phase.
+- Complete deterministic/browser/MSRV/no-bundle validation and native
+  PseudoRNG Collect plus manifest-backed Reports smoke validation passed.
+  Other native variants remain explicit acceptance work. Default tests remain
+  hardware-free; physical smokes are ignored, opt-in, and serial.
 
 ## Delivery boundaries
 

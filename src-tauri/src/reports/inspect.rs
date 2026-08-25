@@ -133,6 +133,10 @@ fn bundle_kind(directory: &Path) -> Result<BundleKind, SafeError> {
 
 pub fn inspect_standalone(path: &Path) -> Result<InspectedReport, SafeError> {
     let session = open_standalone(path).map_err(map_standalone)?;
+    let source_basename = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or_default();
     let meta = session.meta();
     let flat = is_flat_legacy_concatenation(path);
     let kind_label = if flat {
@@ -182,7 +186,8 @@ pub fn inspect_standalone(path: &Path) -> Result<InspectedReport, SafeError> {
         } else {
             ReportKind::Standalone
         },
-        options: ReportOptions::for_session(&session).map_err(map_xlsx)?,
+        options: ReportOptions::for_session_with_source_basename(&session, source_basename)
+            .map_err(map_xlsx)?,
     })
 }
 
