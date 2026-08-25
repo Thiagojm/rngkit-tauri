@@ -49,6 +49,15 @@ describe('SessionConfiguration', () => {
     expect(appState.snapshot.collection.fold).toBe(2);
   });
 
+  it('offers the backend-known Collect working folder after a root is chosen', () => {
+    appState.applyScenario('ready');
+    render(CollectPage);
+
+    expect(
+      screen.getByRole('button', { name: copy.openWorkingFolder }),
+    ).toHaveProperty('disabled', false);
+  });
+
   it('records a chosen folder label in development without a filesystem path', async () => {
     render(CollectPage);
 

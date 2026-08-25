@@ -42,4 +42,12 @@ describe('CombinePage', () => {
       /Overlapping timestamp ranges/i,
     );
   });
+
+  it('offers a Combine working-folder action without a frontend path', () => {
+    render(CombinePage);
+
+    expect(
+      screen.getByRole('button', { name: copy.openWorkingFolder }),
+    ).toHaveProperty('disabled', false);
+  });
 });

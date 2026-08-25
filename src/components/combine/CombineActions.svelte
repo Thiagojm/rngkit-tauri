@@ -38,6 +38,12 @@
     disabledReason="Create a derived bundle before opening its folder."
     onclick={() => appState.openDerivedFolder()}>{copy.openFolder}</Button
   >
+  <Button
+    disabled={!controls.openCombineWorkingFolder.enabled}
+    disabledReason={controls.openCombineWorkingFolder.reason}
+    onclick={() => appState.openCombineWorkingFolder()}
+    >{copy.openWorkingFolder}</Button
+  >
 </div>
 
 <Dialog

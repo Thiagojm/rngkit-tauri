@@ -57,6 +57,22 @@ describe('deriveControls', () => {
     expect(deriveControls(generating).openContainingFolder.enabled).toBe(false);
   });
 
+  it('enables contextual working folders only outside active jobs', () => {
+    const ready = deriveControls(MOCK_SCENARIOS.ready);
+    expect(ready.openCollectionWorkingFolder.enabled).toBe(true);
+    expect(ready.openReportWorkingFolder.enabled).toBe(true);
+    expect(ready.openCombineWorkingFolder.enabled).toBe(true);
+
+    const idle = deriveControls(MOCK_SCENARIOS.idle);
+    expect(idle.openCollectionWorkingFolder.enabled).toBe(false);
+    expect(idle.openReportWorkingFolder.enabled).toBe(true);
+
+    const collecting = deriveControls(MOCK_SCENARIOS.collecting);
+    expect(collecting.openCollectionWorkingFolder.enabled).toBe(false);
+    expect(collecting.openReportWorkingFolder.enabled).toBe(false);
+    expect(collecting.openCombineWorkingFolder.enabled).toBe(false);
+  });
+
   it('shows fold when the selected source requires it', () => {
     expect(deriveControls(MOCK_SCENARIOS.ready).showFold).toBe(true);
     expect(deriveControls(MOCK_SCENARIOS.idle).showFold).toBe(false);

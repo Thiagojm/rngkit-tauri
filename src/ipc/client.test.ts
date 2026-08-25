@@ -2,6 +2,7 @@ import { mockIPC, clearMocks } from '@tauri-apps/api/mocks';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MOCK_SCENARIOS } from '../state/mock-scenarios';
 import {
+  acknowledgeOutcome,
   applyDevScenario,
   chooseOutputFolder,
   chooseCsvInputs,
@@ -12,8 +13,11 @@ import {
   generateReport,
   getAppState,
   openDerivedFolder,
+  openCollectionWorkingFolder,
+  openCombineWorkingFolder,
   openReport,
   openReportFolder,
+  openReportWorkingFolder,
   openSessionFolder,
   removeCombineInput,
   replaceReport,
@@ -234,17 +238,25 @@ describe('ipc client', () => {
     await openReport();
     await openReportFolder();
     await openDerivedFolder();
+    await openCollectionWorkingFolder();
+    await openReportWorkingFolder();
+    await openCombineWorkingFolder();
+    await acknowledgeOutcome(7);
     for (const command of [
       'open_session_folder',
       'open_report',
       'open_report_folder',
       'open_derived_folder',
+      'open_collection_working_folder',
+      'open_report_working_folder',
+      'open_combine_working_folder',
     ]) {
       const encoded = JSON.stringify(payloads[command] ?? {});
       expect(encoded).not.toMatch(/path/i);
       expect(encoded).not.toMatch(/[A-Za-z]:\\/);
       expect(encoded).not.toMatch(/\/dev\//);
     }
+    expect(payloads.acknowledge_outcome).toEqual({ noticeId: 7 });
   });
 
   it('uses only structured safe IPC errors in the UI', () => {

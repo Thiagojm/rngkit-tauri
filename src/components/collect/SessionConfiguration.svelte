@@ -85,6 +85,12 @@
       disabledReason={controls.chooseFolder.reason}
       onclick={() => appState.chooseOutputFolder()}>{copy.chooseFolder}</Button
     >
+    <Button
+      disabled={!controls.openCollectionWorkingFolder.enabled}
+      disabledReason={controls.openCollectionWorkingFolder.reason}
+      onclick={() => appState.openCollectionWorkingFolder()}
+      >{copy.openWorkingFolder}</Button
+    >
   </Field>
   <CollectionControls />
 </section>

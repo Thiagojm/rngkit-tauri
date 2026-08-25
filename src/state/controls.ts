@@ -37,13 +37,16 @@ export interface DerivedControls {
   refresh: Control;
   configure: Control;
   chooseFolder: Control;
+  openCollectionWorkingFolder: Control;
   openSessionFolder: Control;
   reports: Control;
   combine: Control;
   generateReport: Control;
   openReport: Control;
   openContainingFolder: Control;
+  openReportWorkingFolder: Control;
   createDerived: Control;
+  openCombineWorkingFolder: Control;
   showStart: boolean;
   showStop: boolean;
   showTerminalActions: boolean;
@@ -93,6 +96,14 @@ export function deriveControls(snapshot: AppSnapshot): DerivedControls {
     chooseFolder: busy
       ? disabled('The output folder cannot change during collection.')
       : enabled(),
+    openCollectionWorkingFolder:
+      fileBusy || !collection.outputRootLabel
+        ? disabled(
+            fileBusy
+              ? fileJobReason
+              : 'Choose an output folder before opening the Collect working folder.',
+          )
+        : enabled(),
     openSessionFolder:
       state === 'completed' || state === 'failed'
         ? enabled()
@@ -117,6 +128,7 @@ export function deriveControls(snapshot: AppSnapshot): DerivedControls {
       : reports.reportReady
         ? enabled()
         : disabled('Open the containing folder after a report exists.'),
+    openReportWorkingFolder: fileBusy ? disabled(fileJobReason) : enabled(),
     createDerived:
       busy || !combine.compatible || combine.inputs.length === 0
         ? disabled(
@@ -126,6 +138,7 @@ export function deriveControls(snapshot: AppSnapshot): DerivedControls {
                   'Select compatible CSV files before creating a bundle.'),
           )
         : enabled(),
+    openCombineWorkingFolder: fileBusy ? disabled(fileJobReason) : enabled(),
     showStart: state === 'idle' || state === 'discovering' || state === 'ready',
     showStop: state === 'collecting' || state === 'stopping',
     showTerminalActions: state === 'completed' || state === 'failed',

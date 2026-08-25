@@ -14,6 +14,7 @@
   import ReportsPage from '../../pages/ReportsPage.svelte';
   import CloseCollectionDialog from './CloseCollectionDialog.svelte';
   import Navigation from './Navigation.svelte';
+  import OperationOutcomeDialog from './OperationOutcomeDialog.svelte';
   import ThemeControl from './ThemeControl.svelte';
 
   $effect(() => {
@@ -82,3 +83,4 @@
   </div>
 </div>
 <CloseCollectionDialog />
+<OperationOutcomeDialog />

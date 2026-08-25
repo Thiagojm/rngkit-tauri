@@ -25,6 +25,12 @@
     onclick={() => appState.openReportFolder()}
     >{copy.openContainingFolder}</Button
   >
+  <Button
+    disabled={!controls.openReportWorkingFolder.enabled}
+    disabledReason={controls.openReportWorkingFolder.reason}
+    onclick={() => appState.openReportWorkingFolder()}
+    >{copy.openWorkingFolder}</Button
+  >
 </div>
 
 <Dialog

@@ -68,6 +68,14 @@ describe('ReportsPage', () => {
     expect(screen.getByText(copy.fold.raw)).toBeTruthy();
   });
 
+  it('offers a Reports working-folder action without a frontend path', () => {
+    render(ReportsPage);
+
+    expect(
+      screen.getByRole('button', { name: copy.openWorkingFolder }),
+    ).toHaveProperty('disabled', false);
+  });
+
   it('opens the Cancel/Replace dialog for a conflicting report', async () => {
     appState.applyScenario('reportsConflict');
     appState.destination = 'reports';

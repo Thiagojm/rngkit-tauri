@@ -1,5 +1,6 @@
 import { isTauri } from '@tauri-apps/api/core';
 import {
+  acknowledgeOutcome as requestAcknowledgeOutcome,
   applyDevScenario,
   chooseCsvInputs,
   clearCombineInputs,
@@ -12,8 +13,11 @@ import {
   getAppState,
   listenCloseRequested,
   openDerivedFolder,
+  openCollectionWorkingFolder,
+  openCombineWorkingFolder,
   openReport,
   openReportFolder,
+  openReportWorkingFolder,
   openSessionFolder,
   removeCombineInput,
   refreshSources,
@@ -31,6 +35,7 @@ import {
 } from '../ipc/client';
 import { ChartSeries } from '../chart/chart-data';
 import { syntheticCumulativeZ } from '../chart/synthetic';
+import { copy } from '../copy';
 import { deriveControls } from './controls';
 import {
   DEFAULT_SCENARIO,
@@ -44,6 +49,8 @@ import type {
   CollectionEvent,
   CollectionSnapshot,
   Destination,
+  OutcomeActionId,
+  OutcomeNotice,
   ThemePreference,
 } from './types';
 
@@ -82,6 +89,8 @@ export class AppViewState {
   loadGeneration = 0;
   collectionChannelGeneration = 0;
   startupDiscoveryStarted = false;
+  localOutcome = $state<OutcomeNotice | null>(null);
+  dismissedOutcomeId = $state<number | null>(null);
   chartSeries = new ChartSeries();
   chartVersion = $state(0);
 
@@ -93,8 +102,27 @@ export class AppViewState {
     },
   });
   controls = $derived(deriveControls(this.snapshot));
+  outcome = $derived.by(() => {
+    if (this.localOutcome) {
+      return this.localOutcome;
+    }
+    const pending = this.backendSnapshot.pendingOutcome;
+    return pending && pending.id !== this.dismissedOutcomeId ? pending : null;
+  });
 
   reconcile(snapshot: AppSnapshot): void {
+    if (
+      this.localOutcome &&
+      snapshot.pendingOutcome?.id !== this.localOutcome.id
+    ) {
+      this.localOutcome = null;
+    }
+    if (
+      this.dismissedOutcomeId !== null &&
+      snapshot.pendingOutcome?.id !== this.dismissedOutcomeId
+    ) {
+      this.dismissedOutcomeId = null;
+    }
     this.backendSnapshot = snapshot;
     this.selectedToken = snapshot.collection.selectedToken;
     this.theme = snapshot.theme;
@@ -255,6 +283,8 @@ export class AppViewState {
     this.replaceDialogOpen = false;
     this.closePrompt = 'none';
     this.diagnosticsCopied = false;
+    this.localOutcome = null;
+    this.dismissedOutcomeId = null;
     this.reconcile(cloneSnapshot(id));
     this.syncMockChart(this.backendSnapshot.collection);
     if (import.meta.env.DEV && isTauri()) {
@@ -313,6 +343,112 @@ export class AppViewState {
         error,
         'preferencesWarning',
       );
+    }
+  }
+
+  async resolveOutcome(
+    noticeId: number,
+    action?: OutcomeActionId,
+  ): Promise<void> {
+    const outcome = this.outcome;
+    if (!outcome || outcome.id !== noticeId) {
+      return;
+    }
+    if (this.localOutcome) {
+      this.localOutcome = null;
+      this.dismissedOutcomeId = noticeId;
+      return;
+    }
+    this.dismissedOutcomeId = noticeId;
+    if (!isTauri()) {
+      this.reconcile({ ...this.backendSnapshot, pendingOutcome: null });
+      return;
+    }
+
+    const generation = ++this.loadGeneration;
+    let actionError: unknown;
+    try {
+      if (action) {
+        try {
+          const snapshot = await this.requestOutcomeAction(action);
+          if (generation !== this.loadGeneration) {
+            return;
+          }
+          this.reconcile(snapshot);
+        } catch (error) {
+          actionError = error;
+        }
+      }
+      try {
+        const snapshot = await requestAcknowledgeOutcome(noticeId);
+        if (generation === this.loadGeneration) {
+          this.reconcile(snapshot);
+        }
+      } catch (error) {
+        if (!actionError) {
+          actionError = error;
+        }
+      }
+      if (generation === this.loadGeneration && actionError) {
+        this.localOutcome = {
+          id: noticeId,
+          severity: 'error',
+          operation: outcome.operation,
+          title: copy.outcome.actionErrorTitle,
+          message: safeErrorMessage(actionError),
+          paths: [],
+          actions: [],
+        };
+      }
+    } catch {
+      // The action and acknowledgement requests are handled independently.
+    }
+  }
+
+  private async requestOutcomeAction(
+    action: OutcomeActionId,
+  ): Promise<AppSnapshot> {
+    switch (action) {
+      case 'openSessionFolder':
+        return openSessionFolder();
+      case 'openReport':
+        return openReport();
+      case 'openReportFolder':
+        return openReportFolder();
+      case 'openDerivedFolder':
+        return openDerivedFolder();
+      case 'openCollectionWorkingFolder':
+        return openCollectionWorkingFolder();
+      case 'openReportWorkingFolder':
+        return openReportWorkingFolder();
+      case 'openCombineWorkingFolder':
+        return openCombineWorkingFolder();
+    }
+  }
+
+  private async runFolderCommand(
+    action: () => Promise<AppSnapshot>,
+    operation: OutcomeNotice['operation'],
+  ): Promise<void> {
+    const generation = ++this.loadGeneration;
+    try {
+      const snapshot = await action();
+      if (generation === this.loadGeneration) {
+        this.reconcile(snapshot);
+      }
+    } catch (error) {
+      if (generation !== this.loadGeneration) {
+        return;
+      }
+      this.localOutcome = {
+        id: -generation,
+        severity: 'error',
+        operation,
+        title: copy.outcome.actionErrorTitle,
+        message: safeErrorMessage(error),
+        paths: [],
+        actions: [],
+      };
     }
   }
 
@@ -648,17 +784,16 @@ export class AppViewState {
 
   openSessionFolder(): void {
     if (isTauri()) {
-      const generation = ++this.loadGeneration;
-      const fallback = $state.snapshot(this.snapshot);
-      void openSessionFolder()
-        .then((snapshot) => {
-          if (generation === this.loadGeneration) {
-            this.reconcile(snapshot);
-          }
-        })
-        .catch((error: unknown) =>
-          this.reconcileCommandFailure(generation, fallback, error),
-        );
+      void this.runFolderCommand(() => openSessionFolder(), 'collection');
+    }
+  }
+
+  openCollectionWorkingFolder(): void {
+    if (isTauri()) {
+      void this.runFolderCommand(
+        () => openCollectionWorkingFolder(),
+        'collection',
+      );
     }
   }
 
@@ -725,19 +860,19 @@ export class AppViewState {
 
   openReport(): void {
     if (isTauri()) {
-      void this.runDraftCommand(
-        () => openReport(),
-        (snapshot) => snapshot,
-      );
+      void this.runFolderCommand(() => openReport(), 'report');
     }
   }
 
   openReportFolder(): void {
     if (isTauri()) {
-      void this.runDraftCommand(
-        () => openReportFolder(),
-        (snapshot) => snapshot,
-      );
+      void this.runFolderCommand(() => openReportFolder(), 'report');
+    }
+  }
+
+  openReportWorkingFolder(): void {
+    if (isTauri()) {
+      void this.runFolderCommand(() => openReportWorkingFolder(), 'report');
     }
   }
 
@@ -807,10 +942,13 @@ export class AppViewState {
 
   openDerivedFolder(): void {
     if (isTauri()) {
-      void this.runDraftCommand(
-        () => openDerivedFolder(),
-        (snapshot) => snapshot,
-      );
+      void this.runFolderCommand(() => openDerivedFolder(), 'combine');
+    }
+  }
+
+  openCombineWorkingFolder(): void {
+    if (isTauri()) {
+      void this.runFolderCommand(() => openCombineWorkingFolder(), 'combine');
     }
   }
 
@@ -848,6 +986,8 @@ export class AppViewState {
     this.replaceDialogOpen = false;
     this.closePrompt = 'none';
     this.diagnosticsCopied = false;
+    this.localOutcome = null;
+    this.dismissedOutcomeId = null;
     this.reconcile(cloneSnapshot(DEFAULT_SCENARIO));
     this.chartSeries.clear();
     this.chartVersion += 1;
