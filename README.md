@@ -31,9 +31,9 @@ restricted CSP. Open commands use backend-known paths only.
 Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
 `src-tauri/tests/hardware.rs`; default tests do not run them.
 
-The product and installer baseline is `061f66a`; the Checkpoint 18 audit is
-complete in the current tree and awaiting user approval. Uninstall and other
-unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
+The unsigned installer baseline remains `061f66a`; the current application
+includes the published workflow improvements described below. Uninstall and
+other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
 `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`.
 
@@ -45,9 +45,9 @@ layout. Phase 4 is complete and published: Reports has one `Choose input`
 action for bundles and standalone CSV/BIN inputs, with automated and
 browser-integrated validation complete. Phase 5 is complete and published with
 automated and browser-integrated validation complete. Phase 6 task-oriented
-Help is implemented in the current worktree and its deterministic/browser
-validation is complete; native integrated workflow validation remains the
-active user gate. Phase 6 approval, commit, and push are separate decisions.
+Help is complete and published with deterministic and production-asset browser
+validation complete; native integrated workflow validation remains the active
+user gate.
 
 ## Sources of truth
 

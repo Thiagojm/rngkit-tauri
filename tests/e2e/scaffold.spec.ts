@@ -118,7 +118,14 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   ]) {
     await expect(page.getByRole('heading', { name: heading })).toBeVisible();
   }
-  await expect(page.getByText(/new bundles use schema 2/)).toBeVisible();
+  await expect(
+    page.getByText(/new Combine output uses schema 2/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/searches for sources automatically when the app opens/),
+  ).toBeVisible();
+  await expect(page.getByText(/YYYYMMDDTHHMMSS/)).toBeVisible();
+  await expect(page.getByText('unexpected_failure')).toBeVisible();
 
   await page.getByLabel(copy.theme.legend).selectOption('dark');
   await expect.poll(() => bodyBackground(page)).toBe(DARK_SURFACE);

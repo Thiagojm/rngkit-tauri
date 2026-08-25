@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import { copy } from '../copy';
+import { ERROR_CODES } from '../ipc/types';
 import { RNGKIT_CORE_REVISION } from '../library-revision';
 import HelpPage from './HelpPage.svelte';
 
@@ -31,11 +32,22 @@ describe('HelpPage', () => {
     ).toBeTruthy();
     expect(screen.getByText(RNGKIT_CORE_REVISION)).toBeTruthy();
     expect(screen.getByText(/Nothing is selected automatically/i)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /searches for sources automatically when the app opens/i,
+      ),
+    ).toBeTruthy();
     expect(screen.getByText(/Inputs are read-only/i)).toBeTruthy();
-    expect(screen.getByText(/new bundles use schema 2/i)).toBeTruthy();
+    expect(screen.getByText(/new Combine output uses schema 2/i)).toBeTruthy();
+    expect(screen.getByText(/YYYYMMDDTHHMMSS/)).toBeTruthy();
+    for (const code of ERROR_CODES) {
+      expect(screen.getByText(code)).toBeTruthy();
+    }
     expect(
       screen.getByText(/all actions are available from the keyboard/i),
     ).toBeTruthy();
     expect(screen.queryByText(/p-value/i)).toBeNull();
+    expect(screen.queryByText(/desktop side/i)).toBeNull();
+    expect(screen.queryByText(/authoritative/i)).toBeNull();
   });
 });

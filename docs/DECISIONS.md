@@ -73,10 +73,10 @@ All decisions are accepted. Material changes return to design review.
 
 - Phase 1 is published in `rngkit-core` at reachable revision
   `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`; app Phases 2–5 are published.
-- Phase 6 Help implementation, copy audit, focused regressions, deterministic
-  validation, browser validation, MSRV validation, and locked no-bundle build
-  passed in the current worktree. Native integrated workflows remain the active
-  user-validation gate. Phase 6 approval, commit, and push are separate.
+- Phase 6 Help, copy audit, focused regressions, deterministic validation,
+  production-asset browser validation, MSRV validation, and locked no-bundle
+  build are complete and published. Native integrated workflows remain the
+  active user-validation gate.
 - Default tests remain hardware-free; physical smokes are ignored, opt-in, and
   serial. NSIS, remote CI, signing, publication, release, and deployment are
   not implied by this phase.

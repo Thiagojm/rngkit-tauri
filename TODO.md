@@ -19,8 +19,9 @@
 - Phase 5: incremental mixed-format Combine, opaque-ID Remove/Clear, and
   schema-2 derived bundles, automatically and browser-integrated validated and
   published.
-- Phase 6 implementation: task-oriented Help in approved order, production-copy
-  audit, focused unit/E2E regression updates, and complete deterministic suite.
+- Phase 6: task-oriented Help in approved order, production-copy audit, focused
+  unit/E2E regressions, and complete deterministic suite reviewed, corrected,
+  and published.
 
 ## In progress
 
@@ -29,7 +30,7 @@
 ## Next steps
 
 1. Run the Phase 6 native manual validation from the approved plan.
-2. Obtain explicit Phase 6 approval before any commit or push authorization.
+2. Record explicit user approval after the native integrated workflow review.
 
 ## Backlog
 

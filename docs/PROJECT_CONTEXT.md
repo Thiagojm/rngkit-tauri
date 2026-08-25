@@ -15,10 +15,10 @@ users to 2048 bits, and performs one asynchronous discovery after hydration
 without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
-`main` includes the published Phase 5 app at `de1f338`. Phase 6 Help is
-implemented and validated in the current worktree; native integrated workflow
-validation and the Phase 6 user-approval gate remain open. No Phase 6 commit or
-push is authorized by this state. The reusable library is pinned to reachable
+`main` includes the published workflow improvements through Phase 6. Help is
+task-oriented and the deterministic and production-asset browser suites pass;
+native integrated workflow validation and the Phase 6 user-approval gate remain
+open. The reusable library is pinned to reachable
 `rngkit-core` revision `2cdf311dd206cb5e7320ee520ef1e7a5139cc146`.
 
 ## Main product flows
@@ -75,6 +75,10 @@ push is authorized by this state. The reusable library is pinned to reachable
 - **Browser-integrated:** production-asset Edge tests passed for destination
   navigation, Help headings/copy, accessibility, reduced motion/contrast, and
   minimum-window layout. These tests use no real Tauri IPC or hardware.
+- **Phase 6 review corrections:** Help now states startup discovery explicitly,
+  documents the compact legacy timestamp form, keeps every stable error code at
+  the end, and replaces architecture terminology in the primary workflow with
+  direct user actions and outcomes.
 - **Native user gate (not passed here):** clean-start defaults/discovery;
   PseudoRNG collection and chart Fit all; standalone legacy/current Reports;
   cross-folder mixed Combine and derived report; Help navigation, theme,

@@ -51,9 +51,9 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   Phase 2, Phase 3, and Phase 4 are complete and published in this app. Phase 4
   passed automated and browser-integrated validation. Phase 5 is complete and
   published and passed automated and browser-integrated validation. Phase 6
-  Help implementation and deterministic/browser validation are complete in the
-  current worktree; native integrated workflow validation is the active gate.
-  Phase 6 approval, commit, and push remain separate decisions.
+  Help is complete and published and passed deterministic and production-asset
+  browser validation; native integrated workflow validation is the active
+  user gate.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or

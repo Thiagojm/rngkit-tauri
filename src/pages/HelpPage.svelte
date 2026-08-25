@@ -1,5 +1,6 @@
 <script lang="ts">
   import { copy, FOLD_OPTIONS } from '../copy';
+  import { ERROR_CODES } from '../ipc/types';
   import { RNGKIT_CORE_REVISION } from '../library-revision';
 </script>
 
@@ -19,8 +20,8 @@
         interval and fold when the controls are shown.
       </li>
       <li>
-        Select Start. Samples continue until you select Stop or a terminal error
-        occurs. The saved session folder is available when collection finishes.
+        Select Start. Samples continue until you select Stop or collection
+        fails. The saved session folder is available when collection finishes.
       </li>
     </ol>
   </section>
@@ -30,10 +31,11 @@
       Choosing a source
     </h2>
     <p>
-      RngKit supports one explicitly selected BitBabbler, TrueRNG, RDSEED, or
-      PseudoRNG source per session. Nothing is selected automatically. Select
-      Refresh sources when the list is empty or when you want to search again; a
-      refresh can invalidate an earlier selection.
+      RngKit searches for sources automatically when the app opens and supports
+      one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG source
+      per session. Nothing is selected automatically. Select Refresh sources
+      when the list is empty or when you want to search again; a refresh can
+      invalidate an earlier selection.
     </p>
     <p>BitBabbler shows these fold choices:</p>
     <ul class="list-disc space-y-1 ps-5">
@@ -53,10 +55,9 @@
       Collecting and stopping safely
     </h2>
     <p>
-      Stop is cooperative: the current durable sample can finish before the
-      session closes. If you close the window while collecting, choose Keep
-      collecting or Stop and exit. When the app is stopping, wait for
-      finalization instead of closing it again.
+      Stop lets the current sample finish and save before the session closes. If
+      you close the window while collecting, choose Keep collecting or Stop and
+      exit. When the app is stopping, wait until it finishes.
     </p>
     <p>
       Every committed sample remains available to the chart. Use Fit all to
@@ -85,10 +86,10 @@
       </li>
     </ol>
     <p>
-      A manifest is authoritative when it is present. Without one, RngKit
-      validates a standalone file from its filename and contents. BIN-only
-      reports use estimated timestamps; derived reports copy timestamps from
-      their concatenated inputs.
+      If the chosen file belongs to a folder with <code>manifest.json</code>,
+      RngKit checks the complete bundle. Otherwise it validates the standalone
+      file from its filename and contents. BIN-only reports use estimated
+      timestamps; derived reports copy timestamps from their combined inputs.
     </p>
   </section>
 
@@ -114,9 +115,7 @@
     <p>
       Combine accepts current CSV, legacy v3 CSV, or a compatible mixture. It
       does not accept BIN files. Inputs must have matching source, sample size,
-      interval, and fold, and their time ranges cannot overlap. Older schema-1
-      derived bundles remain readable; new bundles use schema 2 with the
-      <code>csv_concatenation</code> format.
+      interval, and fold, and their time ranges cannot overlap.
     </p>
   </section>
 
@@ -149,8 +148,8 @@
         nothing, verify the device connection or choose PseudoRNG.
       </li>
       <li>
-        <strong>No output folder:</strong> select Choose folder and retry the action.
-        The app keeps the folder path on the desktop side.
+        <strong>No output folder:</strong> select Choose folder, choose an available
+        directory, and retry the action.
       </li>
       <li>
         <strong>Combine is incompatible:</strong> inspect the invalid row, remove
@@ -179,8 +178,11 @@
         <code>manifest.json</code>.
       </li>
       <li>
-        Current standalone CSV/BIN and legacy v3 CSV/BIN can be inspected by
-        Reports when no parent manifest is present.
+        A current CSV has a seven-column header and RFC 3339 timestamps. A
+        legacy v3 CSV has no header and uses compact rows such as
+        <code>YYYYMMDDTHHMMSS,&lt;ones&gt;</code>. Reports also accepts
+        standalone current or legacy BIN files when their filenames contain
+        valid metadata.
       </li>
       <li>
         A derived bundle contains a same-stem CSV and manifest. Schema-1
@@ -192,5 +194,11 @@
     <p>
       Library revision <code>{RNGKIT_CORE_REVISION}</code>.
     </p>
+    <p>Stable error codes shown in diagnostics:</p>
+    <ul class="flex flex-wrap gap-x-3 gap-y-1" aria-label="Stable error codes">
+      {#each ERROR_CODES as code (code)}
+        <li><code>{code}</code></li>
+      {/each}
+    </ul>
   </section>
 </article>
