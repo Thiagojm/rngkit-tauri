@@ -1,2 +1,2 @@
 /** Reachable rngkit-core revision pinned by this application. */
-export const RNGKIT_CORE_REVISION = '2cdf311dd206cb5e7320ee520ef1e7a5139cc146';
+export const RNGKIT_CORE_REVISION = '495c3f5acdb6960f90e662927e1466aebae7cffd';

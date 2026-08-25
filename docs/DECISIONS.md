@@ -72,7 +72,7 @@ All decisions are accepted. Material changes return to design review.
 ## Phase status and evidence
 
 - The 2026-08-25 library Phase 1 is published at reachable revision
-  `7c798146eddbcb9443c84adc236c0f7c09bd7789`; the app artifact-feedback work
+  `495c3f5acdb6960f90e662927e1466aebae7cffd`; the app artifact-feedback work
   is published through Phase 4 at commits `b946c4d`, `44e0d65`, and `b137419`.
 - The 2026-08-25 app Phase 3 keeps artifact feedback transient and typed: one
   monotonic-ID notice is pending at a time, stale acknowledgements fail, and
@@ -84,6 +84,14 @@ All decisions are accepted. Material changes return to design review.
   acknowledgement, polling, hydration, and navigation, while Replace and
   close-collection dialogs retain precedence. Contextual working folders use
   no frontend path arguments.
+- A terminal collection channel event immediately reloads backend state so the
+  already-created success/failure outcome is rendered without waiting for a
+  later UI command. Session ID, channel generation, and event sequence guards
+  prevent stale terminal reloads from replacing a newer collection.
+- Recorded-time report charts use the local clock contract published in
+  `rngkit-core` revision `495c3f5acdb6960f90e662927e1466aebae7cffd`:
+  native manifests provide the offset, manifest-free current CSVs infer it from
+  the canonical filename, and legacy CSV clocks are not shifted twice.
 - Flat canonical `_concat_` CSVs are a distinct Reports kind without a
   manifest. Inspected reports retain the library's source basename and chart
   axis mode in backend-only state; generation revalidates that context before

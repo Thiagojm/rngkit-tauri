@@ -23,7 +23,7 @@ use reports::ReportsHandle;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
-pub const RNGKIT_CORE_REVISION: &str = "7c798146eddbcb9443c84adc236c0f7c09bd7789";
+pub const RNGKIT_CORE_REVISION: &str = "495c3f5acdb6960f90e662927e1466aebae7cffd";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -208,10 +208,10 @@ mod tests {
     use super::RNGKIT_CORE_REVISION;
 
     #[test]
-    fn pins_gate_a_library_revision() {
+    fn pins_reachable_library_revision() {
         assert_eq!(
             RNGKIT_CORE_REVISION,
-            "7c798146eddbcb9443c84adc236c0f7c09bd7789"
+            "495c3f5acdb6960f90e662927e1466aebae7cffd"
         );
     }
 

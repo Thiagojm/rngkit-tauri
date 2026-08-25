@@ -67,6 +67,31 @@ describe('AppViewState native collection channel', () => {
         statusLabel: 'Stopping',
       },
     };
+    const completed: AppSnapshot = {
+      ...stopping,
+      collection: {
+        ...stopping.collection,
+        state: 'completed',
+        statusLabel: 'Completed',
+        sampleCount: 3,
+        lastEventSequence: 1,
+      },
+      pendingOutcome: {
+        id: 1,
+        severity: 'success',
+        operation: 'collection',
+        title: 'Collection saved',
+        message: 'The collection artifacts were saved.',
+        paths: [
+          {
+            label: 'Session folder',
+            path: 'C:\\Users\\tester\\Documents\\rngkit\\session',
+          },
+        ],
+        actions: ['openSessionFolder'],
+      },
+    };
+    const getAppState = vi.fn(async () => completed);
 
     vi.resetModules();
     vi.doMock('@tauri-apps/api/core', async (importOriginal) => ({
@@ -82,7 +107,7 @@ describe('AppViewState native collection channel', () => {
       createDerived: vi.fn(),
       generateDerived: vi.fn(),
       generateReport: vi.fn(),
-      getAppState: vi.fn(async () => collecting),
+      getAppState,
       openDerivedFolder: vi.fn(),
       openReport: vi.fn(),
       openReportFolder: vi.fn(),
@@ -129,9 +154,11 @@ describe('AppViewState native collection channel', () => {
     });
     resolveStop?.(stopping);
     await vi.waitFor(() =>
-      expect(state.snapshot.collection.state).toBe('completed'),
+      expect(state.outcome?.title).toBe('Collection saved'),
     );
 
+    expect(getAppState).toHaveBeenCalledTimes(1);
+    expect(state.snapshot.collection.state).toBe('completed');
     expect(state.snapshot.collection.sampleCount).toBe(3);
     expect(state.snapshot.collection.lastEventSequence).toBe(1);
   });

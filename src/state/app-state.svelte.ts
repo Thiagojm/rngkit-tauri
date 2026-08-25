@@ -568,21 +568,21 @@ export class AppViewState {
     };
   }
 
-  acceptCollectionEvent(event: CollectionEvent): void {
+  acceptCollectionEvent(event: CollectionEvent): boolean {
     const collection = this.backendSnapshot.collection;
     if (collection.state !== 'collecting' && collection.state !== 'stopping') {
-      return;
+      return false;
     }
     if (event.sessionId !== collection.sessionId) {
       if (
         collection.sessionId !== null ||
         (collection.state !== 'collecting' && collection.state !== 'stopping')
       ) {
-        return;
+        return false;
       }
     }
     if (event.sequence <= collection.lastEventSequence) {
-      return;
+      return false;
     }
     const next = {
       ...collection,
@@ -624,6 +624,27 @@ export class AppViewState {
         break;
     }
     this.reconcile({ ...this.backendSnapshot, collection: next });
+    return true;
+  }
+
+  private async reconcileTerminalCollection(
+    channelGeneration: number,
+    event: CollectionEvent,
+  ): Promise<void> {
+    try {
+      const snapshot = await getAppState();
+      const collection = snapshot.collection;
+      if (
+        channelGeneration !== this.collectionChannelGeneration ||
+        collection.sessionId !== event.sessionId ||
+        collection.lastEventSequence < event.sequence
+      ) {
+        return;
+      }
+      this.reconcile(snapshot);
+    } catch {
+      // The terminal channel event already leaves the collection in a safe state.
+    }
   }
 
   startCollection(): void {
@@ -646,7 +667,13 @@ export class AppViewState {
       });
       void startCollection((event) => {
         if (channelGeneration === this.collectionChannelGeneration) {
-          this.acceptCollectionEvent(event);
+          const accepted = this.acceptCollectionEvent(event);
+          if (
+            accepted &&
+            (event.kind === 'cleanStop' || event.kind === 'terminalFailure')
+          ) {
+            void this.reconcileTerminalCollection(channelGeneration, event);
+          }
         }
       })
         .then((snapshot) => {

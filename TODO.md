@@ -31,6 +31,9 @@
 - 2026-08-25 Phase 4: one-shot outcome dialog, backend-approved artifact
   actions, contextual working-folder buttons, and complete frontend/browser
   validation completed and published at app commit `b137419`.
+- Terminal collection outcome reconciliation and local-clock XLSX labels are
+  integrated against `rngkit-core` revision `495c3f5`, with complete frontend,
+  locked Rust, Rust 1.85, E2E, build, and no-bundle release validation passed.
 
 ## In progress
 

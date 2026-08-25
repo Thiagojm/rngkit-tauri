@@ -16,10 +16,10 @@ without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
 `main` includes the published workflow improvements through Phase 6. The
-2026-08-25 artifact-feedback/report-charts work is published through Phase 4
-against reachable `rngkit-core` revision
-`7c798146eddbcb9443c84adc236c0f7c09bd7789`; Phase 5 documentation and native
-acceptance handoff work is local and remains uncommitted at its user gate.
+2026-08-25 artifact-feedback/report-charts work is complete through the
+terminal-outcome/local-clock correction against reachable `rngkit-core`
+revision `495c3f5acdb6960f90e662927e1466aebae7cffd`. Deterministic integration is
+validated; native interaction remains the user acceptance gate.
 
 ## Main product flows
 
@@ -89,6 +89,13 @@ acceptance handoff work is local and remains uncommitted at its user gate.
   Vite build, and `git diff --check` passed. The dialog and contextual-folder
   UI use mocked/browser-safe state; no native Tauri, Explorer, Excel, or
   hardware interaction was claimed. The four physical tests remained ignored.
+- **Terminal outcome correction (2026-08-25):** frontend format/check/lint and
+  all 27 Vitest files/106 tests passed. A focused native-channel mock confirms
+  that CleanStop reloads `pendingOutcome` immediately. The complete locked Rust
+  suite, five production-asset E2E tests, Rust 1.85 check/test, frontend build,
+  and locked no-bundle release build also passed against core revision
+  `495c3f5acdb6960f90e662927e1466aebae7cffd`. Real native timing and Excel
+  inspection still require user validation.
 - **Browser-integrated:** production-asset Edge tests passed for destination
   navigation, Help headings/copy, accessibility, reduced motion/contrast, and
   minimum-window layout. These tests use no real Tauri IPC or hardware.

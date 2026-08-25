@@ -54,19 +54,19 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   Help is complete and published and passed deterministic and production-asset
   browser validation; native integrated workflow validation is the active
   user gate.
-- The 2026-08-25 artifact-feedback/report-charts work is published through
-  Phase 4: app Phase 2 is `b946c4d`, backend Phase 3 is `44e0d65`, and UI Phase
-  4 is `b137419`, all against `rngkit-core` revision
-  `7c798146eddbcb9443c84adc236c0f7c09bd7789`. Phase 5 documentation and
-  acceptance handoff work is the active local phase; native integrated workflow
-  validation remains the user gate.
+- The 2026-08-25 artifact-feedback/report-charts work is complete through the
+  terminal-outcome/local-clock correction. App Phase 2 is `b946c4d`, backend
+  Phase 3 is `44e0d65`, and UI Phase 4 is `b137419`; the current app pins
+  `rngkit-core` revision `495c3f5acdb6960f90e662927e1466aebae7cffd`.
+  Deterministic, browser-integrated, MSRV, and no-bundle release validation
+  passed; native integrated workflow validation remains the user gate.
 - Preserve the approved design and plan; update their current-state references only when evidence changes.
 - Use the locked versions in `package-lock.json` and `src-tauri/Cargo.lock`; do not float dependencies or use prereleases.
 - Browser tests use Playwright with production assets and no real Tauri IPC or
   hardware. On Windows they use the installed Edge channel. Vitest component
   tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.
 - Final `rngkit-*` dependencies must use the exact reachable Git revision
-  `7c798146eddbcb9443c84adc236c0f7c09bd7789`. Never a local path.
+  `495c3f5acdb6960f90e662927e1466aebae7cffd`. Never a local path.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.

@@ -35,14 +35,13 @@ The unsigned installer baseline remains `061f66a`; the current application
 includes the published workflow improvements described below. Uninstall and
 other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
-`7c798146eddbcb9443c84adc236c0f7c09bd7789`.
+`495c3f5acdb6960f90e662927e1466aebae7cffd`.
 
-The approved 2026-08-25 artifact-feedback/report-charts plan is implemented
-through Phase 4. The library Phase 1 is published at the exact revision above;
-app Phase 2 is `b946c4d`, backend Phase 3 is `44e0d65`, and UI Phase 4 is
-`b137419`. Native integrated workflow validation remains the active user gate;
-Phase 5 documentation and acceptance handoff work is local until its gate is
-completed.
+The approved 2026-08-25 artifact-feedback/report-charts plan and the subsequent
+terminal-outcome/local-clock corrections are implemented against the exact
+library revision above. App Phase 2 is `b946c4d`, backend Phase 3 is `44e0d65`,
+and UI Phase 4 is `b137419`. Native integrated workflow validation remains the
+active user gate.
 
 ## Sources of truth
 
