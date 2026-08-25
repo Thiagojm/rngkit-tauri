@@ -16,10 +16,10 @@ without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
 `main` includes the published workflow improvements through Phase 6. The
-2026-08-25 artifact-feedback/report-charts work is implemented locally through
-Phase 3 against reachable `rngkit-core` revision
-`7c798146eddbcb9443c84adc236c0f7c09bd7789`; Phase 3 remains uncommitted at its
-user-validation gate and Phase 4 UI work is not authorized.
+2026-08-25 artifact-feedback/report-charts work is published through Phase 4
+against reachable `rngkit-core` revision
+`7c798146eddbcb9443c84adc236c0f7c09bd7789`; Phase 5 documentation and native
+acceptance handoff work is local and remains uncommitted at its user gate.
 
 ## Main product flows
 
@@ -84,6 +84,11 @@ user-validation gate and Phase 4 UI work is not authorized.
   all-target tests, clippy, doc tests, Rust 1.85 check/test, frontend
   format/check/lint/unit validation, and `git diff --check` passed. The four
   physical tests remained ignored. No frontend page UI was changed.
+- **2026-08-25 Phase 4 deterministic validation (Windows host):** Prettier,
+  Svelte/TypeScript check, ESLint, Vitest 27 files/106 tests, Playwright 5/5,
+  Vite build, and `git diff --check` passed. The dialog and contextual-folder
+  UI use mocked/browser-safe state; no native Tauri, Explorer, Excel, or
+  hardware interaction was claimed. The four physical tests remained ignored.
 - **Browser-integrated:** production-asset Edge tests passed for destination
   navigation, Help headings/copy, accessibility, reduced motion/contrast, and
   minimum-window layout. These tests use no real Tauri IPC or hardware.
@@ -93,10 +98,11 @@ user-validation gate and Phase 4 UI work is not authorized.
   direct user actions and outcomes.
 - **Native user gate (not passed here):** copied flat-concatenation Reports
   preview/generate/open, Replace and input immutability, BIN-only sample-number
-  axis, plus the earlier clean-start defaults/discovery;
-  PseudoRNG collection and chart Fit all; standalone legacy/current Reports;
-  cross-folder mixed Combine and derived report; Help navigation, theme,
-  keyboard use, and minimum window.
+  axis, BIN+CSV timestamp provenance, clean-start defaults/discovery, PseudoRNG
+  collection and chart Fit all, standalone legacy/current Reports,
+  cross-folder mixed Combine and derived report, full-path outcome dialogs,
+  acknowledgement/action behavior, every contextual working-folder action,
+  Help navigation, theme, keyboard use, and minimum window.
 - **Still unverified:** native hardware/unplug behavior, native 100k/1M chart
   rendering, scaling/screen-reader sampling, NSIS uninstall/session-data
   preservation, signing/publication, and remote CI. Physical hardware and NSIS

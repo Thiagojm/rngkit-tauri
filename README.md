@@ -35,19 +35,14 @@ The unsigned installer baseline remains `061f66a`; the current application
 includes the published workflow improvements described below. Uninstall and
 other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
-`2cdf311dd206cb5e7320ee520ef1e7a5139cc146`.
+`7c798146eddbcb9443c84adc236c0f7c09bd7789`.
 
-A follow-on workflow-improvements design and six-phase implementation plan
-dated 2026-08-24 are approved. Phase 1 is complete in `rngkit-core`, and Phase
-2 is complete and validated automatically in this app. Phase 3 is complete and
-published: the Collect chart has one `Fit all` action and the instrument-style
-layout. Phase 4 is complete and published: Reports has one `Choose input`
-action for bundles and standalone CSV/BIN inputs, with automated and
-browser-integrated validation complete. Phase 5 is complete and published with
-automated and browser-integrated validation complete. Phase 6 task-oriented
-Help is complete and published with deterministic and production-asset browser
-validation complete; native integrated workflow validation remains the active
-user gate.
+The approved 2026-08-25 artifact-feedback/report-charts plan is implemented
+through Phase 4. The library Phase 1 is published at the exact revision above;
+app Phase 2 is `b946c4d`, backend Phase 3 is `44e0d65`, and UI Phase 4 is
+`b137419`. Native integrated workflow validation remains the active user gate;
+Phase 5 documentation and acceptance handoff work is local until its gate is
+completed.
 
 ## Sources of truth
 
@@ -55,6 +50,8 @@ user gate.
 - Execution plan: `docs/plans/2026-08-22-rngkit-tauri-plan.md`
 - Approved improvements: `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
 - Approved phased improvements plan: `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
+- Approved artifact-feedback design: `docs/specs/2026-08-25-rngkit-artifact-feedback-and-report-charts-design.md`
+- Approved artifact-feedback plan: `docs/plans/2026-08-25-rngkit-artifact-feedback-and-report-charts-plan.md`
 - Current state: `docs/PROJECT_CONTEXT.md`
 - Durable decisions: `docs/DECISIONS.md`
 - Roadmap: `TODO.md`

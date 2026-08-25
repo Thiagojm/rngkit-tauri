@@ -40,6 +40,17 @@ describe('HelpPage', () => {
     expect(screen.getByText(/Inputs are read-only/i)).toBeTruthy();
     expect(screen.getByText(/new Combine output uses schema 2/i)).toBeTruthy();
     expect(screen.getByText(/YYYYMMDDTHHMMSS/)).toBeTruthy();
+    expect(
+      screen.getAllByText(/BIN-only reports use sample numbers/i),
+    ).toHaveLength(2);
+    expect(screen.getByText(/outcome dialog appears once/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Open working folder in Collect, Reports, or Combine/i),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/canonical flat legacy concatenation CSV/i),
+    ).toBeTruthy();
+    expect(screen.queryByText(/estimated timestamps/i)).toBeNull();
     for (const code of ERROR_CODES) {
       expect(screen.getByText(code)).toBeTruthy();
     }

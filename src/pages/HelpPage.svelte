@@ -88,8 +88,16 @@
     <p>
       If the chosen file belongs to a folder with <code>manifest.json</code>,
       RngKit checks the complete bundle. Otherwise it validates the standalone
-      file from its filename and contents. BIN-only reports use estimated
-      timestamps; derived reports copy timestamps from their combined inputs.
+      file from its filename and contents. BIN-only reports use sample numbers
+      on the chart's horizontal axis; CSV-based reports use recorded timestamps.
+      A BIN with a valid sibling CSV can use the recorded timestamps from that
+      bundle. Derived reports copy timestamps from their combined inputs.
+    </p>
+    <p>
+      After generation, an outcome dialog appears once with the complete
+      backend-confirmed artifact path. Use its approved action to open the
+      report or containing folder, or select Dismiss. The Reports working folder
+      is also available without entering a path.
     </p>
   </section>
 
@@ -116,6 +124,12 @@
       Combine accepts current CSV, legacy v3 CSV, or a compatible mixture. It
       does not accept BIN files. Inputs must have matching source, sample size,
       interval, and fold, and their time ranges cannot overlap.
+    </p>
+    <p>
+      After a derived bundle is created, the outcome dialog lists its complete
+      CSV, manifest, and folder paths and offers the approved folder action.
+      Combine also has a contextual working-folder action. Displayed paths are
+      informational; opening always uses backend-known state.
     </p>
   </section>
 
@@ -161,6 +175,16 @@
         file or choose Replace only when overwriting is intended.
       </li>
       <li>
+        <strong>An outcome appears:</strong> review the complete paths, use an available
+        action, or Dismiss. Collection, report, and derived-bundle outcomes are shown
+        once; safe failures do not invent artifact paths.
+      </li>
+      <li>
+        <strong>Need the working folder:</strong> use Open working folder in Collect,
+        Reports, or Combine. The destination is resolved and checked by RngKit immediately
+        before it opens.
+      </li>
+      <li>
         <strong>Keyboard or display needs:</strong> all actions are available from
         the keyboard, themes are available in the top bar, and reduced motion removes
         extra chart animation.
@@ -183,6 +207,11 @@
         <code>YYYYMMDDTHHMMSS,&lt;ones&gt;</code>. Reports also accepts
         standalone current or legacy BIN files when their filenames contain
         valid metadata.
+      </li>
+      <li>
+        A canonical flat legacy concatenation CSV has a <code>_concat_</code>
+        stem and no manifest. It is read-only input; reports use its recorded timestamps.
+        BIN-only reports use sample numbers on the chart axis.
       </li>
       <li>
         A derived bundle contains a same-stem CSV and manifest. Schema-1

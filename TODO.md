@@ -27,18 +27,22 @@
   validation completed and published at app commit `b946c4d`.
 - 2026-08-25 Phase 3: transient typed artifact outcome notices, acknowledgement,
   backend-known working-folder commands, safe artifact path allowlisting, and
-  locked app validation completed locally; no UI was changed.
+  locked app validation completed and published at app commit `44e0d65`.
+- 2026-08-25 Phase 4: one-shot outcome dialog, backend-approved artifact
+  actions, contextual working-folder buttons, and complete frontend/browser
+  validation completed and published at app commit `b137419`.
 
 ## In progress
 
-- 2026-08-25 Phase 3 user-validation gate: backend outcome notices,
-  acknowledgement behavior, and backend-known working-folder recovery are
-  implemented and validated by tests; Phase 4 UI work remains unauthorized.
+- 2026-08-25 Phase 5 user-validation gate: Help/documentation now describe the
+  current artifact, path, chart-axis, and recovery contracts; deterministic
+  and native acceptance evidence is separated, with native integrated workflow
+  validation still required.
 
 ## Next steps
 
-1. Validate the 2026-08-25 Phase 3 backend behavior and approve the next gate.
-2. Separately authorize any Phase 3 commit/push and Phase 4 UI implementation.
+1. Run the complete native acceptance checklist from the approved plan.
+2. Separately authorize any Phase 5 commit/push, release, or publication work.
 
 ## Backlog
 

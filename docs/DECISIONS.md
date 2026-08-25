@@ -72,14 +72,18 @@ All decisions are accepted. Material changes return to design review.
 ## Phase status and evidence
 
 - The 2026-08-25 library Phase 1 is published at reachable revision
-  `7c798146eddbcb9443c84adc236c0f7c09bd7789`; the app Phase 2 integration is
-  published at app commit `b946c4d`; Phase 3 remains uncommitted pending its
-  user gate.
+  `7c798146eddbcb9443c84adc236c0f7c09bd7789`; the app artifact-feedback work
+  is published through Phase 4 at commits `b946c4d`, `44e0d65`, and `b137419`.
 - The 2026-08-25 app Phase 3 keeps artifact feedback transient and typed: one
   monotonic-ID notice is pending at a time, stale acknowledgements fail, and
   only confirmed regular files/directories under backend-known roots may be
-  exposed or opened. Phase 3 is locally validated but remains uncommitted at
-  its user gate; no Phase 4 UI is authorized.
+  exposed or opened. Phase 3 and Phase 4 are validated and published; native
+  integrated workflow validation remains the user gate.
+- Phase 4 renders one severity-aware outcome dialog with selectable complete
+  paths and only backend-approved actions. It suppresses repeated IDs across
+  acknowledgement, polling, hydration, and navigation, while Replace and
+  close-collection dialogs retain precedence. Contextual working folders use
+  no frontend path arguments.
 - Flat canonical `_concat_` CSVs are a distinct Reports kind without a
   manifest. Inspected reports retain the library's source basename and chart
   axis mode in backend-only state; generation revalidates that context before
