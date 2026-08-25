@@ -76,6 +76,7 @@ describe('AppViewState native collection channel', () => {
     vi.doMock('../ipc/client', () => ({
       applyDevScenario: vi.fn(),
       chooseCsvInputs: vi.fn(),
+      clearCombineInputs: vi.fn(),
       chooseOutputFolder: vi.fn(),
       chooseReportInput: vi.fn(),
       createDerived: vi.fn(),
@@ -86,6 +87,7 @@ describe('AppViewState native collection channel', () => {
       openReport: vi.fn(),
       openReportFolder: vi.fn(),
       openSessionFolder: vi.fn(),
+      removeCombineInput: vi.fn(),
       replaceReport: vi.fn(),
       refreshSources: vi.fn(),
       safeErrorMessage: () => 'safe error',
@@ -151,6 +153,7 @@ describe('AppViewState native collection channel', () => {
     vi.doMock('../ipc/client', () => ({
       applyDevScenario: vi.fn(),
       chooseCsvInputs: vi.fn(),
+      clearCombineInputs: vi.fn(),
       chooseOutputFolder: vi.fn(),
       chooseReportInput: vi.fn(),
       copyDiagnostics: vi.fn(),
@@ -163,6 +166,7 @@ describe('AppViewState native collection channel', () => {
       openReport: vi.fn(),
       openReportFolder: vi.fn(),
       openSessionFolder: vi.fn(),
+      removeCombineInput: vi.fn(),
       replaceReport: vi.fn(),
       refreshSources: vi.fn(),
       safeErrorMessage: () => 'safe error',

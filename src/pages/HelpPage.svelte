@@ -46,9 +46,10 @@
     <h2 id="help-files" class="text-lg font-medium">File formats</h2>
     <p>
       A native session is a same-stem BIN, CSV, and <code>manifest.json</code>.
-      Reports also accept RngKitPSG v3 BIN or CSV. Combine creates a derived CSV
-      plus manifest bundle with its own directory grammar; it is not a collected
-      session and never modifies the input files.
+      Reports also accept current or RngKitPSG v3 BIN or CSV. Combine accepts
+      compatible current, legacy, or mixed CSV selections and creates a derived
+      CSV plus manifest bundle with its own directory grammar; it is not a
+      collected session and never modifies the input files.
     </p>
   </section>
 

@@ -8,8 +8,8 @@
 <div class="flex min-w-0 flex-col gap-4">
   <h1 class="text-2xl font-semibold">{copy.destinations.combine}</h1>
   <p class="text-text-muted">
-    Preview compatible RngKitPSG v3 CSV files and create a provenance-bearing
-    derived bundle without modifying the inputs.
+    Add compatible current or legacy CSV files from one or more folders and
+    create a provenance-bearing derived bundle without modifying the inputs.
   </p>
   <CombineActions />
   <InputTable />

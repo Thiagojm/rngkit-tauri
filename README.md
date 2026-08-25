@@ -3,7 +3,7 @@
 RngKit is a Windows-first desktop application for collecting entropy samples
 from explicitly selected hardware or pseudo-random sources, recording native
 sessions, monitoring descriptive cumulative statistics, creating XLSX reports,
-and safely combining compatible RngKitPSG v3 CSV files.
+and safely combining compatible current and RngKitPSG v3 CSV files.
 
 ## Status
 
@@ -20,10 +20,11 @@ Closing while collecting confirms Keep collecting or Stop and exit. Debug
 builds include a scenario switch that calls `apply_dev_scenario`; production
 omits that command and the switch. The live chart retains every committed
 descriptive cumulative Z point. Copied diagnostics are bounded and redacted.
-Reports inspect a native session directory, a legacy v3 BIN/CSV file, or a
-derived concatenation bundle and generate a same-stem XLSX with an explicit
-Cancel/Replace round trip. Combine previews compatible legacy v3 CSV files and
-creates a provenance-bearing derived bundle without modifying inputs.
+Reports inspect a native session directory, a current or legacy v3 BIN/CSV
+file, or a derived concatenation bundle and generate a same-stem XLSX with an
+explicit Cancel/Replace round trip. Combine accumulates compatible current,
+legacy, or mixed CSV files across folders and creates a provenance-bearing
+derived bundle without modifying inputs.
 Production capabilities stay `core:default` and `dialog:default` with a
 restricted CSP. Open commands use backend-known paths only.
 
@@ -42,8 +43,9 @@ dated 2026-08-24 are approved. Phase 1 is complete in `rngkit-core`, and Phase
 published: the Collect chart has one `Fit all` action and the instrument-style
 layout. Phase 4 is complete and published: Reports has one `Choose input`
 action for bundles and standalone CSV/BIN inputs, with automated and
-browser-integrated validation complete. Native Reports manual validation
-remains pending, and Phase 5 is not authorized.
+browser-integrated validation complete. Phase 5 is complete and published with
+automated and browser-integrated validation complete; native Combine manual
+validation remains pending, and Phase 6 is not authorized.
 
 ## Sources of truth
 

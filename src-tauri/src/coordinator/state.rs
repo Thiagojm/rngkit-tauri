@@ -129,9 +129,12 @@ pub struct AppCoordinator {
     report_kind: Option<ReportKind>,
     combine: CombineSnapshot,
     combine_inputs: Vec<PathBuf>,
+    combine_input_ids: Vec<String>,
+    combine_last_directory: Option<PathBuf>,
     combine_directory: Option<PathBuf>,
     diagnostics: VecDeque<DiagnosticRecord>,
     next_operation_seq: u64,
+    next_combine_input_seq: u64,
 }
 
 impl fmt::Debug for AppCoordinator {
@@ -156,6 +159,11 @@ impl fmt::Debug for AppCoordinator {
             .field("has_report_input", &self.report_input.is_some())
             .field("report_kind", &self.report_kind)
             .field("has_combine_inputs", &!self.combine_inputs.is_empty())
+            .field("combine_input_count", &self.combine_inputs.len())
+            .field(
+                "has_combine_last_directory",
+                &self.combine_last_directory.is_some(),
+            )
             .field("has_combine_directory", &self.combine_directory.is_some())
             .finish_non_exhaustive()
     }
@@ -206,9 +214,12 @@ impl AppCoordinator {
             report_kind: None,
             combine: CombineSnapshot::empty(),
             combine_inputs: Vec::new(),
+            combine_input_ids: Vec::new(),
+            combine_last_directory: None,
             combine_directory: None,
             diagnostics: VecDeque::new(),
             next_operation_seq: 0,
+            next_combine_input_seq: 0,
         }
     }
 
@@ -368,13 +379,61 @@ impl AppCoordinator {
     }
 
     #[must_use]
+    pub fn combine_input_ids(&self) -> &[String] {
+        &self.combine_input_ids
+    }
+
+    #[must_use]
+    pub fn combine_last_directory(&self) -> Option<&Path> {
+        self.combine_last_directory.as_deref()
+    }
+
+    pub fn remember_combine_directory(&mut self, directory: PathBuf) {
+        self.combine_last_directory = Some(directory);
+    }
+
+    pub fn replace_combine_inputs(&mut self, paths: Vec<PathBuf>) {
+        self.combine_inputs.clear();
+        self.combine_input_ids.clear();
+        self.add_combine_inputs(paths);
+    }
+
+    pub fn add_combine_inputs(&mut self, paths: Vec<PathBuf>) {
+        for path in paths {
+            self.next_combine_input_seq = self.next_combine_input_seq.saturating_add(1);
+            let id = format!("combine-{}", self.next_combine_input_seq);
+            self.combine_inputs.push(path);
+            self.combine_input_ids.push(id);
+        }
+    }
+
+    pub fn remove_combine_input(&mut self, input_id: &str) -> Result<(), SafeError> {
+        let Some(index) = self.combine_input_ids.iter().position(|id| id == input_id) else {
+            return Err(SafeError::invalid_configuration(
+                "That Combine input is no longer selected.",
+            ));
+        };
+        self.combine_input_ids.remove(index);
+        self.combine_inputs.remove(index);
+        self.combine_directory = None;
+        self.combine.result = None;
+        Ok(())
+    }
+
+    pub fn clear_combine_inputs(&mut self) {
+        self.combine_inputs.clear();
+        self.combine_input_ids.clear();
+        self.combine = CombineSnapshot::empty();
+        self.combine_directory = None;
+    }
+
+    #[must_use]
     pub fn combine_directory(&self) -> Option<&Path> {
         self.combine_directory.as_deref()
     }
 
-    pub fn set_combine_preview(&mut self, snapshot: CombineSnapshot, paths: Vec<PathBuf>) {
+    pub fn set_combine_preview(&mut self, snapshot: CombineSnapshot) {
         self.combine = snapshot;
-        self.combine_inputs = paths;
         self.combine_directory = None;
     }
 
@@ -1025,6 +1084,8 @@ impl AppCoordinator {
         self.report_kind = None;
         self.combine = snapshot.combine;
         self.combine_inputs.clear();
+        self.combine_input_ids.clear();
+        self.combine_last_directory = None;
         self.combine_directory = None;
         self.theme = snapshot.theme;
         self.preferences_warning = snapshot.preferences_warning;

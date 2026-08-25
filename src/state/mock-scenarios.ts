@@ -138,7 +138,10 @@ const nativePreview = {
 
 const compatibleInputs = [
   {
+    inputId: 'combine-1',
+    ordinal: 1,
     basename: '20260101T010000_bitb_s8_i1.csv',
+    format: 'current_csv',
     source: 'BitBabbler',
     sampleBits: 8,
     intervalSeconds: 1,
@@ -150,7 +153,10 @@ const compatibleInputs = [
     error: null,
   },
   {
+    inputId: 'combine-2',
+    ordinal: 2,
     basename: '20260101T020000_bitb_s8_i1.csv',
+    format: 'legacy_v3_csv',
     source: 'BitBabbler',
     sampleBits: 8,
     intervalSeconds: 1,

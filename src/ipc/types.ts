@@ -132,7 +132,10 @@ export interface ReportPreview {
 }
 
 export interface CombineInputRow {
+  inputId: string;
+  ordinal: number;
   basename: string;
+  format: string;
   source: string;
   sampleBits: number;
   intervalSeconds: number;

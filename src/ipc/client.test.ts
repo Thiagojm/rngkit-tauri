@@ -5,6 +5,7 @@ import {
   applyDevScenario,
   chooseOutputFolder,
   chooseCsvInputs,
+  clearCombineInputs,
   chooseReportInput,
   createDerived,
   generateDerived,
@@ -14,6 +15,7 @@ import {
   openReport,
   openReportFolder,
   openSessionFolder,
+  removeCombineInput,
   replaceReport,
   refreshSources,
   safeErrorMessage,
@@ -191,6 +193,8 @@ describe('ipc client', () => {
     mockIPC((cmd) => {
       if (
         cmd === 'choose_csv_inputs' ||
+        cmd === 'remove_combine_input' ||
+        cmd === 'clear_combine_inputs' ||
         cmd === 'create_derived' ||
         cmd === 'generate_derived' ||
         cmd === 'open_derived_folder'
@@ -200,6 +204,12 @@ describe('ipc client', () => {
       throw new Error(`unexpected command ${cmd}`);
     });
     await expect(chooseCsvInputs()).resolves.toEqual(
+      MOCK_SCENARIOS.combineCompatible,
+    );
+    await expect(removeCombineInput('combine-1')).resolves.toEqual(
+      MOCK_SCENARIOS.combineCompatible,
+    );
+    await expect(clearCombineInputs()).resolves.toEqual(
       MOCK_SCENARIOS.combineCompatible,
     );
     await expect(createDerived()).resolves.toEqual(

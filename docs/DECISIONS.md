@@ -44,8 +44,9 @@ All decisions are accepted. Material changes return to design review.
   `start_another_session`, `open_session_folder`, `copy_diagnostics`,
   `stop_and_exit`, `choose_report_input`, `generate_report`, `replace_report`,
   `open_report`, `open_report_folder`, `choose_csv_inputs`, `create_derived`,
-  `generate_derived`, and `open_derived_folder` against backend-known paths
-  only. `apply_dev_scenario` is debug-only.
+  `generate_derived`, `open_derived_folder`, `remove_combine_input`, and
+  `clear_combine_inputs` against backend-known paths only. `apply_dev_scenario`
+  is debug-only.
 - Why/impact: preserve engine durability, deterministic authority, and an
   entropy-free frontend.
 
@@ -79,9 +80,9 @@ All decisions are accepted. Material changes return to design review.
 - XLSX reports use normalized readers for native sessions, read-only RngKitPSG
   v3 BIN/CSV, and validated derived bundles. Existing output needs explicit
   Replace.
-- Strict concatenation accepts distinct compatible legacy v3 CSV inputs,
-  rejects ambiguous overlap, revalidates after preview, and never stores
-  absolute input paths.
+- Strict concatenation accepts distinct compatible current, legacy, or mixed
+  CSV inputs, rejects ambiguous overlap, revalidates after preview, and never
+  stores absolute input paths in frontend state or persisted preferences.
 - Statistical Z and `+/-1.96` are descriptive visual references only.
 
 ## Approved workflow improvements (2026-08-24 contract)
@@ -156,8 +157,25 @@ All decisions are accepted. Material changes return to design review.
   bundles instead of being routed to a reader heuristically.
 - Same-stem XLSX output, explicit Cancel/Replace, backend-known open actions,
   active-session rejection, and input immutability remain unchanged. Automated
-  and browser-integrated validation passed; native Reports interaction is the
-  active gate before Phase 5.
+  and browser-integrated validation passed; native Reports interaction remains
+  unverified.
+
+## Phase 5 implementation status (2026-08-24)
+
+- Combine selection is an ordered backend-only collection of canonical paths
+  addressed by transient opaque input IDs. Repeated Add calls append; Remove
+  and Clear all invalidate the preview/result and recompute the remaining
+  generic CSV preview. The last dialog directory is process-only.
+- DTO rows expose safe basenames, display ordinals, current/legacy format
+  labels, compatibility metadata, and per-input validation state. Same
+  basenames from different folders remain separately addressable; canonical
+  duplicates are rejected by the pinned library.
+- New derived bundles use schema 2, kind `csv_concatenation`, with per-input
+  format metadata. Schema-1 reading/report behavior is preserved. Inputs stay
+  read-only, BIN is rejected, and changed-after-preview validation remains
+  authoritative at creation.
+- Automated and browser-integrated validation passed. Native Combine validation
+  is the active user gate; Phase 6 requires separate authorization.
 
 ## Dependencies and delivery (2026-08-22 through 2026-08-24)
 

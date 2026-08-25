@@ -169,7 +169,10 @@ pub struct ReportPreview {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CombineInputRow {
+    pub input_id: String,
+    pub ordinal: u32,
     pub basename: String,
+    pub format: String,
     pub source: String,
     pub sample_bits: u32,
     pub interval_seconds: u32,

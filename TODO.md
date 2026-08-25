@@ -23,16 +23,20 @@
   standalone current/legacy CSV/BIN report support completed, reviewed,
   corrected, and published. Automated and browser-integrated validation passed;
   native Reports user validation remains pending.
+- Phase 5: incremental mixed-format Combine selection, opaque-ID Remove/Clear,
+  and schema-2 current/legacy CSV concatenation completed, reviewed, corrected,
+  and published. Automated and browser-integrated validation passed; native
+  Combine user validation is pending.
 
 ## In progress
 
-- Phase 4 native Reports user validation gate. Do not begin Phase 5 without a
+- Phase 5 native Combine user validation gate. Do not begin Phase 6 without a
   new explicit request.
 
 ## Next steps
 
-1. Run the Phase 4 native manual validation from the approved plan.
-2. Begin Phase 5 only after explicit authorization.
+1. Run the Phase 5 native manual validation from the approved plan.
+2. Begin Phase 6 only after explicit authorization.
 
 ## Backlog
 

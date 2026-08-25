@@ -273,7 +273,10 @@ fn native_preview(conflict: bool) -> ReportPreview {
 fn compatible_inputs() -> Vec<CombineInputRow> {
     vec![
         CombineInputRow {
+            input_id: "combine-1".into(),
+            ordinal: 1,
             basename: "20260101T010000_bitb_s8_i1.csv".into(),
+            format: "current_csv".into(),
             source: "BitBabbler".into(),
             sample_bits: 8,
             interval_seconds: 1,
@@ -285,7 +288,10 @@ fn compatible_inputs() -> Vec<CombineInputRow> {
             error: None,
         },
         CombineInputRow {
+            input_id: "combine-2".into(),
+            ordinal: 2,
             basename: "20260101T020000_bitb_s8_i1.csv".into(),
+            format: "legacy_v3_csv".into(),
             source: "BitBabbler".into(),
             sample_bits: 8,
             interval_seconds: 1,

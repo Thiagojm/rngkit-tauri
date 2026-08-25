@@ -38,7 +38,9 @@ export const copy = {
     'An XLSX file already exists for this input. Cancel keeps it. Replace is an explicit second request.',
   cancel: 'Cancel',
   replace: 'Replace',
-  chooseCsvInputs: 'Choose CSV files',
+  chooseCsvInputs: 'Add files',
+  clearCombineInputs: 'Clear all',
+  removeCombineInput: 'Remove',
   createDerived: 'Create derived bundle',
   generateXlsx: 'Generate XLSX',
   openFolder: 'Open folder',
@@ -79,7 +81,7 @@ export const copy = {
   noSources:
     'Sources are discovered automatically on startup. Refresh to search again. Nothing is selected automatically.',
   noReportInput: 'No report input selected.',
-  noCombineInputs: 'No legacy v3 CSV files selected.',
+  noCombineInputs: 'No CSV files selected.',
   status: 'Status',
 } as const;
 

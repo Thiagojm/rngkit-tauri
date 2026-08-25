@@ -58,7 +58,7 @@ impl<R: Runtime> FolderPicker for LiveFolderPicker<R> {
             .dialog()
             .file()
             .set_title(title)
-            .add_filter("RngKitPSG v3 CSV", &["csv"]);
+            .add_filter("RngKit CSV", &["csv"]);
         if let Some(directory) = current.filter(|path| path.is_dir()) {
             builder = builder.set_directory(directory);
         }

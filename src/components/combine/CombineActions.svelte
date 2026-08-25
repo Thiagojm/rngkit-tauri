@@ -15,6 +15,14 @@
     onclick={() => appState.chooseCsvInputs()}>{copy.chooseCsvInputs}</Button
   >
   <Button
+    disabled={!controls.combine.enabled || combine.inputs.length === 0}
+    disabledReason={controls.combine.enabled
+      ? 'Select at least one CSV file before clearing the selection.'
+      : controls.combine.reason}
+    onclick={() => appState.clearCombineInputs()}
+    >{copy.clearCombineInputs}</Button
+  >
+  <Button
     variant="primary"
     disabled={!controls.createDerived.enabled}
     disabledReason={controls.createDerived.reason}

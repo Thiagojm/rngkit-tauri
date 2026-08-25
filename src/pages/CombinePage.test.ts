@@ -13,6 +13,16 @@ describe('CombinePage', () => {
       screen.getByRole('button', { name: copy.chooseCsvInputs }),
     ).toBeTruthy();
     expect(screen.getByText('20260101T010000_bitb_s8_i1.csv')).toBeTruthy();
+    expect(screen.getByText('Current CSV')).toBeTruthy();
+    expect(screen.getByText('Legacy v3 CSV')).toBeTruthy();
+    expect(
+      screen.getByRole('button', {
+        name: 'Remove 20260101T010000_bitb_s8_i1.csv #1',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.clearCombineInputs }),
+    ).toHaveProperty('disabled', false);
     expect(
       screen.getByRole('button', { name: copy.createDerived }),
     ).toHaveProperty('disabled', false);

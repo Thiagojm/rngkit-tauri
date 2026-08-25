@@ -10,7 +10,7 @@ use rngkit_lib::coordinator::AppCoordinator;
 use rngkit_lib::dto::ErrorCode;
 use rngkit_lib::reports::{inspect_derived, inspect_picked};
 use rngkit_recording::{
-    CONCATENATION_KIND, ConcatenationFailPoint, with_concatenation_fail_point,
+    CSV_CONCATENATION_KIND, ConcatenationFailPoint, with_concatenation_fail_point,
     with_concatenation_inspect_hook,
 };
 use rngkit_xlsx::{REF_MINUS, REF_PLUS, SAMPLES_SHEET, SUMMARY_SHEET};
@@ -18,6 +18,10 @@ use rngkit_xlsx::{REF_MINUS, REF_PLUS, SAMPLES_SHEET, SUMMARY_SHEET};
 const FILE_A: &str = "20260821T18:30:00,8\n20260821T18:30:01,8\n";
 const FILE_B: &str = "20260821T18:30:10,4\n20260821T18:30:11,4\n";
 const FILE_OVERLAP: &str = "20260821T18:30:01,8\n20260821T18:30:02,8\n";
+const CURRENT_HEADER: &str =
+    "sample_index,captured_at_utc,elapsed_ms,acquisition_ms,ones,byte_offset,byte_length\n";
+const CURRENT_ROWS: &str =
+    "1,2026-08-21T18:30:20Z,0,0,8,0,2\n2,2026-08-21T18:30:21Z,1000,0,4,2,2\n";
 const STEM_A: &str = "20260821T183000_trng_s16_i1";
 const STEM_B: &str = "20260821T183010_trng_s16_i1";
 const STEM_C: &str = "20260821T183001_trng_s16_i1";
@@ -70,6 +74,10 @@ fn write_csv(dir: &Path, stem: &str, body: &str) -> PathBuf {
     path
 }
 
+fn write_current_csv(dir: &Path, stem: &str) -> PathBuf {
+    write_csv(dir, stem, &format!("{CURRENT_HEADER}{CURRENT_ROWS}"))
+}
+
 fn hash(path: &Path) -> Vec<u8> {
     fs::read(path).expect("hash")
 }
@@ -120,7 +128,8 @@ fn compatible_csvs_create_bundle_without_mutation() {
     assert!(!directory.join(format!("{}.bin", result.stem)).exists());
 
     let manifest = fs::read_to_string(directory.join("manifest.json")).expect("manifest");
-    assert!(manifest.contains(CONCATENATION_KIND));
+    assert!(manifest.contains(CSV_CONCATENATION_KIND));
+    assert!(manifest.contains("\"schema_version\": 2"));
     assert_safe_json(&manifest);
     assert!(!manifest.contains(&root.display().to_string()));
     assert_eq!(hash(&a), before_a);
@@ -129,6 +138,96 @@ fn compatible_csvs_create_bundle_without_mutation() {
     let dump = serde_json::to_string(&coordinator.snapshot()).expect("json");
     assert_safe_json(&dump);
     assert!(!dump.contains(&root.display().to_string()));
+}
+
+#[test]
+fn mixed_current_and_legacy_csvs_create_schema_two_bundle() {
+    let _lock = combine_test_lock();
+    let root = temp_root();
+    let current_dir = root.join("current");
+    fs::create_dir_all(&current_dir).expect("current dir");
+    let legacy = write_csv(&root, STEM_B, FILE_B);
+    let current = write_current_csv(&current_dir, "20260821T183020_trng_s16_i1");
+
+    let mut coordinator = ready_combine(&root, &[current, legacy]);
+    let snapshot = coordinator.snapshot();
+    assert!(snapshot.combine.compatible);
+    assert_eq!(snapshot.combine.inputs.len(), 2);
+    assert_eq!(snapshot.combine.inputs[0].format, "legacy_v3_csv");
+    assert_eq!(snapshot.combine.inputs[1].format, "current_csv");
+    assert_ne!(
+        snapshot.combine.inputs[0].input_id,
+        snapshot.combine.inputs[1].input_id
+    );
+
+    create_previewed(&mut coordinator).expect("create mixed bundle");
+    let directory = coordinator.combine_directory().expect("dir");
+    let manifest = fs::read_to_string(directory.join("manifest.json")).expect("manifest");
+    assert!(manifest.contains(CSV_CONCATENATION_KIND));
+    assert!(manifest.contains("\"format\": \"current_csv\""));
+    assert!(manifest.contains("\"format\": \"legacy_v3_csv\""));
+    assert_safe_json(&manifest);
+}
+
+#[test]
+fn current_only_csv_creates_schema_two_bundle() {
+    let _lock = combine_test_lock();
+    let root = temp_root();
+    let current = write_current_csv(&root, "20260821T183020_trng_s16_i1");
+
+    let mut coordinator = ready_combine(&root, &[current]);
+    assert!(coordinator.snapshot().combine.compatible);
+    assert_eq!(
+        coordinator.snapshot().combine.inputs[0].format,
+        "current_csv"
+    );
+    create_previewed(&mut coordinator).expect("create current-only bundle");
+
+    let directory = coordinator.combine_directory().expect("dir");
+    let manifest = fs::read_to_string(directory.join("manifest.json")).expect("manifest");
+    assert!(manifest.contains(CSV_CONCATENATION_KIND));
+    assert!(manifest.contains("\"format\": \"current_csv\""));
+}
+
+#[test]
+fn removing_one_opaque_combine_id_preserves_the_other_selection() {
+    let _lock = combine_test_lock();
+    let root = temp_root();
+    let a = write_csv(&root, STEM_A, FILE_A);
+    let b = write_csv(&root, STEM_B, FILE_B);
+    let mut coordinator = ready_combine(&root, &[a, b]);
+    let removed = coordinator.snapshot().combine.inputs[0].input_id.clone();
+
+    coordinator
+        .remove_combine_input(&removed)
+        .expect("remove selected input");
+    assert_eq!(coordinator.combine_inputs().len(), 1);
+    assert_eq!(coordinator.combine_input_ids().len(), 1);
+    assert_ne!(coordinator.combine_input_ids()[0], removed);
+
+    coordinator.clear_combine_inputs();
+    assert!(coordinator.combine_inputs().is_empty());
+    assert!(coordinator.snapshot().combine.inputs.is_empty());
+}
+
+#[test]
+fn same_basename_inputs_from_different_folders_have_distinct_ids_and_ordinals() {
+    let _lock = combine_test_lock();
+    let root = temp_root();
+    let first_dir = root.join("first");
+    let second_dir = root.join("second");
+    fs::create_dir_all(&first_dir).expect("first dir");
+    fs::create_dir_all(&second_dir).expect("second dir");
+    let first = write_csv(&first_dir, STEM_A, FILE_A);
+    let second = write_csv(&second_dir, STEM_A, FILE_B);
+
+    let coordinator = ready_combine(&root, &[second, first]);
+    let rows = coordinator.snapshot().combine.inputs;
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0].basename, rows[1].basename);
+    assert_ne!(rows[0].input_id, rows[1].input_id);
+    assert_eq!(rows[0].ordinal, 1);
+    assert_eq!(rows[1].ordinal, 2);
 }
 
 #[test]

@@ -1,11 +1,12 @@
-//! Legacy v3 CSV concatenation preview and derived-bundle creation.
+//! CSV concatenation preview and derived-bundle creation.
 
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 use rngkit_core::{SOURCE_ID_BITB, SOURCE_ID_PSEUDO, SOURCE_ID_RDSEED, SOURCE_ID_TRNG};
 use rngkit_recording::{
-    ConcatenationPreview, RecordingError, create_legacy_csv_concatenation, inspect_legacy_csvs,
+    ConcatenationPreview, RecordingError, StandaloneInputFormat, create_csv_concatenation,
+    inspect_csv_inputs,
 };
 
 use crate::coordinator::{AppCoordinator, ReportKind};
@@ -18,7 +19,8 @@ pub fn preview_csvs(
     paths: &[PathBuf],
 ) -> Result<AppStateDto, SafeError> {
     coordinator.begin_file_job(FileJobState::Inspecting)?;
-    let result = inspect_legacy_csvs(paths);
+    coordinator.replace_combine_inputs(paths.to_vec());
+    let result = inspect_csv_inputs(paths);
     let _ = coordinator.finish_file_job();
     apply_preview(coordinator, paths, result)
 }
@@ -35,10 +37,10 @@ pub fn create_previewed(coordinator: &mut AppCoordinator) -> Result<AppStateDto,
     if paths.is_empty() {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
-            "Select compatible legacy v3 CSV files before creating a bundle.",
+            "Select compatible CSV files before creating a bundle.",
         ));
     }
-    let result = create_legacy_csv_concatenation(&paths, &root);
+    let result = create_csv_concatenation(&paths, &root);
     let _ = coordinator.finish_file_job();
     match result {
         Ok(directory) => finish_created(coordinator, directory),
@@ -98,40 +100,51 @@ pub(crate) fn apply_preview(
 ) -> Result<AppStateDto, SafeError> {
     match result {
         Ok(preview) => {
-            coordinator.set_combine_preview(snapshot_from_preview(&preview), paths.to_vec());
+            coordinator.set_combine_preview(snapshot_from_preview(
+                &preview,
+                coordinator.combine_input_ids(),
+                paths,
+            ));
             Ok(coordinator.snapshot())
         }
         Err(error) => {
-            let snapshot = incompatible_snapshot(paths, &error);
+            let snapshot = incompatible_snapshot(paths, coordinator.combine_input_ids(), &error);
             let mapped = map_combine(error);
             coordinator.record_diagnostic(mapped.code, mapped.message());
-            coordinator.set_combine_preview(snapshot, Vec::new());
+            coordinator.set_combine_preview(snapshot);
             Ok(coordinator.snapshot())
         }
     }
 }
 
-fn incompatible_snapshot(paths: &[PathBuf], error: &RecordingError) -> CombineSnapshot {
+fn incompatible_snapshot(
+    paths: &[PathBuf],
+    input_ids: &[String],
+    error: &RecordingError,
+) -> CombineSnapshot {
     let affected = affected_basenames(error);
     let global_message = map_combine_ref(error);
     let mut inputs = paths
         .iter()
-        .map(|path| {
+        .zip(input_ids.iter())
+        .map(|(path, input_id)| {
             let basename = path
                 .file_name()
                 .and_then(|name| name.to_str())
                 .unwrap_or("Unsupported input")
                 .to_owned();
-            match inspect_legacy_csvs(std::slice::from_ref(path)) {
+            match inspect_csv_inputs(std::slice::from_ref(path)) {
                 Ok(preview) => {
-                    let mut row = row_from_preview(&preview, 0);
+                    let mut row = row_from_preview(&preview, 0, input_id, 0);
                     if affected.iter().any(|name| name == &basename) {
                         row.valid = false;
                         row.error = Some(global_message.clone());
                     }
                     row
                 }
-                Err(single_error) => invalid_row(basename, map_combine(single_error).message()),
+                Err(single_error) => {
+                    invalid_row(input_id, 0, basename, map_combine(single_error).message())
+                }
             }
         })
         .collect::<Vec<_>>();
@@ -140,6 +153,9 @@ fn incompatible_snapshot(paths: &[PathBuf], error: &RecordingError) -> CombineSn
             .cmp(&right.first_timestamp)
             .then_with(|| left.basename.cmp(&right.basename))
     });
+    for (index, row) in inputs.iter_mut().enumerate() {
+        row.ordinal = u32::try_from(index + 1).unwrap_or(u32::MAX);
+    }
     CombineSnapshot {
         inputs,
         compatible: false,
@@ -163,6 +179,7 @@ fn affected_basenames(error: &RecordingError) -> Vec<String> {
         | RecordingError::DuplicateConcatenationInput { basename }
         | RecordingError::ConcatenationInputNotCsv { basename }
         | RecordingError::NativeConcatenationInput { basename }
+        | RecordingError::InvalidNativeCsvHeader { basename }
         | RecordingError::DecreasingConcatenationTimestamp { basename }
         | RecordingError::ConcatenationInputChanged { basename } => vec![basename.clone()],
         _ => Vec::new(),
@@ -171,17 +188,16 @@ fn affected_basenames(error: &RecordingError) -> Vec<String> {
 
 fn map_combine_ref(error: &RecordingError) -> String {
     match error {
-        RecordingError::EmptyConcatenationInputs => "Choose at least one legacy v3 CSV file.",
+        RecordingError::EmptyConcatenationInputs => "Choose at least one CSV file.",
         RecordingError::EmptyConcatenationInput { .. } => "A selected CSV file is empty.",
         RecordingError::DuplicateConcatenationInput { .. } => {
             "The same CSV file was selected more than once."
         }
-        RecordingError::ConcatenationInputNotCsv { .. } => {
-            "Combine accepts only RngKitPSG v3 CSV files."
+        RecordingError::ConcatenationInputNotCsv { .. } => "Combine accepts CSV files only.",
+        RecordingError::InvalidNativeCsvHeader { .. } => {
+            "A selected current CSV header is invalid."
         }
-        RecordingError::NativeConcatenationInput { .. } => {
-            "Native session CSV files cannot be combined."
-        }
+        RecordingError::NativeConcatenationInput { .. } => "That current CSV is not supported.",
         RecordingError::IncompatibleConcatenationInputs { .. } => {
             "The selected CSV files are not compatible."
         }
@@ -213,10 +229,18 @@ fn map_combine_ref(error: &RecordingError) -> String {
     .to_owned()
 }
 
-fn row_from_preview(preview: &ConcatenationPreview, index: usize) -> CombineInputRow {
+fn row_from_preview(
+    preview: &ConcatenationPreview,
+    index: usize,
+    input_id: &str,
+    ordinal: u32,
+) -> CombineInputRow {
     let entry = &preview.inputs()[index];
     CombineInputRow {
+        input_id: input_id.to_owned(),
+        ordinal,
         basename: entry.basename().to_owned(),
+        format: entry.format().map(format_label).unwrap_or("unknown").into(),
         source: source_label(preview.source_id().as_str()),
         sample_bits: preview.sample_bits().get(),
         interval_seconds: preview.interval().get(),
@@ -229,9 +253,12 @@ fn row_from_preview(preview: &ConcatenationPreview, index: usize) -> CombineInpu
     }
 }
 
-fn invalid_row(basename: String, message: &str) -> CombineInputRow {
+fn invalid_row(input_id: &str, ordinal: u32, basename: String, message: &str) -> CombineInputRow {
     CombineInputRow {
+        input_id: input_id.to_owned(),
+        ordinal,
         basename,
+        format: "unknown".into(),
         source: "—".into(),
         sample_bits: 0,
         interval_seconds: 0,
@@ -273,17 +300,67 @@ pub(crate) fn finish_created(
     Ok(coordinator.snapshot())
 }
 
-fn snapshot_from_preview(preview: &ConcatenationPreview) -> CombineSnapshot {
+fn snapshot_from_preview(
+    preview: &ConcatenationPreview,
+    input_ids: &[String],
+    paths: &[PathBuf],
+) -> CombineSnapshot {
+    let ordered_ids = ordered_input_ids(preview, input_ids, paths);
     CombineSnapshot {
         inputs: preview
             .inputs()
             .iter()
             .enumerate()
-            .map(|(index, _)| row_from_preview(preview, index))
+            .map(|(index, _)| {
+                let ordinal = u32::try_from(index + 1).unwrap_or(u32::MAX);
+                let input_id = ordered_ids
+                    .get(index)
+                    .map(String::as_str)
+                    .unwrap_or("combine-unknown");
+                row_from_preview(preview, index, input_id, ordinal)
+            })
             .collect(),
         compatible: true,
         incompatibility: None,
         result: None,
+    }
+}
+
+fn ordered_input_ids(
+    preview: &ConcatenationPreview,
+    input_ids: &[String],
+    paths: &[PathBuf],
+) -> Vec<String> {
+    let mut indexed = paths
+        .iter()
+        .zip(input_ids.iter())
+        .enumerate()
+        .filter_map(|(index, (path, input_id))| {
+            inspect_csv_inputs(std::slice::from_ref(path))
+                .ok()
+                .and_then(|single| single.inputs().first().cloned())
+                .map(|entry| (index, input_id.clone(), entry))
+        })
+        .collect::<Vec<_>>();
+    indexed.sort_by(|left, right| {
+        left.2
+            .first_timestamp()
+            .cmp(&right.2.first_timestamp())
+            .then_with(|| left.2.basename().cmp(right.2.basename()))
+            .then_with(|| left.0.cmp(&right.0))
+    });
+    if indexed.len() == preview.inputs().len() {
+        indexed.into_iter().map(|(_, id, _)| id).collect()
+    } else {
+        input_ids.to_vec()
+    }
+}
+
+fn format_label(format: StandaloneInputFormat) -> &'static str {
+    match format {
+        StandaloneInputFormat::CurrentCsv => "current_csv",
+        StandaloneInputFormat::LegacyV3Csv => "legacy_v3_csv",
+        StandaloneInputFormat::Bin => "bin",
     }
 }
 
@@ -307,7 +384,7 @@ fn rfc3339(timestamp: rngkit_core::UtcTimestamp) -> String {
 pub(crate) fn map_combine(error: RecordingError) -> SafeError {
     match error {
         RecordingError::EmptyConcatenationInputs => {
-            SafeError::invalid_configuration("Choose at least one legacy v3 CSV file.")
+            SafeError::invalid_configuration("Choose at least one CSV file.")
         }
         RecordingError::EmptyConcatenationInput { .. } => {
             SafeError::invalid_configuration("A selected CSV file is empty.")
@@ -316,10 +393,13 @@ pub(crate) fn map_combine(error: RecordingError) -> SafeError {
             SafeError::invalid_configuration("The same CSV file was selected more than once.")
         }
         RecordingError::ConcatenationInputNotCsv { .. } => {
-            SafeError::unsupported_input("Combine accepts only RngKitPSG v3 CSV files.")
+            SafeError::unsupported_input("Combine accepts CSV files only.")
+        }
+        RecordingError::InvalidNativeCsvHeader { .. } => {
+            SafeError::corrupt_input("A selected current CSV header is invalid.")
         }
         RecordingError::NativeConcatenationInput { .. } => {
-            SafeError::unsupported_input("Native session CSV files cannot be combined.")
+            SafeError::unsupported_input("That current CSV is not supported.")
         }
         RecordingError::IncompatibleConcatenationInputs { .. } => {
             SafeError::invalid_configuration("The selected CSV files are not compatible.")

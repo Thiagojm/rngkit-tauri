@@ -1,5 +1,6 @@
 //! Combine preview, derived creation, and derived XLSX IPC.
 
+use std::fs;
 use std::path::Path;
 use std::sync::Mutex;
 
@@ -22,11 +23,14 @@ pub async fn choose_csv_inputs(
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         coordinator.begin_file_job(FileJobState::Inspecting)?;
-        coordinator.output_root().map(Path::to_path_buf)
+        coordinator
+            .combine_last_directory()
+            .or_else(|| coordinator.output_root())
+            .map(Path::to_path_buf)
     };
     let handle = (*dialogs).clone();
     let picked = tauri::async_runtime::spawn_blocking(move || {
-        handle.pick_files("Choose CSV files", current.as_deref())
+        handle.pick_files("Add CSV files", current.as_deref())
     })
     .await;
     let picked = match picked {
@@ -43,18 +47,101 @@ pub async fn choose_csv_inputs(
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         return Ok(coordinator.snapshot());
     };
-    let stored = paths.clone();
-    let inspected =
-        tauri::async_runtime::spawn_blocking(move || rngkit_recording::inspect_legacy_csvs(&paths))
-            .await;
+    let canonical = paths
+        .iter()
+        .map(|path| {
+            fs::canonicalize(path)
+                .map_err(|_| SafeError::corrupt_input("A selected CSV file could not be read."))
+        })
+        .collect::<Result<Vec<_>, _>>();
+    let canonical = match canonical {
+        Ok(paths) => paths,
+        Err(error) => {
+            finish_job(&coordinator);
+            return Err(error);
+        }
+    };
+    let selected = {
+        let mut coordinator = coordinator
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let Some(directory) = paths
+            .first()
+            .and_then(|path| path.parent())
+            .map(Path::to_path_buf)
+        {
+            coordinator.remember_combine_directory(directory);
+        }
+        coordinator.add_combine_inputs(canonical);
+        coordinator.combine_inputs().to_vec()
+    };
+    let inspected_paths = selected.clone();
+    let inspected = tauri::async_runtime::spawn_blocking(move || {
+        rngkit_recording::inspect_csv_inputs(&selected)
+    })
+    .await;
     let mut coordinator = coordinator
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     let _ = coordinator.finish_file_job();
     match inspected {
-        Ok(result) => apply_preview(&mut coordinator, &stored, result),
+        Ok(result) => apply_preview(&mut coordinator, &inspected_paths, result),
         Err(_) => Err(SafeError::unexpected_failure()),
     }
+}
+
+#[tauri::command]
+pub async fn remove_combine_input(
+    coordinator: State<'_, Mutex<AppCoordinator>>,
+    input_id: String,
+) -> Result<AppStateDto, SafeError> {
+    let selected = {
+        let mut coordinator = coordinator
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        coordinator.begin_file_job(FileJobState::Inspecting)?;
+        if let Err(error) = coordinator.remove_combine_input(&input_id) {
+            let _ = coordinator.finish_file_job();
+            return Err(error);
+        }
+        coordinator.combine_inputs().to_vec()
+    };
+    if selected.is_empty() {
+        let mut coordinator = coordinator
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let _ = coordinator.finish_file_job();
+        coordinator.clear_combine_inputs();
+        return Ok(coordinator.snapshot());
+    }
+    let inspected = tauri::async_runtime::spawn_blocking(move || {
+        rngkit_recording::inspect_csv_inputs(&selected)
+    })
+    .await;
+    let mut coordinator = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _ = coordinator.finish_file_job();
+    match inspected {
+        Ok(result) => {
+            let paths = coordinator.combine_inputs().to_vec();
+            apply_preview(&mut coordinator, &paths, result)
+        }
+        Err(_) => Err(SafeError::unexpected_failure()),
+    }
+}
+
+#[tauri::command]
+pub fn clear_combine_inputs(
+    coordinator: State<'_, Mutex<AppCoordinator>>,
+) -> Result<AppStateDto, SafeError> {
+    let mut coordinator = coordinator
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    coordinator.begin_file_job(FileJobState::Inspecting)?;
+    coordinator.clear_combine_inputs();
+    let _ = coordinator.finish_file_job();
+    Ok(coordinator.snapshot())
 }
 
 #[tauri::command]
@@ -80,11 +167,11 @@ pub async fn create_derived(
     if paths.is_empty() {
         finish_job(&coordinator);
         return Err(SafeError::invalid_configuration(
-            "Select compatible legacy v3 CSV files before creating a bundle.",
+            "Select compatible CSV files before creating a bundle.",
         ));
     }
     let created = tauri::async_runtime::spawn_blocking(move || {
-        rngkit_recording::create_legacy_csv_concatenation(&paths, &root)
+        rngkit_recording::create_csv_concatenation(&paths, &root)
     })
     .await;
     let mut coordinator = coordinator

@@ -235,6 +235,22 @@ export async function chooseCsvInputs(): Promise<AppSnapshot> {
   return getAppState();
 }
 
+export async function removeCombineInput(
+  inputId: string,
+): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('remove_combine_input', { inputId });
+  }
+  return getAppState();
+}
+
+export async function clearCombineInputs(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('clear_combine_inputs');
+  }
+  return getAppState();
+}
+
 export async function createDerived(): Promise<AppSnapshot> {
   if (isTauri()) {
     return invoke<AppSnapshot>('create_derived');

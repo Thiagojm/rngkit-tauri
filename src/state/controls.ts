@@ -123,7 +123,7 @@ export function deriveControls(snapshot: AppSnapshot): DerivedControls {
             busy
               ? fileJobReason
               : (combine.incompatibility ??
-                  'Select compatible legacy v3 CSV files before creating a bundle.'),
+                  'Select compatible CSV files before creating a bundle.'),
           )
         : enabled(),
     showStart: state === 'idle' || state === 'discovering' || state === 'ready',

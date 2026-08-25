@@ -2,6 +2,7 @@ import { isTauri } from '@tauri-apps/api/core';
 import {
   applyDevScenario,
   chooseCsvInputs,
+  clearCombineInputs,
   chooseOutputFolder,
   chooseReportInput,
   copyDiagnostics as requestCopyDiagnostics,
@@ -14,6 +15,7 @@ import {
   openReport,
   openReportFolder,
   openSessionFolder,
+  removeCombineInput,
   refreshSources,
   replaceReport,
   safeErrorMessage,
@@ -743,6 +745,24 @@ export class AppViewState {
     if (isTauri()) {
       void this.runDraftCommand(
         () => chooseCsvInputs(),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  removeCombineInput(inputId: string): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => removeCombineInput(inputId),
+        (snapshot) => snapshot,
+      );
+    }
+  }
+
+  clearCombineInputs(): void {
+    if (isTauri()) {
+      void this.runDraftCommand(
+        () => clearCombineInputs(),
         (snapshot) => snapshot,
       );
     }

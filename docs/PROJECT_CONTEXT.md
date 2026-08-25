@@ -5,7 +5,7 @@
 RngKit is a Windows-first desktop application that collects fixed-size entropy
 samples from one explicitly selected BitBabbler, TrueRNG, RDSEED, or PseudoRNG;
 monitors descriptive statistics; records native sessions; generates XLSX; and
-safely combines compatible RngKitPSG v3 CSV files.
+safely combines compatible current and RngKitPSG v3 CSV files.
 
 This repository is a locked Tauri 2 + client-only Svelte 5 + TypeScript + Vite +
 Tailwind CSS 4 app. Rust owns the coordinator
@@ -29,10 +29,10 @@ unverified. No required original-v1 product work is stubbed.
 
 The follow-on workflow-improvements design and phased plan dated 2026-08-24
 are approved and readable under `docs/specs/` and `docs/plans/`. Phase 1 is
-complete and published in `rngkit-core`; Phase 2 is complete and validated
-automatically in this app. Phase 3 and Phase 4 are complete and published.
-Phase 4 passed automated and browser-integrated validation; its native Reports
-manual test is the active gate and Phase 5 is not authorized.
+complete and published in `rngkit-core`; Phase 2, Phase 3, and Phase 4 are
+complete and published in this app. Phase 5 is complete and published and
+passed automated and browser-integrated validation; native Combine manual
+validation is the active gate and Phase 6 is not authorized.
 
 The library is `https://github.com/Thiagojm/rngkit-core` at
 `2cdf311dd206cb5e7320ee520ef1e7a5139cc146` (git, never a local path).
@@ -43,8 +43,9 @@ The library is `https://github.com/Thiagojm/rngkit-core` at
    cooperative stop, record a native bundle, and plot every committed Z point.
 2. **Reports:** inspect native or derived bundles, current standalone CSV/BIN,
    or legacy v3 CSV and write same-stem XLSX with explicit Replace.
-3. **Combine:** preview compatible legacy v3 CSVs and create a no-overwrite
-   derived CSV/manifest bundle without modifying inputs.
+3. **Combine:** accumulate compatible current, legacy, or mixed CSVs across
+   folders and create a no-overwrite schema-2 derived CSV/manifest bundle
+   without modifying inputs.
 4. **Help:** sources, folds, formats, troubleshooting, and descriptive limits.
 
 ## Architecture boundary
@@ -169,3 +170,28 @@ session-data preservation; SmartScreen behavior, signing, and publication.
 - Native window selection and generation for legacy CSV, current CSV/BIN,
   native bundle artifacts, and derived manifests remain unverified and form the
   user-validation gate.
+
+## Evidence (2026-08-24, workflow improvements Phase 5)
+
+- Combine now keeps ordered backend-only canonical input paths behind transient
+  opaque IDs. Add appends selections across folders; Remove targets one row;
+  Clear all resets the selection, preview, and derived result. The DTO exposes
+  only safe basename, ordinal, format, compatibility metadata, and validation
+  messages.
+- Combine uses the pinned generic `rngkit_recording` CSV APIs. Legacy-only,
+  current-only, and mixed compatible CSV sets create schema-2 bundles with
+  `kind` `csv_concatenation` and per-input format labels. Schema-1 bundles
+  remain readable through the existing report path. BIN inputs remain rejected;
+  duplicate, incompatible, overlap, changed, corrupt, and path-redaction
+  coverage remains backend-owned.
+- Deterministic validation passed: format check, Svelte/TypeScript check, lint,
+  Vitest 100/100, Playwright 5/5, production Vite build, focused Combine tests
+  9/9, locked cargo fmt/check/test/clippy/doc, Rust 1.85 check/test, locked
+  no-bundle Tauri build, local unsigned NSIS build, and `git diff --check`.
+- Browser-integrated review passed for compatible, incompatible, and
+  collecting states at desktop and minimum-window sizes. It verified readable
+  format labels, distinct Remove actions and ordinals, disabled-state behavior,
+  table-local horizontal scrolling, and clean browser logs.
+- Native Combine workflow validation remains unverified and is the active user
+  gate before Phase 6. Phase 5 is committed and published; Phase 6 remains
+  unauthorized.

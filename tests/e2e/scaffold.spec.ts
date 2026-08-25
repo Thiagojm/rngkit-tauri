@@ -72,6 +72,8 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   expect(js).toContain('open_report');
   expect(js).toContain('open_report_folder');
   expect(js).toContain('choose_csv_inputs');
+  expect(js).toContain('remove_combine_input');
+  expect(js).toContain('clear_combine_inputs');
   expect(js).toContain('create_derived');
   expect(js).toContain('generate_derived');
   expect(js).toContain('open_derived_folder');
