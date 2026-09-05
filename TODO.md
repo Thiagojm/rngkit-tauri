@@ -15,6 +15,8 @@
 - Complete frontend, locked Rust, Rust 1.85, E2E, build, and no-bundle release
   validation passed. Native PseudoRNG Collect and manifest-backed Reports smoke
   validation passed, including immediate outcome and normalized full paths.
+- Help, diagnostics, README, and revision tests now track the exact locked
+  `rngkit-core` revision from Cargo sources.
 
 ## In progress
 

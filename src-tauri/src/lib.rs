@@ -23,7 +23,7 @@ use reports::ReportsHandle;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
-pub const RNGKIT_CORE_REVISION: &str = "495c3f5acdb6960f90e662927e1466aebae7cffd";
+pub const RNGKIT_CORE_REVISION: &str = "3dc969d983ffa7c981536c46d19afa223f0c490b";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -208,11 +208,37 @@ mod tests {
     use super::RNGKIT_CORE_REVISION;
 
     #[test]
-    fn pins_reachable_library_revision() {
-        assert_eq!(
-            RNGKIT_CORE_REVISION,
-            "495c3f5acdb6960f90e662927e1466aebae7cffd"
+    fn matches_backend_dependency_pins() {
+        let manifest = include_str!("../Cargo.toml");
+        let pinned_revisions: Vec<&str> = manifest
+            .lines()
+            .filter(|line| line.trim_start().starts_with("rngkit-"))
+            .filter_map(|line| {
+                line.split_once("rev = \"")
+                    .and_then(|(_, value)| value.split_once('"').map(|(revision, _)| revision))
+            })
+            .collect();
+        assert!(!pinned_revisions.is_empty());
+        assert!(
+            pinned_revisions
+                .iter()
+                .all(|revision| *revision == RNGKIT_CORE_REVISION)
         );
+
+        let lockfile = include_str!("../Cargo.lock");
+        let expected_source = format!(
+            "source = \"git+https://github.com/Thiagojm/rngkit-core?rev={0}#{0}\"",
+            RNGKIT_CORE_REVISION
+        );
+        let lock_sources: Vec<&str> = lockfile
+            .lines()
+            .map(str::trim)
+            .filter(|line| {
+                line.starts_with("source = \"git+https://github.com/Thiagojm/rngkit-core?rev=")
+            })
+            .collect();
+        assert!(!lock_sources.is_empty());
+        assert!(lock_sources.iter().all(|source| *source == expected_source));
     }
 
     #[test]
