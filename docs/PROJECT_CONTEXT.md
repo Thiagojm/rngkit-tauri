@@ -74,8 +74,11 @@ reachable `rngkit-core` revision
 - **CI repair (2026-09-05):** run `33981573132` at `ec5153c` failed in the
   Combine integration test on both runners. Assertions now compare canonical
   path components and exclude the authorized outcome from the snapshot path
-  prohibition. Local Windows locked all-target Rust tests passed; a corrected
-  remote run remains pending.
+  prohibition. Local Windows locked all-target Rust tests passed. Remote Ubuntu
+  tests passed in run `34002210623`, which then exposed an unused Windows-only
+  test import in Clippy; that import now has `cfg(windows)`. Windows exposed
+  the same short/long-path mismatch in Security; Security/Collection outcome
+  assertions now compare canonical components too. New CI pending.
 - **Complete deterministic validation (2026-08-25, Windows):** npm install,
   format/check/lint, 27 Vitest files/106 tests, Playwright 5/5, Vite build,
   locked Rust fmt/check/test/clippy/doc, Rust 1.85 check/test, locked no-bundle

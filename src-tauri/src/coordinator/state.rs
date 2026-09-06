@@ -1528,7 +1528,9 @@ fn source_id_of(config: &SourceConfig) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use super::{AppCoordinator, display_path};
+    use super::AppCoordinator;
+    #[cfg(windows)]
+    use super::display_path;
     use crate::coordinator::fixtures::{DevScenario, bitb_candidate, pseudo_candidate};
     use crate::dto::{CollectionState, ErrorCode, FileJobState};
     use crate::errors::SafeError;

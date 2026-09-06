@@ -85,9 +85,11 @@ fn assert_safe_snapshot(snapshot: &rngkit_lib::dto::AppStateDto, allowed_root: &
         .get("paths")
         .and_then(serde_json::Value::as_array)
         .expect("outcome paths");
+    let canonical = fs::canonicalize(allowed_root).expect("canonical output root");
     for row in paths {
         let path = row["path"].as_str().expect("outcome path");
-        assert!(path.starts_with(&*allowed_root.to_string_lossy()), "{path}");
+        let resolved = fs::canonicalize(path).expect("existing outcome path");
+        assert!(resolved.starts_with(&canonical), "{path}");
     }
     value["pendingOutcome"] = serde_json::Value::Null;
     assert_safe_json(&value.to_string());

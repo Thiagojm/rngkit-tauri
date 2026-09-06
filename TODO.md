@@ -19,7 +19,10 @@
   `rngkit-core` revision from Cargo sources.
 - Corrected Combine outcome-path assertions behind CI run `33981573132`:
   canonical component containment and privacy checks outside the allowed outcome.
-  Local locked Rust tests passed; remote confirmation awaits a new push.
+  Remote Ubuntu tests passed in run `34002210623`; its subsequent Clippy
+  failure is corrected by gating the Windows-only test import. Windows exposed
+  the same path-alias assertion in Security; Security/Collection now canonicalize
+  outcome paths too. New CI pending.
 
 ## In progress
 
