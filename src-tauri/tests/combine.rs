@@ -82,6 +82,41 @@ fn hash(path: &Path) -> Vec<u8> {
     fs::read(path).expect("hash")
 }
 
+fn path_is_under_allowed_root(path: &str, allowed_root: &Path) -> bool {
+    #[cfg(windows)]
+    {
+        let normalize = |value: &str| {
+            let value = value.replace('/', "\\");
+            let value = if let Some(rest) = value.strip_prefix(r"\\?\\UNC\\") {
+                format!(r"\\{rest}")
+            } else if let Some(rest) = value.strip_prefix(r"\\?\\") {
+                rest.to_owned()
+            } else {
+                value
+            };
+            value.to_ascii_lowercase()
+        };
+        let path = normalize(path);
+        let root = normalize(&allowed_root.to_string_lossy());
+        if path.starts_with(&root) {
+            return true;
+        }
+        fs::canonicalize(allowed_root)
+            .map(|canonical| path.starts_with(&normalize(&canonical.to_string_lossy())))
+            .unwrap_or(false)
+    }
+    #[cfg(not(windows))]
+    {
+        let root = allowed_root.to_string_lossy();
+        if path.starts_with(&*root) {
+            return true;
+        }
+        fs::canonicalize(allowed_root)
+            .map(|canonical| path.starts_with(&*canonical.to_string_lossy()))
+            .unwrap_or(false)
+    }
+}
+
 fn assert_safe_json(dump: &str) {
     let lower = dump.to_ascii_lowercase();
     assert!(!dump.contains(":\\"), "{dump}");
@@ -97,11 +132,6 @@ fn assert_safe_snapshot(snapshot: &rngkit_lib::dto::AppStateDto, allowed_root: &
         .get_mut("pendingOutcome")
         .and_then(serde_json::Value::as_object_mut)
         .expect("outcome");
-    let root = allowed_root.to_string_lossy();
-    let canonical = fs::canonicalize(allowed_root)
-        .unwrap_or_else(|_| allowed_root.to_path_buf())
-        .to_string_lossy()
-        .into_owned();
     for row in outcome
         .get("paths")
         .and_then(serde_json::Value::as_array)
@@ -109,7 +139,7 @@ fn assert_safe_snapshot(snapshot: &rngkit_lib::dto::AppStateDto, allowed_root: &
     {
         let path = row["path"].as_str().expect("outcome path");
         assert!(
-            path.starts_with(&*root) || path.starts_with(&canonical),
+            path_is_under_allowed_root(path, allowed_root),
             "{path}"
         );
     }
