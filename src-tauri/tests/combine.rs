@@ -1,1 +1,1 @@
-file:///workspace/combine.rs
+LOADING_FROM_DISK_VIA_NEXT_APPROACH
