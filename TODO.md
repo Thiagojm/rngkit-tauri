@@ -17,6 +17,9 @@
   validation passed, including immediate outcome and normalized full paths.
 - Help, diagnostics, README, and revision tests now track the exact locked
   `rngkit-core` revision from Cargo sources.
+- Corrected Combine outcome-path assertions behind CI run `33981573132`:
+  canonical component containment and privacy checks outside the allowed outcome.
+  Local locked Rust tests passed; remote confirmation awaits a new push.
 
 ## In progress
 
