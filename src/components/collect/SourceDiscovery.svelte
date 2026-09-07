@@ -8,11 +8,18 @@
   const controls = $derived(appState.controls);
 </script>
 
-<Button
-  disabled={!controls.refresh.enabled}
-  disabledReason={controls.refresh.reason}
-  onclick={() => void appState.refreshSources()}>{copy.refreshSources}</Button
->
+<div class="flex flex-wrap items-center gap-2">
+  <Button
+    disabled={!controls.refresh.enabled}
+    disabledReason={controls.refresh.reason}
+    onclick={() => void appState.refreshSources()}>{copy.refreshSources}</Button
+  >
+  <button
+    type="button"
+    class="rounded-sm px-1 py-1 text-sm font-medium text-text-muted hover:bg-surface-muted hover:text-text"
+    onclick={() => appState.openDeviceSetup()}>{copy.deviceSetup}</button
+  >
+</div>
 <fieldset class="flex flex-col gap-2" disabled={!controls.configure.enabled}>
   <legend class="text-sm font-medium">{copy.entropySource}</legend>
   {#if collection.candidates.length === 0}

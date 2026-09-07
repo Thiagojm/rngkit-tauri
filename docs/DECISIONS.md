@@ -134,3 +134,12 @@ All decisions are accepted. Material changes return to design review.
   below 56rem available width; colors use existing theme tokens.
 - Explain numeric validation and complete-bundle requirements in user language;
   never recommend deleting manifests to bypass report validation.
+
+## Device setup guidance (2026-09-07)
+
+- Device setup lives under Choosing a source, not as a ninth topic. Windows uses
+  WinUSB only for BitBabbler `0403:7840` and manufacturer CDC/usbser for TrueRNG3
+  `04d8:f5fe`. Ubuntu/Debian uses group `rngkit`, mode 0660, app-owned rule names,
+  and device-scoped ModemManager ignore; do not unload `ftdi_sio` or grant world
+  access. Collect may jump to that heading through transient in-memory intent.
+  Phase 1 has no folder command, bundled helper, or installer action.

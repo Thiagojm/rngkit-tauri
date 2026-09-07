@@ -117,3 +117,16 @@ reachable `rngkit-core` revision
   Two Help unit tests, six Edge E2E tests, types/build and visual browser checks
   passed, including keyboard focus, both themes and enlarged text. The user
   reported successful native Help acceptance on 2026-09-07.
+
+## Device setup Phase 1 (2026-09-07)
+
+- Choosing a source includes Device setup with four native disclosures
+  (Windows/Ubuntu-Debian × BitBabbler/TrueRNG3). Both platforms stay visible.
+  Linux hardware acceptance is pending. PseudoRNG needs no setup; RDSEED depends
+  on the CPU. Collect has a compact Device setup control next to Refresh sources;
+  it opens Help, focuses that heading, and does not persist the jump. Collection
+  state is unchanged. No folder button or new IPC yet.
+- Frontend checks: 27 Vitest files/124 tests, types, lint, format, and 7 Edge
+  E2E tests passed. The user reported successful native Collect-link, Help
+  focus/disclosures, and return-to-collection acceptance on 2026-09-07. This does
+  not establish driver installation. Phase 2 is the next authorized slice.

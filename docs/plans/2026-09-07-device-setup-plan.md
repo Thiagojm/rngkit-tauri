@@ -1,6 +1,7 @@
 # Device setup implementation plan
 
-Status: Approved by the user on 2026-09-07. Implementation authorization remains pending.
+Status: Approved by the user on 2026-09-07. Phase 1 complete after native
+user acceptance. Phase 2 authorized; Phase 3 remains unauthorized.
 Design: `docs/specs/2026-09-07-device-setup-design.md` (approved).
 
 ## Execution contract

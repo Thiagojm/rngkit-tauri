@@ -24,6 +24,7 @@ export const copy = {
   noOutputFolder: 'No output folder selected. Choose a folder to continue.',
   entropySource: 'Entropy source',
   refreshSources: 'Refresh sources',
+  deviceSetup: 'Device setup',
   chooseFolder: 'Choose folder',
   openWorkingFolder: 'Open working folder',
   start: 'Start',

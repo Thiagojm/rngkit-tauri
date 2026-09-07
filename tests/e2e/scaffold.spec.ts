@@ -131,6 +131,20 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   ).toBeVisible();
   await expect(page.getByText(/YYYYMMDDTHHMMSS/)).toBeVisible();
   await expect(page.getByText('unexpected_failure')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: copy.deviceSetup, exact: true }),
+  ).toBeVisible();
+  for (const summary of [
+    'Windows / BitBabbler',
+    'Windows / TrueRNG3',
+    'Ubuntu-Debian / BitBabbler',
+    'Ubuntu-Debian / TrueRNG3',
+  ]) {
+    await expect(page.getByText(summary, { exact: true })).toBeVisible();
+  }
+  await expect(
+    page.getByRole('button', { name: /Open device setup folder/i }),
+  ).toHaveCount(0);
 
   await page.getByLabel(copy.theme.legend).selectOption('dark');
   await expect.poll(() => bodyBackground(page)).toBe(DARK_SURFACE);

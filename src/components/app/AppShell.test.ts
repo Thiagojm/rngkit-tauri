@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import { copy } from '../../copy';
 import { appState } from '../../state/app-state.svelte';
@@ -33,6 +33,55 @@ describe('AppShell', () => {
     expect(
       screen.getByRole('heading', { name: copy.destinations.combine }),
     ).toBeTruthy();
+  });
+
+  it('opens Device setup from Collect without changing collection state', async () => {
+    HTMLElement.prototype.scrollIntoView = () => {};
+    appState.applyScenario('collecting');
+    render(AppShell);
+
+    expect(appState.snapshot.collection.state).toBe('collecting');
+    expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.chart.fitAll }),
+    ).toBeTruthy();
+
+    await fireEvent.click(
+      screen.getByRole('button', { name: copy.deviceSetup }),
+    );
+
+    const heading = screen.getByRole('heading', { name: copy.deviceSetup });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(heading);
+    });
+    expect(appState.destination).toBe('help');
+    expect(appState.helpFocusId).toBeNull();
+    expect(appState.snapshot.collection.state).toBe('collecting');
+    expect(appState.snapshot.collection.sampleCount).toBe(12);
+
+    await fireEvent.click(
+      screen.getByRole('button', { name: copy.destinations.collect }),
+    );
+    expect(appState.destination).toBe('collect');
+    expect(appState.snapshot.collection.state).toBe('collecting');
+    expect(screen.getByText(/Retained points: 12/)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: copy.chart.fitAll }),
+    ).toBeTruthy();
+  });
+
+  it('does not jump to Device setup during ordinary Help navigation', async () => {
+    HTMLElement.prototype.scrollIntoView = () => {};
+    render(AppShell);
+
+    await fireEvent.click(
+      screen.getByRole('button', { name: copy.destinations.help }),
+    );
+    expect(appState.destination).toBe('help');
+    expect(appState.helpFocusId).toBeNull();
+    expect(document.activeElement).not.toBe(
+      screen.getByRole('heading', { name: copy.deviceSetup }),
+    );
   });
 
   it('applies the selected theme to the document', async () => {

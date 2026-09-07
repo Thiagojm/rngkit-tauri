@@ -77,6 +77,7 @@ function isActiveCollection(snapshot: AppSnapshot): boolean {
 
 export class AppViewState {
   destination = $state<Destination>('collect');
+  helpFocusId = $state<string | null>(null);
   theme = $state<ThemePreference>('system');
   scenarioId = $state<ScenarioId>(DEFAULT_SCENARIO);
   selectedToken = $state<string | null>(
@@ -275,6 +276,16 @@ export class AppViewState {
       this.diagnosticsCopied = false;
       return false;
     }
+  }
+
+  showDestination(id: Destination): void {
+    this.helpFocusId = null;
+    this.destination = id;
+  }
+
+  openDeviceSetup(): void {
+    this.helpFocusId = 'help-device-setup';
+    this.destination = 'help';
   }
 
   applyScenario(id: ScenarioId): void {
@@ -1045,6 +1056,7 @@ export class AppViewState {
   reset(): void {
     this.loadGeneration += 1;
     this.destination = 'collect';
+    this.helpFocusId = null;
     this.theme = 'system';
     this.scenarioId = DEFAULT_SCENARIO;
     this.replaceDialogOpen = false;

@@ -20,6 +20,21 @@ describe('SourceDiscovery', () => {
     expect(
       screen.getByRole('button', { name: copy.refreshSources }),
     ).toHaveProperty('disabled', false);
+    expect(
+      screen.getByRole('button', { name: copy.deviceSetup }),
+    ).toHaveProperty('disabled', false);
+  });
+
+  it('keeps Device setup available while collecting', () => {
+    appState.applyScenario('collecting');
+    render(CollectPage);
+
+    expect(
+      screen.getByRole('button', { name: copy.refreshSources }),
+    ).toHaveProperty('disabled', true);
+    expect(
+      screen.getByRole('button', { name: copy.deviceSetup }),
+    ).toHaveProperty('disabled', false);
   });
 
   it('lists multiple mock devices as separate choices', () => {

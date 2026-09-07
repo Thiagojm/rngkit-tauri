@@ -188,3 +188,70 @@ test('Help topic links, disclosures and responsive layouts are accessible', asyn
     ),
   ).toBe(false);
 });
+
+test('Collect Device setup focuses Help and disclosures stay usable', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await expect(
+    page.getByRole('button', { name: copy.deviceSetup }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: copy.deviceSetup }).click();
+  await expect(
+    page.getByRole('heading', { name: copy.deviceSetup, exact: true }),
+  ).toBeFocused();
+
+  for (const theme of ['light', 'dark']) {
+    await page.getByLabel(copy.theme.legend).selectOption(theme);
+    const summary = page
+      .locator('summary')
+      .filter({ hasText: 'Windows / BitBabbler' });
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(summary.locator('..')).toHaveAttribute('open', '');
+    await expect(
+      summary.locator('..').getByText('0403:7840').first(),
+    ).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(summary.locator('..')).not.toHaveAttribute('open', '');
+  }
+
+  await page.setViewportSize({ width: 800, height: 600 });
+  await expect(
+    page.getByRole('heading', { name: copy.deviceSetup, exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth + 1,
+    ),
+  ).toBe(false);
+
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '150%';
+  });
+  const linux = page
+    .locator('summary')
+    .filter({ hasText: 'Ubuntu-Debian / TrueRNG3' });
+  await linux.click();
+  await expect(
+    linux.locator('..').getByText('04d8:f5fe').first(),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth + 1,
+    ),
+  ).toBe(false);
+
+  await page.getByRole('button', { name: copy.destinations.collect }).click();
+  await expect(
+    page.getByRole('heading', { name: copy.destinations.collect }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.refreshSources }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: copy.deviceSetup }),
+  ).toBeVisible();
+  await expect(page.getByText(copy.chart.empty)).toBeVisible();
+});

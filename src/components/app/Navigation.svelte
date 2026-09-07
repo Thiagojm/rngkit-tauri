@@ -21,7 +21,7 @@
           class="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface"
           class:bg-surface={appState.destination === item.id}
           aria-current={appState.destination === item.id ? 'page' : undefined}
-          onclick={() => (appState.destination = item.id)}
+          onclick={() => appState.showDestination(item.id)}
         >
           {item.label}
         </button>

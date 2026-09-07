@@ -16,12 +16,14 @@
 - User-reported manual acceptance (2026-09-07): refreshed Help and Reports/Combine,
   including standalone current/legacy CSV/BIN, cross-folder combinations and XLSX
   titles, timestamps and charts in Excel.
+- Device setup Phase 1: offline Help disclosures and Collect navigation; automated
+  checks passed and the user reported successful native acceptance.
 
 ## Next steps
 
-1. Confirm completion of the Collect layout CI run.
-2. Validate remaining artifact open/folder actions and native scaling acceptance.
-3. Add instalation guide and files for Windows/ Linux for Bitbabbler and TrueRNG3. Try to include them in the NSIS installer.
+1. Implement Device setup Phase 2: reviewed offline kit and Linux helper.
+2. Confirm completion of the Collect layout CI run.
+3. Validate remaining artifact open/folder actions and native scaling acceptance.
 
 ## Backlog
 

@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { onMount, tick } from 'svelte';
   import { copy, FOLD_OPTIONS } from '../copy';
   import { ERROR_CODES } from '../ipc/types';
   import { RNGKIT_CORE_REVISION } from '../library-revision';
+  import { appState } from '../state/app-state.svelte';
 
   const topics = [
     ['help-quick-start', 'Quick start'],
@@ -16,10 +18,21 @@
 
   function goToTopic(event: MouseEvent, id: string): void {
     event.preventDefault();
+    focusHeading(id);
+  }
+
+  function focusHeading(id: string): void {
     const heading = document.getElementById(id);
     heading?.focus({ preventScroll: true });
     heading?.scrollIntoView({ behavior: 'instant', block: 'start' });
   }
+
+  onMount(() => {
+    const id = appState.helpFocusId;
+    appState.helpFocusId = null;
+    if (!id) return;
+    void tick().then(() => focusHeading(id));
+  });
 </script>
 
 <div class="help-page @container max-w-5xl">
@@ -99,9 +112,169 @@
         </ul>
         <p>
           RDSEED and PseudoRNG use their library defaults and do not show a fold
-          control. If a source disappears, refresh and choose an available
-          source again; RngKit does not silently switch devices.
+          control. PseudoRNG needs no device setup. RDSEED appears only when the
+          CPU provides it. If a source disappears, refresh and choose an
+          available source again; RngKit does not silently switch devices.
         </p>
+        <h3
+          tabindex="-1"
+          id="help-device-setup"
+          class="mt-2 text-base font-medium"
+        >
+          {copy.deviceSetup}
+        </h3>
+        <p>
+          Windows and Ubuntu-Debian guides are both here; the app does not pick
+          one from your operating system. Linux hardware acceptance is pending.
+          RngKit never starts an installer, terminal, or script.
+        </p>
+        <div class="space-y-2">
+          <details>
+            <summary>Windows / BitBabbler</summary>
+            <div class="space-y-3 p-4">
+              <p>
+                Use this only for a BitBabbler with USB ID
+                <code>0403:7840</code>. Bind <strong>WinUSB</strong> to that device.
+                Do not replace an arbitrary FTDI driver with WinUSB.
+              </p>
+              <ol class="list-decimal space-y-2 ps-5">
+                <li>
+                  Get Zadig from the official Zadig site. You need permission to
+                  change the driver for this device.
+                </li>
+                <li>
+                  Plug in the BitBabbler. In Zadig, enable Options → List All
+                  Devices and select the BitBabbler interface
+                  <code>0403:7840</code>.
+                </li>
+                <li>
+                  Install WinUSB for that interface, not the FTDI VCP driver.
+                </li>
+                <li>
+                  Unplug the device, wait a moment, then plug it in again.
+                </li>
+                <li>
+                  In Collect, select <strong>Refresh sources</strong>, choose
+                  the BitBabbler, then Start and Stop to confirm a session is
+                  saved.
+                </li>
+              </ol>
+            </div>
+          </details>
+          <details>
+            <summary>Windows / TrueRNG3</summary>
+            <div class="space-y-3 p-4">
+              <p>
+                Use this only for TrueRNG v1/v2/v3 with USB ID
+                <code>04d8:f5fe</code>. Install the manufacturer CDC /
+                <code>usbser</code> driver for that ID. Do not bind WinUSB to this
+                device.
+              </p>
+              <ol class="list-decimal space-y-2 ps-5">
+                <li>
+                  Obtain the manufacturer TrueRNG Windows driver (INF and CAT)
+                  for <code>04d8:f5fe</code>. You need permission to install it.
+                </li>
+                <li>
+                  Plug in the TrueRNG3 and install that CDC / usbser driver for
+                  this device only.
+                </li>
+                <li>
+                  Unplug the device, wait a moment, then plug it in again.
+                </li>
+                <li>
+                  In Collect, select <strong>Refresh sources</strong>, choose
+                  TrueRNG, then Start and Stop to confirm a session is saved.
+                </li>
+              </ol>
+            </div>
+          </details>
+          <details>
+            <summary>Ubuntu-Debian / BitBabbler</summary>
+            <div class="space-y-3 p-4">
+              <p>
+                These steps only set USB permissions on Ubuntu or Debian with
+                systemd/udev. Linux hardware acceptance is pending.
+              </p>
+              <ol class="list-decimal space-y-2 ps-5">
+                <li>
+                  Create a dedicated <code>rngkit</code> group and add your login
+                  user. Do not grant world access.
+                </li>
+                <li>
+                  Install a regular, root-owned file
+                  <code>/etc/udev/rules.d/60-rngkit-bitbabbler.rules</code> with mode
+                  0644. Do not change permissions on the rules directory. If that
+                  name already exists with different contents, leave it and stop.
+                  Identical contents need no change.
+                </li>
+                <li>
+                  Match only USB device nodes <code>0403:7840</code> with group
+                  <code>rngkit</code> and mode 0660:
+                  <code
+                    >{'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="7840", MODE="0660", GROUP="rngkit"'}</code
+                  >. Do not unload or blacklist <code>ftdi_sio</code>.
+                </li>
+                <li>
+                  Reload rules with
+                  <code>udevadm control --reload-rules</code>. Do not trigger
+                  every device. Log out and back in, then reconnect the
+                  BitBabbler.
+                </li>
+                <li>
+                  In Collect, select <strong>Refresh sources</strong>, choose
+                  the BitBabbler, then Start and Stop to confirm a session is
+                  saved.
+                </li>
+              </ol>
+            </div>
+          </details>
+          <details>
+            <summary>Ubuntu-Debian / TrueRNG3</summary>
+            <div class="space-y-3 p-4">
+              <p>
+                These steps only set tty permissions on Ubuntu or Debian with
+                systemd/udev. Linux hardware acceptance is pending. RngKit
+                configures serial settings; do not add OS serial hooks or a
+                shared symlink.
+              </p>
+              <ol class="list-decimal space-y-2 ps-5">
+                <li>
+                  Create a dedicated <code>rngkit</code> group and add your login
+                  user. Do not grant world access.
+                </li>
+                <li>
+                  Install a regular, root-owned file
+                  <code>/etc/udev/rules.d/60-rngkit-truerng3.rules</code> with mode
+                  0644. Do not change permissions on the rules directory. If that
+                  name already exists with different contents, leave it and stop.
+                </li>
+                <li>
+                  Ignore ModemManager only for USB ID <code>04d8:f5fe</code>,
+                  and match only that device's tty nodes with group
+                  <code>rngkit</code> and mode 0660:
+                  <code
+                    >{'ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f5fe", ENV{ID_MM_DEVICE_IGNORE}="1"'}</code
+                  >
+                  and
+                  <code
+                    >{'SUBSYSTEM=="tty", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f5fe", MODE="0660", GROUP="rngkit"'}</code
+                  >.
+                </li>
+                <li>
+                  Reload rules with
+                  <code>udevadm control --reload-rules</code>. Do not trigger
+                  every device. Log out and back in, then reconnect the
+                  TrueRNG3.
+                </li>
+                <li>
+                  In Collect, select <strong>Refresh sources</strong>, choose
+                  TrueRNG, then Start and Stop to confirm a session is saved.
+                </li>
+              </ol>
+            </div>
+          </details>
+        </div>
       </section>
 
       <section
@@ -381,11 +554,11 @@
 </div>
 
 <style>
-  .help-page :is(h2, a, summary):focus-visible {
+  .help-page :is(h2, h3, a, summary):focus-visible {
     outline: 2px solid var(--color-text);
     outline-offset: 4px;
   }
-  .help-page h2 {
+  .help-page :is(h2, h3) {
     scroll-margin-top: 1rem;
   }
   .help-page code {

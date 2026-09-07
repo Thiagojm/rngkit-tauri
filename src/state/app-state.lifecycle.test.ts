@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { AppViewState } from './app-state.svelte';
 import { MOCK_SCENARIOS } from './mock-scenarios';
 
+describe('AppViewState Help Device setup focus', () => {
+  it('records a transient Device setup target and consumes it on ordinary navigation', () => {
+    const state = new AppViewState();
+    state.openDeviceSetup();
+    expect(state.destination).toBe('help');
+    expect(state.helpFocusId).toBe('help-device-setup');
+    state.showDestination('help');
+    expect(state.destination).toBe('help');
+    expect(state.helpFocusId).toBeNull();
+  });
+});
+
 describe('AppViewState close and terminal recovery', () => {
   it('ignores late collection events after a failed snapshot', () => {
     const state = new AppViewState();
