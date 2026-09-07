@@ -21,7 +21,12 @@ Authenticode-checked without executing installers.
 - Redistribution: permitted under those licenses with notices and corresponding
   source.
 
-## TrueRNG Windows CDC/usbser (`windows/truerng3/`)
+## TrueRNG Windows CDC/usbser (excluded)
+
+The previously inspected INF/CAT are excluded from the kit: redistribution
+permission has not been established. The records below identify the inspected
+upstream package, not bundled files. Inclusion remains blocked pending documented
+permission. Users may obtain the package directly from the manufacturer source.
 
 - Upstream: ubld.it points to https://github.com/euler357/TrueRNG
   (`Windows_Drivers/TrueRNG-Windows-Driver1.zip`).
@@ -36,8 +41,8 @@ Authenticode-checked without executing installers.
   as verified.
 - License: the GitHub repository publishes no LICENSE file. The INF names
   ubld.it / Chris K Cockrum and is the manufacturer signed CDC/usbser package
-  for this ID. Included as that vendor driver package, not as a substitute from
-  a legacy app tree.
+  for this ID. Manufacturer provenance and a valid signature do not establish
+  redistribution permission.
 - Vendor note in the zip README: the INF is not strictly required on Windows 7
   or later because native USB CDC often already maps the device.
 

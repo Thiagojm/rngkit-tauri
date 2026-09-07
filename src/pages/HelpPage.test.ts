@@ -96,6 +96,12 @@ describe('HelpPage', () => {
     );
     expect(screen.queryByText(/bundled helper/i)).toBeNull();
     expect(
+      screen.getAllByText(/bash setup-rng-devices\.sh --check/),
+    ).toHaveLength(2);
+    expect(
+      screen.getByText(/Windows driver package is not included/),
+    ).toBeTruthy();
+    expect(
       screen.getByRole('button', { name: copy.openDeviceSetupFolder }),
     ).toBeTruthy();
   });

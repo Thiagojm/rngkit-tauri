@@ -19,12 +19,16 @@
 - Device setup Phases 1–3: Help disclosures, Collect navigation, reviewed kit
   and Linux helper, and Help opens `device-setup` through
   `open_device_setup_folder`. User-reported native acceptance on 2026-09-07
-  covers guidance, kit review, and folder-open. Unsigned NSIS includes the kit
-  with matching hashes; installed-app access is not established.
+  covers guidance, kit review, and folder-open. Earlier NSIS inspection predates
+  review corrections; installed-app access is not established.
+- Review fixes: explicit Bash commands, retryable udev reload, and exclusion of
+  TrueRNG INF/CAT pending documented redistribution permission.
 
 ## Next steps
 
-1. Separately authorize installing the unsigned NSIS and opening the kit from
+1. Establish TrueRNG package redistribution permission before bundling INF/CAT.
+   Separately authorize rebuilding/inspecting the corrected unsigned NSIS,
+   then installing it and opening the kit from
    Help offline, as a standard user. Setup must not run implicitly.
 2. Separately authorize Ubuntu/Debian hardware validation (both devices after
    login/reconnect, repeated setup, unrelated FTDI unchanged) when a host exists.

@@ -148,3 +148,7 @@ All decisions are accepted. Material changes return to design review.
   refused while elevated. The app never launches the helper, Zadig, or INF
   install. Help opens that directory through no-argument `open_device_setup_folder`.
   Bundle resources map `resources/device-setup` to `device-setup`.
+- Invoke the Linux helper with `bash`; every apply reloads udev, even when rules
+  are identical, to recover from earlier reload failures. Check remains read-only.
+  Exclude TrueRNG INF/CAT until redistribution permission is documented; offline
+  Windows driver setup requires the user to obtain that package in advance.

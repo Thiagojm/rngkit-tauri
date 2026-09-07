@@ -4,6 +4,11 @@ Status: Approved by the user on 2026-09-07. Phases 1–3 complete after user
 acceptance, including native folder-open. Unsigned NSIS packaging inspected
 on 2026-09-07; installed-app checks and Linux hardware validation remain
 unauthorized.
+Review corrections (2026-09-07): Linux commands now invoke Bash and every apply
+reloads udev for retry recovery. TrueRNG INF/CAT inclusion is blocked pending
+documented redistribution permission; the files are excluded and Help identifies
+the manufacturer download. Earlier installer evidence predates these corrections;
+a rebuild and inspection remain separately authorized work.
 Design: `docs/specs/2026-09-07-device-setup-design.md` (approved).
 
 ## Execution contract

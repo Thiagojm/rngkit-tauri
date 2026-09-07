@@ -127,8 +127,17 @@ reachable `rngkit-core` revision
   `open_device_setup_folder`; the app never launches Zadig, INF install, or the
   Linux helper. Frontend 27 files/127 tests, 7 Edge E2E, locked Rust/MSRV, and
   clippy passed. The user reported successful native folder-open on 2026-09-07.
-  Unsigned NSIS `RngKit_0.1.0_x64-setup.exe` includes the twelve kit files; Zadig,
-  INF, and CAT hashes match `SOURCES.md`. The installer copies them under
+  The earlier unsigned NSIS `RngKit_0.1.0_x64-setup.exe` included twelve kit files;
+  that packaging evidence predates the review corrections below. It copied them under
   `$INSTDIR\device-setup` and does not run Zadig, INF install, or the Linux helper.
   Installed-app offline folder-open is not established. Linux hardware acceptance
   remains pending. This does not establish driver installation.
+- Review corrections: Linux instructions invoke Bash explicitly; every apply
+  reloads udev so a failed reload can be retried with identical rules. TrueRNG
+  INF/CAT are removed pending documented redistribution permission; Help points
+  to the manufacturer package for advance download. Existing installer artifacts
+  are stale and must be rebuilt and reinspected under separate authorization.
+- Review-fix validation: seven Help unit tests, seven Edge E2E tests, frontend
+  check/lint/format and Bash syntax/isolated helper tests passed. The helper
+  regression covers repeated reload failure and successful recovery. Git Bash
+  skipped symlink/mode cases; this is not native Linux or hardware evidence.

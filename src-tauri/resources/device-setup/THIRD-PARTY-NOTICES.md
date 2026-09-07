@@ -14,11 +14,12 @@ or later. See `windows/bitbabbler/COPYING` and
 
 This binary is provided as-is, without warranty.
 
-## TrueRNG Windows driver (INF/CAT)
+## TrueRNG Windows driver reference (not included)
 
 Copyright ubld.it / Chris K Cockrum. Manufacturer CDC/`usbser` package for USB
 ID `04d8:f5fe`, published at https://github.com/euler357/TrueRNG. No separate
-license file was present in that repository at verification time. The catalog
-is a signed Authenticode catalog; keep it next to `TrueRNG.inf`.
+license file was present in that repository at verification time. INF/CAT files
+are excluded until redistribution permission is documented. The kit only names
+the manufacturer source for users who need to obtain the package themselves.
 
 Do not use this package for TrueRNGpro or other USB IDs.

@@ -14,7 +14,6 @@ TRNG_SOURCE="${SCRIPT_DIR}/${TRNG_RULE_NAME}"
 TEST_ROOT=${RNGKIT_SETUP_TEST_ROOT-}
 COMPLETED=()
 PLANNED_RULES=()
-NEED_UDEV_RELOAD=0
 CREATED_GROUP=0
 ADDED_MEMBERSHIP=0
 INSTALLED_RULES=()
@@ -307,7 +306,6 @@ install_rule() {
     rm -f "$tmp"
     fail "could not install rule $dest"
   }
-  NEED_UDEV_RELOAD=1
   INSTALLED_RULES+=("$dest")
   COMPLETED+=("installed $dest")
 }
@@ -319,10 +317,9 @@ for spec in "${PLANNED_RULES[@]}"; do
   install_rule "$dest" "$src"
 done
 
-if [ "$NEED_UDEV_RELOAD" -eq 1 ]; then
-  udevadm control --reload-rules || fail 'udevadm control --reload-rules failed after installing rules'
-  COMPLETED+=("reloaded udev rules")
-fi
+# Reload on every apply so retrying a failed reload also works with identical files.
+udevadm control --reload-rules || fail 'udevadm control --reload-rules failed; retry this command after resolving the udev error'
+COMPLETED+=("reloaded udev rules")
 
 printf 'setup finished for device=%s user=%s\n' "$DEVICE" "$USER_NAME"
 if [ "$CREATED_GROUP" -eq 1 ]; then
@@ -336,9 +333,7 @@ if [ "${#INSTALLED_RULES[@]}" -gt 0 ]; then
     printf 'installed %s\n' "$dest"
   done
 fi
-if [ "$NEED_UDEV_RELOAD" -eq 1 ]; then
-  printf 'reloaded udev rules (did not trigger all devices)\n'
-fi
+printf 'reloaded udev rules (did not trigger all devices)\n'
 printf 'log out and back in so group membership applies, then reconnect the selected device\n'
 printf 'in RngKit, select Refresh sources and run a short Start/Stop collection\n'
 printf 'permission setup cannot certify hardware I/O\n'

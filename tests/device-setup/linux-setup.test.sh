@@ -188,10 +188,11 @@ else
   fail_test 'installed bitbabbler rule matches source' 'content mismatch'
 fi
 
-# Second apply is a no-op for identical rules.
+# Second apply preserves identical rules and membership, but reloads udev.
 : >"$ROOT/var/log/commands"
 expect_ok 'repeat apply identical' "$ROOT" --device bitbabbler --user alice
-if grep -q groupadd "$ROOT/var/log/commands" || grep -q udevadm "$ROOT/var/log/commands"; then
+if grep -Eq 'groupadd|usermod' "$ROOT/var/log/commands" ||
+  ! grep -q 'udevadm control --reload-rules' "$ROOT/var/log/commands"; then
   fail_test 'repeat apply identical' "unexpected commands: $(cat "$ROOT/var/log/commands")"
 else
   pass 'repeat apply identical'
@@ -272,6 +273,18 @@ if printf '%s' "$out" | grep -q 'completed before failure' &&
   pass 'partial failure is reported'
 else
   fail_test 'partial failure is reported' "$out"
+fi
+
+# Retrying a failed reload must fail again until udev recovers, then reload.
+expect_fail 'repeat failed reload' 'udevadm control --reload-rules failed' "$ROOT6" --device bitbabbler --user alice
+rm -f "$ROOT6/fail-udevadm"
+: >"$ROOT6/var/log/commands"
+expect_ok 'retry reload after recovery' "$ROOT6" --device bitbabbler --user alice
+if grep -q 'udevadm control --reload-rules' "$ROOT6/var/log/commands" &&
+  ! grep -Eq 'groupadd|usermod' "$ROOT6/var/log/commands"; then
+  pass 'retry reload preserves existing setup'
+else
+  fail_test 'retry reload preserves existing setup' "$(cat "$ROOT6/var/log/commands")"
 fi
 
 # Missing libusb fails BitBabbler, not TrueRNG3.

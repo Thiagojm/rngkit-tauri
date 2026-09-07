@@ -20,8 +20,10 @@ On Windows 7 or later the device often uses the built-in CDC / `usbser`
 driver. If Windows does not bind it:
 
 1. Plug in the TrueRNG3 (`04d8:f5fe` only; not TrueRNGpro).
-2. Right-click `windows/truerng3/TrueRNG.inf` and install it. Keep the paired
-   `truerng.cat` in the same folder.
+2. Obtain the manufacturer package from https://github.com/euler357/TrueRNG
+   (`Windows_Drivers`) and follow its instructions. Download it in advance for
+   offline setup and keep the INF/CAT together. These files are not included in
+   this kit because redistribution permission has not been established.
 3. Do not bind WinUSB to this device.
 4. Unplug and reconnect, then use Refresh sources in Collect.
 
@@ -33,8 +35,8 @@ serial access; RngKit sets serial parameters.
 From `linux/`:
 
 ```text
-./setup-rng-devices.sh --check --device bitbabbler --user YOUR_USER
-sudo ./setup-rng-devices.sh --device bitbabbler --user YOUR_USER
+bash setup-rng-devices.sh --check --device bitbabbler --user YOUR_USER
+sudo bash setup-rng-devices.sh --device bitbabbler --user YOUR_USER
 ```
 
 Replace `bitbabbler` with `truerng3` or `both` as needed. `--help` and
@@ -42,6 +44,9 @@ Replace `bitbabbler` with `truerng3` or `both` as needed. `--help` and
 
 Then log out and back in, reconnect the selected device, Refresh sources, and
 run a short Start/Stop collection.
+
+Every apply reloads udev rules, including when the files already match. If reload
+fails, resolve the reported udev problem and repeat the same apply command.
 
 Rollback only what the helper reported: remove installed
 `/etc/udev/rules.d/60-rngkit-*.rules` files, drop the user from group `rngkit`

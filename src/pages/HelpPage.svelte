@@ -205,13 +205,15 @@
               </p>
               <ol class="list-decimal space-y-2 ps-5">
                 <li>
-                  Use the manufacturer TrueRNG INF and CAT in the device-setup
-                  kit for <code>04d8:f5fe</code>. You need permission to install
-                  them. RngKit never starts the installer.
+                  Plug in the TrueRNG3 and select Refresh sources first. The
+                  Windows driver package is not included in this kit.
                 </li>
                 <li>
-                  Plug in the TrueRNG3 and install that CDC / usbser driver for
-                  this device only.
+                  If the device is unavailable, obtain the manufacturer package
+                  from <code>https://github.com/euler357/TrueRNG</code>
+                  (Windows_Drivers) and follow its installation instructions for this
+                  device only. Download it in advance for offline setup. Keep the
+                  INF and CAT together. RngKit never starts the installer.
                 </li>
                 <li>
                   Unplug the device, wait a moment, then plug it in again.
@@ -236,8 +238,8 @@
                 <li>
                   From the kit <code>linux</code> folder, run
                   <code
-                    >./setup-rng-devices.sh --check --device bitbabbler --user
-                    YOUR_USER</code
+                    >bash setup-rng-devices.sh --check --device bitbabbler
+                    --user YOUR_USER</code
                   >
                   then the same command with sudo and without
                   <code>--check</code>.
@@ -279,7 +281,7 @@
                 <li>
                   From the kit <code>linux</code> folder, run
                   <code
-                    >./setup-rng-devices.sh --check --device truerng3 --user
+                    >bash setup-rng-devices.sh --check --device truerng3 --user
                     YOUR_USER</code
                   >
                   then the same command with sudo and without
