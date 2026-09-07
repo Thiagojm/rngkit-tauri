@@ -71,14 +71,9 @@ reachable `rngkit-core` revision
 
 ## Evidence and open validation
 
-- **CI repair (2026-09-05):** run `33981573132` at `ec5153c` failed in the
-  Combine integration test on both runners. Assertions now compare canonical
-  path components and exclude the authorized outcome from the snapshot path
-  prohibition. Local Windows locked all-target Rust tests passed. Remote Ubuntu
-  tests passed in run `34002210623`, which then exposed an unused Windows-only
-  test import in Clippy; that import now has `cfg(windows)`. Windows exposed
-  the same short/long-path mismatch in Security; Security/Collection outcome
-  assertions now compare canonical components too. New CI pending.
+- **Remote CI:** Windows/Ubuntu repair run `34002608469` and numeric-validation
+  run `34072410813` passed. Collect layout run `34077305701` is in progress
+  as of this maintenance pass (2026-09-06).
 - **Complete deterministic validation (2026-08-25, Windows):** npm install,
   format/check/lint, 27 Vitest files/106 tests, Playwright 5/5, Vite build,
   locked Rust fmt/check/test/clippy/doc, Rust 1.85 check/test, locked no-bundle
@@ -96,7 +91,7 @@ reachable `rngkit-core` revision
   window, hardware/unplug behavior, and native 100k/1M chart interaction.
 - **Still unverified:** native hardware/unplug behavior, native 100k/1M chart
   rendering, scaling/screen-reader sampling, NSIS uninstall/session-data
-  preservation, signing/publication, and remote CI. Physical hardware and NSIS
+  preservation, and signing/publication. Physical hardware and NSIS
   are outside this Phase 6 authorization.
 
 ## Sources of truth
@@ -105,22 +100,14 @@ reachable `rngkit-core` revision
   current contracts and remaining gates are summarized here and in
   `docs/DECISIONS.md` and `TODO.md`.
 
-## Session validation update (2026-09-06)
+## Current Collect behavior and acceptance (2026-09-06)
 
-- Numeric edits remain local until Start, which validates both fields and awaits
-  backend acceptance before collection. Invalid settings open a corrective dialog.
-  Terminal folder/restart actions now live in Session.
-- Validation: focused component and mocked-IPC tests, frontend type checks/lint,
-  production build, and the existing five Edge E2E tests passed. E2E covers the
-  shell, not native collection IPC. The user reported successful native acceptance of all these changes on 2026-09-06.
-
-## Collect layout update (2026-09-06)
-
-- Monitoring uses compact metrics, an inline status, and tighter spacing; source
-  and session-name details live in Session. Chart sizing rules are unchanged.
-- Browser development scenarios Ready/Collecting/Completed fit Monitoring inside
-  a 1280x800 viewport (bottom about 778px, previously 990px for Completed), with
-  unchanged chart height and no width reduction. Session may still scroll.
-  At 800x600 the stacked layout scrolls without horizontal overflow.
-- Frontend checks, 117 unit tests, production build and five Edge E2E tests passed.
-  The layout measurements use simulated browser state; native acceptance is pending.
+- Numeric drafts validate on Start: positive whole bits divisible by 8 and positive
+  whole seconds, within u32. Invalid input opens a corrective dialog; Start awaits
+  backend acceptance. Terminal actions and source/session details live in Session.
+- Compact Monitoring fits 1280x800 in browser Ready/Collecting/Completed scenarios
+  without reducing the chart. Smaller windows and expanded content still scroll.
+- Frontend checks, 117 unit tests, build and five Edge E2E tests passed. Browser
+  layout measurements use simulated state. The user reported successful native
+  validation of numeric rules/actions and approved the compact layout.
+- Next proposed product work: revise Help copy and presentation; design pending.

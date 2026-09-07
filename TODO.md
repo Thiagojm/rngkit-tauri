@@ -2,58 +2,34 @@
 
 ## Done
 
-- Approved Windows-first design/plan and `rngkit-core` Gate A at `7c79814`.
-- Original v1 and six workflow-improvement phases: Tauri/Svelte shell,
-  collection/chart/close policy, unified standalone Reports, mixed CSV Combine,
-  task-oriented Help, security/accessibility, CI, and unsigned NSIS baseline.
-- Artifact feedback and report-chart phases: flat legacy concatenation,
-  contextual charts, typed one-shot outcomes, backend-known folder actions,
-  and complete frontend/browser validation.
-- Terminal collection outcomes display immediately; recorded charts use local
-  clock context; selected `.bin` basenames remain authoritative; user-visible
-  Windows paths omit `\\?\`. The app pins reachable core revision `3dc969d`.
-- Complete frontend, locked Rust, Rust 1.85, E2E, build, and no-bundle release
-  validation passed. Native PseudoRNG Collect and manifest-backed Reports smoke
-  validation passed, including immediate outcome and normalized full paths.
-- Help, diagnostics, README, and revision tests now track the exact locked
-  `rngkit-core` revision from Cargo sources.
-- Corrected Combine outcome-path assertions behind CI run `33981573132`:
-  canonical component containment and privacy checks outside the allowed outcome.
-  Remote Ubuntu tests passed in run `34002210623`; its subsequent Clippy
-  failure is corrected by gating the Windows-only test import. Windows exposed
-  the same path-alias assertion in Security; Security/Collection now canonicalize
-  outcome paths too. New CI pending.
-
-## In progress
-
-- Remaining native acceptance variants are tracked below.
+- Windows-first v1 and six workflow phases: Collect/chart/close policy, standalone
+  Reports, mixed CSV Combine, Help, accessibility, CI and unsigned NSIS baseline.
+- Artifact outcomes, local-clock report charts, selected-BIN basename and Windows
+  path display fixes; exact rngkit-core revision `3dc969d` remains pinned.
+- Historical full frontend/Rust/MSRV/no-bundle validation and native PseudoRNG
+  Collect/manifest Reports smoke passed; detailed evidence is in PROJECT_CONTEXT.
+- Cross-platform outcome-path CI repair passed (`34002608469`); numeric-validation
+  CI passed (`34072410813`). Numeric rules and Session actions are user-validated.
+- Compact Monitoring preserves chart size; browser checks and user visual approval
+  passed. Layout CI run `34077305701` is in progress at this maintenance pass.
 
 ## Next steps
 
-1. Validate flat/standalone legacy/current and BIN-only report variants,
-   selected-BIN chart title, mixed cross-folder Combine, artifact open actions,
-   Help/theme/keyboard/minimum-window behavior, and Excel chart rendering.
+1. Design a Help copy/layout refresh: current numeric rules, Session actions,
+   clearer report bundle requirements, less jargon, and readable visual hierarchy.
+   The user requested assessment; design and implementation are not yet approved.
+2. Confirm completion of the Collect layout CI run.
+3. Validate standalone legacy/current and BIN-only Reports, selected-BIN chart title,
+   cross-folder mixed Combine/derived reports, artifact actions and Excel charts.
+4. Complete native Help/theme/keyboard/minimum-window and scaling acceptance.
 
 ## Backlog
 
-- NSIS uninstall and session-data preservation; signing, releases, updater,
-  Store, Linux packaging, and deployment remain outside current authority.
-- Native hardware Collect, unplug-during-read, other devices/folds, and Linux
-  physical behavior.
-- Native 100k/1M chart interaction; native Reports/Combine dialogs; Windows
-  scaling and screen-reader sampling; symlink inspect privilege coverage.
-- TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
+- Native hardware collection, unplug-during-read, other devices/folds and Linux
+  physical behavior; opt-in only.
+- Native 100k/1M chart interaction, Reports/Combine dialogs, screen-reader sampling
+  and symlink inspection privilege coverage.
+- NSIS uninstall/session-data preservation, signing, releases, updater, Store,
+  Linux packaging and deployment; separate authorization remains required.
+- TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume and statistical
   inference remain non-goals or future work.
-
-## Session validation follow-up (2026-09-06)
-
-- Implemented Start-time numeric validation with explanatory dialogs and moved
-  terminal session actions into Session. Focused regression tests passed.
-- The user reported successful native validation of all these changes on 2026-09-06.
-
-## Collect layout follow-up (2026-09-06)
-
-- Implemented compact Monitoring and moved source/session details into Session.
-  Browser measurements confirm Monitoring fits 1280x800 without reducing the chart;
-  minimum-window scrolling and existing frontend tests passed.
-- Next: user native validation of the compact layout at the default window size.
