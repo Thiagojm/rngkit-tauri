@@ -50,6 +50,9 @@
     "homepage": "https://github.com/Thiagojm/rngkit-tauri",
     "license": "MIT",
     "licenseFile": "../LICENSE",
+    "resources": {
+      "resources/device-setup": "device-setup"
+    },
     "createUpdaterArtifacts": false,
     "icon": [
       "icons/32x32.png",

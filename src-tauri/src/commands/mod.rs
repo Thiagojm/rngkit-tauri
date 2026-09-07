@@ -2,6 +2,7 @@
 
 pub mod collection;
 pub mod combine;
+pub mod device_setup;
 pub mod dialogs;
 pub mod discovery;
 pub mod lifecycle;

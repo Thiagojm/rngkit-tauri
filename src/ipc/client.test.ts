@@ -18,6 +18,7 @@ import {
   openReport,
   openReportFolder,
   openReportWorkingFolder,
+  openDeviceSetupFolder,
   openSessionFolder,
   removeCombineInput,
   replaceReport,
@@ -55,6 +56,7 @@ describe('ipc client', () => {
     expect(dump).not.toMatch(/COM\d/i);
     expect(dump).not.toMatch(/[A-Za-z]:\\/);
     expect(dump).not.toMatch(/\/dev\//);
+    await expect(openDeviceSetupFolder()).resolves.toEqual(snapshot);
   });
 
   it('invokes get_app_state inside Tauri', async () => {
@@ -241,6 +243,7 @@ describe('ipc client', () => {
     await openCollectionWorkingFolder();
     await openReportWorkingFolder();
     await openCombineWorkingFolder();
+    await openDeviceSetupFolder();
     await acknowledgeOutcome(7);
     for (const command of [
       'open_session_folder',
@@ -250,6 +253,7 @@ describe('ipc client', () => {
       'open_collection_working_folder',
       'open_report_working_folder',
       'open_combine_working_folder',
+      'open_device_setup_folder',
     ]) {
       const encoded = JSON.stringify(payloads[command] ?? {});
       expect(encoded).not.toMatch(/path/i);

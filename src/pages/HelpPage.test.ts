@@ -1,12 +1,28 @@
+import { mockIPC, clearMocks } from '@tauri-apps/api/mocks';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { copy } from '../copy';
 import { ERROR_CODES } from '../ipc/types';
 import { RNGKIT_CORE_REVISION } from '../library-revision';
+import { MOCK_SCENARIOS } from '../state/mock-scenarios';
 import { appState } from '../state/app-state.svelte';
 import HelpPage from './HelpPage.svelte';
 
+function setTauri(enabled: boolean): void {
+  const host = globalThis as { isTauri?: boolean };
+  if (enabled) {
+    host.isTauri = true;
+  } else {
+    delete host.isTauri;
+  }
+}
+
 describe('HelpPage', () => {
+  afterEach(() => {
+    setTauri(false);
+    clearMocks();
+  });
+
   it('presents the approved task-oriented workflow', () => {
     render(HelpPage);
 
@@ -80,8 +96,8 @@ describe('HelpPage', () => {
     );
     expect(screen.queryByText(/bundled helper/i)).toBeNull();
     expect(
-      screen.queryByRole('button', { name: /open device setup folder/i }),
-    ).toBeNull();
+      screen.getByRole('button', { name: copy.openDeviceSetupFolder }),
+    ).toBeTruthy();
   });
   it('provides topic links and current collection guidance', async () => {
     render(HelpPage);
@@ -133,5 +149,64 @@ describe('HelpPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Choosing a source' }),
     ).toBeTruthy();
+  });
+
+  it('opens the device setup folder without a path and shows pending then success', async () => {
+    setTauri(true);
+    let finish: ((value: unknown) => void) | undefined;
+    mockIPC((cmd, payload) => {
+      expect(cmd).toBe('open_device_setup_folder');
+      expect(JSON.stringify(payload ?? {})).not.toMatch(/path/i);
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+    render(HelpPage);
+    const button = screen.getByRole('button', {
+      name: copy.openDeviceSetupFolder,
+    });
+    await fireEvent.click(button);
+    await waitFor(() => {
+      expect(button).toHaveProperty('disabled', true);
+    });
+    expect(screen.getByText(copy.openingDeviceSetupFolder)).toBeTruthy();
+    finish?.(MOCK_SCENARIOS.idle);
+    await waitFor(() => {
+      expect(button).toHaveProperty('disabled', false);
+    });
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('shows safe error feedback when the device setup folder cannot open', async () => {
+    setTauri(true);
+    mockIPC(() => {
+      throw {
+        code: 'invalid_configuration',
+        message: 'The device setup folder is unavailable.',
+        recovery: 'Reinstall RngKit if the support files are missing.',
+      };
+    });
+    render(HelpPage);
+    await fireEvent.click(
+      screen.getByRole('button', { name: copy.openDeviceSetupFolder }),
+    );
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain(
+      'The device setup folder is unavailable.',
+    );
+    expect(alert.textContent).toContain(
+      'Reinstall RngKit if the support files are missing.',
+    );
+  });
+
+  it('does not open a folder from the browser mock', async () => {
+    render(HelpPage);
+    await fireEvent.click(
+      screen.getByRole('button', { name: copy.openDeviceSetupFolder }),
+    );
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: copy.openDeviceSetupFolder }),
+    ).toHaveProperty('disabled', false);
   });
 });

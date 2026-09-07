@@ -1,9 +1,29 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
+  import Button from '../components/ui/Button.svelte';
   import { copy, FOLD_OPTIONS } from '../copy';
+  import { openDeviceSetupFolder, safeErrorMessage } from '../ipc/client';
   import { ERROR_CODES } from '../ipc/types';
   import { RNGKIT_CORE_REVISION } from '../library-revision';
   import { appState } from '../state/app-state.svelte';
+
+  let openingSetup = $state(false);
+  let setupError = $state<string | null>(null);
+
+  async function openSetupFolder(): Promise<void> {
+    if (openingSetup) {
+      return;
+    }
+    openingSetup = true;
+    setupError = null;
+    try {
+      await openDeviceSetupFolder();
+    } catch (error) {
+      setupError = safeErrorMessage(error);
+    } finally {
+      openingSetup = false;
+    }
+  }
 
   const topics = [
     ['help-quick-start', 'Quick start'],
@@ -126,8 +146,20 @@
         <p>
           Windows and Ubuntu-Debian guides are both here; the app does not pick
           one from your operating system. Linux hardware acceptance is pending.
-          RngKit never starts an installer, terminal, or script.
+          RngKit never starts an installer, terminal, or script. Open the device
+          setup folder to find the kit files, then run those tools yourself.
         </p>
+        <div class="w-max">
+          <Button
+            disabled={openingSetup}
+            disabledReason={openingSetup ? copy.openingDeviceSetupFolder : ''}
+            onclick={() => void openSetupFolder()}
+            >{copy.openDeviceSetupFolder}</Button
+          >
+        </div>
+        {#if setupError}
+          <p class="text-sm text-status-failed" role="alert">{setupError}</p>
+        {/if}
         <div class="space-y-2">
           <details>
             <summary>Windows / BitBabbler</summary>

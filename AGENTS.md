@@ -69,8 +69,8 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   `choose_report_input`, `generate_report`, `replace_report`, `open_report`,
   `open_report_folder`, `open_report_working_folder`,
   `choose_csv_inputs`, `remove_combine_input`, `clear_combine_inputs`,
-  `create_derived`, `generate_derived`, `open_derived_folder`, and
-  `open_combine_working_folder`. Default start
+  `create_derived`, `generate_derived`, `open_derived_folder`,
+  `open_combine_working_folder`, and `open_device_setup_folder`. Default start
   does not enumerate hardware. Default
   tests inject fake discovery and fake sources and do not call
   `rngkit_sources::discover()` or open hardware. Native startup performs one

@@ -25,6 +25,8 @@ export const copy = {
   entropySource: 'Entropy source',
   refreshSources: 'Refresh sources',
   deviceSetup: 'Device setup',
+  openDeviceSetupFolder: 'Open device setup folder',
+  openingDeviceSetupFolder: 'Opening the device setup folder…',
   chooseFolder: 'Choose folder',
   openWorkingFolder: 'Open working folder',
   start: 'Start',

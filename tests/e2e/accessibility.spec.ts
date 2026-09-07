@@ -201,6 +201,11 @@ test('Collect Device setup focuses Help and disclosures stay usable', async ({
   await expect(
     page.getByRole('heading', { name: copy.deviceSetup, exact: true }),
   ).toBeFocused();
+  await expect(
+    page.getByRole('button', { name: copy.openDeviceSetupFolder }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: copy.openDeviceSetupFolder }).click();
+  await expect(page.getByRole('alert')).toHaveCount(0);
 
   for (const theme of ['light', 'dark']) {
     await page.getByLabel(copy.theme.legend).selectOption(theme);

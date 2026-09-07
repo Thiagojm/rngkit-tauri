@@ -302,6 +302,13 @@ export async function openCombineWorkingFolder(): Promise<AppSnapshot> {
   return getAppState();
 }
 
+export async function openDeviceSetupFolder(): Promise<AppSnapshot> {
+  if (isTauri()) {
+    return invoke<AppSnapshot>('open_device_setup_folder');
+  }
+  return getAppState();
+}
+
 function formatMockDiagnostics(snapshot: AppSnapshot): string {
   if (snapshot.diagnostics.length === 0) {
     return 'RngKit diagnostics\nNo diagnostic records.';

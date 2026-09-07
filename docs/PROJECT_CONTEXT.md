@@ -118,27 +118,14 @@ reachable `rngkit-core` revision
   passed, including keyboard focus, both themes and enlarged text. The user
   reported successful native Help acceptance on 2026-09-07.
 
-## Device setup Phase 1 (2026-09-07)
+## Device setup (2026-09-07)
 
 - Choosing a source includes Device setup with four native disclosures
-  (Windows/Ubuntu-Debian × BitBabbler/TrueRNG3). Both platforms stay visible.
-  Linux hardware acceptance is pending. PseudoRNG needs no setup; RDSEED depends
-  on the CPU. Collect has a compact Device setup control next to Refresh sources;
-  it opens Help, focuses that heading, and does not persist the jump. Collection
-  state is unchanged. No folder button or new IPC yet.
-- Frontend checks: 27 Vitest files/124 tests, types, lint, format, and 7 Edge
-  E2E tests passed. The user reported successful native Collect-link, Help
-  focus/disclosures, and return-to-collection acceptance on 2026-09-07. This does
-  not establish driver installation.
-
-## Device setup Phase 2 (2026-09-07)
-
-- Kit lives at `src-tauri/resources/device-setup/` and is not installer-registered
-  yet. Windows: Zadig 2.9 (Authenticode Akeo Consulting) and TrueRNG INF/CAT for
-  `04d8:f5fe` only. Linux: `setup-rng-devices.sh` plus narrow udev rules. Hashes
-  and notices are in `SOURCES.md`. The app still never launches tools.
-- Isolated helper tests passed on this Windows host via Git Bash; symlink and
-  mode-666 cases were skipped here and remain for Ubuntu CI. `udevadm` rule
-  matching on real hardware was not available. Native Ubuntu/Debian hardware
-  acceptance remains pending. The user reported successful kit review on
-  2026-09-07. This does not establish driver installation or folder packaging.
+  (Windows/Ubuntu-Debian × BitBabbler/TrueRNG3). Collect jumps to that heading
+  through transient in-memory intent. The kit is `src-tauri/resources/device-setup/`,
+  mapped to bundled `device-setup`. Help opens it with no-argument
+  `open_device_setup_folder`; the app never launches Zadig, INF install, or the
+  Linux helper. Frontend 27 files/127 tests, 7 Edge E2E, locked Rust/MSRV, and
+  clippy passed. The user reported successful native folder-open on 2026-09-07.
+  Packaged NSIS inclusion and installed-app access are not established. Linux
+  hardware acceptance remains pending. This does not establish driver installation.

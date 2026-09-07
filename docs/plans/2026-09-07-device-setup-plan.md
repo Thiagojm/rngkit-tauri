@@ -1,8 +1,8 @@
 # Device setup implementation plan
 
-Status: Approved by the user on 2026-09-07. Phase 1 complete after native
-user acceptance. Phase 2 complete after kit review. Phase 3 remains
-unauthorized.
+Status: Approved by the user on 2026-09-07. Phases 1–3 complete after user
+acceptance, including native folder-open. Installer build, installed-app
+checks, and Linux hardware validation remain unauthorized.
 Design: `docs/specs/2026-09-07-device-setup-design.md` (approved).
 
 ## Execution contract

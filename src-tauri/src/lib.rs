@@ -65,6 +65,9 @@ pub fn run() {
                 restore_window_geometry(&window, &prefs);
             }
             app.manage(DialogHandle::live(app.handle().clone()));
+            app.manage(commands::device_setup::DeviceSetupHandle::live(
+                app.handle().clone(),
+            ));
             app.manage(prefs);
             Ok(())
         })
@@ -134,6 +137,7 @@ pub fn run() {
         commands::combine::generate_derived,
         commands::combine::open_derived_folder,
         commands::combine::open_combine_working_folder,
+        commands::device_setup::open_device_setup_folder,
         commands::dev::apply_dev_scenario,
     ]);
 
@@ -168,6 +172,7 @@ pub fn run() {
         commands::combine::generate_derived,
         commands::combine::open_derived_folder,
         commands::combine::open_combine_working_folder,
+        commands::device_setup::open_device_setup_folder,
     ]);
 
     builder

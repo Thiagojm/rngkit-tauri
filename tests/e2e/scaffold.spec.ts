@@ -77,6 +77,7 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   expect(js).toContain('create_derived');
   expect(js).toContain('generate_derived');
   expect(js).toContain('open_derived_folder');
+  expect(js).toContain('open_device_setup_folder');
   expect(js).not.toContain('apply_dev_scenario');
   await expect.poll(() => bodyBackground(page)).toBe(LIGHT_SURFACE);
 
@@ -143,8 +144,8 @@ test('renders the four-destination shell without hardware or mock-scenario contr
     await expect(page.getByText(summary, { exact: true })).toBeVisible();
   }
   await expect(
-    page.getByRole('button', { name: /Open device setup folder/i }),
-  ).toHaveCount(0);
+    page.getByRole('button', { name: copy.openDeviceSetupFolder }),
+  ).toBeVisible();
 
   await page.getByLabel(copy.theme.legend).selectOption('dark');
   await expect.poll(() => bodyBackground(page)).toBe(DARK_SURFACE);

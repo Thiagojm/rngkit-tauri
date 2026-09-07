@@ -16,14 +16,16 @@
 - User-reported manual acceptance (2026-09-07): refreshed Help and Reports/Combine,
   including standalone current/legacy CSV/BIN, cross-folder combinations and XLSX
   titles, timestamps and charts in Excel.
-- Device setup Phase 1: offline Help disclosures and Collect navigation; automated
-  checks passed and the user reported successful native acceptance.
-- Device setup Phase 2 kit and Linux helper implemented; user kit review passed
-  on 2026-09-07.
+- Device setup Phases 1–3: Help disclosures, Collect navigation, reviewed kit
+  and Linux helper, and Help opens `device-setup` through
+  `open_device_setup_folder`. User-reported native acceptance on 2026-09-07
+  covers guidance, kit review, and folder-open. Packaged NSIS inclusion and
+  installed-app access are not established.
 
 ## Next steps
 
-1. Implement Device setup Phase 3: open_device_setup_folder and packaging.
+1. Separately authorize NSIS packaging so the kit can be inspected in the
+   installer and opened from an installed app, offline, as a standard user.
 2. Separately authorize Ubuntu/Debian hardware validation (both devices after
    login/reconnect, repeated setup, unrelated FTDI unchanged) when a host exists.
 3. Confirm completion of the Collect layout CI run.

@@ -21,6 +21,7 @@ const LIB_RS: &str = include_str!("../src/lib.rs");
 const OPEN_SESSION: &str = include_str!("../src/commands/collection.rs");
 const OPEN_REPORTS: &str = include_str!("../src/commands/reports.rs");
 const OPEN_COMBINE: &str = include_str!("../src/commands/combine.rs");
+const OPEN_DEVICE_SETUP: &str = include_str!("../src/commands/device_setup.rs");
 const REPORTS_IMPL: &str = include_str!("../src/reports/mod.rs");
 const CI_WORKFLOW: &str = include_str!("../../.github/workflows/ci.yml");
 
@@ -193,6 +194,10 @@ fn production_csp_is_restricted_and_debug_command_is_cfg_gated() {
     );
     assert_eq!(conf["app"]["windows"][0]["minWidth"], 800);
     assert_eq!(conf["app"]["windows"][0]["minHeight"], 600);
+    assert_eq!(
+        conf["bundle"]["resources"]["resources/device-setup"],
+        "device-setup"
+    );
 
     let release = LIB_RS
         .split("#[cfg(not(debug_assertions))]")
@@ -207,7 +212,7 @@ fn production_csp_is_restricted_and_debug_command_is_cfg_gated() {
 
 #[test]
 fn open_commands_accept_no_frontend_path() {
-    for source in [OPEN_SESSION, OPEN_REPORTS, OPEN_COMBINE] {
+    for source in [OPEN_SESSION, OPEN_REPORTS, OPEN_COMBINE, OPEN_DEVICE_SETUP] {
         for name in [
             "open_session_folder",
             "open_report",
@@ -216,6 +221,7 @@ fn open_commands_accept_no_frontend_path() {
             "open_collection_working_folder",
             "open_report_working_folder",
             "open_combine_working_folder",
+            "open_device_setup_folder",
         ] {
             if !source.contains(&format!("pub fn {name}")) {
                 continue;
@@ -233,6 +239,10 @@ fn open_commands_accept_no_frontend_path() {
     assert!(
         !REPORTS_IMPL.contains("Command::new(\"cmd\")"),
         "artifact opening must not invoke a command interpreter"
+    );
+    assert!(
+        !OPEN_DEVICE_SETUP.contains("Command::new(\"cmd\")"),
+        "device-setup opening must not invoke a command interpreter"
     );
 }
 

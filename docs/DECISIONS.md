@@ -28,8 +28,8 @@ All decisions are accepted. Material changes return to design review.
   `stop_and_exit`, `choose_report_input`, `generate_report`, `replace_report`,
   `open_report`, `open_report_folder`, `choose_csv_inputs`,
   `remove_combine_input`, `clear_combine_inputs`, `create_derived`,
-  `generate_derived`, and `open_derived_folder`. `apply_dev_scenario` is
-  debug-only.
+  `generate_derived`, `open_derived_folder`, and `open_device_setup_folder`.
+  `apply_dev_scenario` is debug-only.
 - Per-session events expose numeric cumulative Z and safe labels only. The
   frontend retains every committed point; zero and `+/-1.96` are visual guides.
 
@@ -146,4 +146,5 @@ All decisions are accepted. Material changes return to design review.
   `setup-rng-devices.sh --device bitbabbler|truerng3|both --user USER` with
   `--check` and `--help`. Apply requires root; check/help do not. Test roots are
   refused while elevated. The app never launches the helper, Zadig, or INF
-  install. No folder command or installer resource mapping until Phase 3.
+  install. Help opens that directory through no-argument `open_device_setup_folder`.
+  Bundle resources map `resources/device-setup` to `device-setup`.
