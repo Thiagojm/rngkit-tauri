@@ -23,6 +23,8 @@
   review corrections; installed-app access is not established.
 - Review fixes: explicit Bash commands, retryable udev reload, and exclusion of
   TrueRNG INF/CAT pending documented redistribution permission.
+- CI run `34144732140` SC1007 fix: explicit empty CDPATH in both Bash scripts.
+  Local syntax/helper checks passed; remote confirmation pending commit/push.
 
 ## Next steps
 

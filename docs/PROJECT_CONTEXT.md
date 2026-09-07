@@ -141,3 +141,7 @@ reachable `rngkit-core` revision
   check/lint/format and Bash syntax/isolated helper tests passed. The helper
   regression covers repeated reload failure and successful recovery. Git Bash
   skipped symlink/mode cases; this is not native Linux or hardware evidence.
+- CI run `34144732140` at `3798ac8` passed Ubuntu helper tests but failed
+  ShellCheck SC1007 on two `CDPATH= cd` expressions. Both now use `CDPATH=''`.
+  Local Bash syntax/helper checks passed; ShellCheck is unavailable locally,
+  and remote confirmation requires a new committed/pushed revision.

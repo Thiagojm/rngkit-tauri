@@ -3,7 +3,7 @@
 # Invoke manually. The application never starts this script.
 set -eu
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 GROUP_NAME=rngkit
 RULE_MODE=644
 BITB_RULE_NAME=60-rngkit-bitbabbler.rules

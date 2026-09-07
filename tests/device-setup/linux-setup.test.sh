@@ -3,7 +3,7 @@
 # Never touches host /etc, groups, or kernel modules.
 set -eu
 
-HELPER=$(CDPATH= cd -- "$(dirname -- "$0")/../../src-tauri/resources/device-setup/linux" && pwd -P)/setup-rng-devices.sh
+HELPER=$(CDPATH='' cd -- "$(dirname -- "$0")/../../src-tauri/resources/device-setup/linux" && pwd -P)/setup-rng-devices.sh
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 FAILS=0
