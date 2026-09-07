@@ -15,13 +15,13 @@
 
 ## Next steps
 
-1. Design a Help copy/layout refresh: current numeric rules, Session actions,
-   clearer report bundle requirements, less jargon, and readable visual hierarchy.
-   The user requested assessment; design and implementation are not yet approved.
+1. Validate the refreshed Help in the native app: topic links, disclosures, both
+   themes and minimum window. Implementation and browser checks passed.
 2. Confirm completion of the Collect layout CI run.
 3. Validate standalone legacy/current and BIN-only Reports, selected-BIN chart title,
    cross-folder mixed Combine/derived reports, artifact actions and Excel charts.
 4. Complete native Help/theme/keyboard/minimum-window and scaling acceptance.
+5. Add instalation guide and files for Windows/ Linux for Bitbabbler and TrueRNG3. Try to include them in the NSIS installer.
 
 ## Backlog
 

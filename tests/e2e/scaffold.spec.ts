@@ -118,6 +118,11 @@ test('renders the four-destination shell without hardware or mock-scenario contr
   ]) {
     await expect(page.getByRole('heading', { name: heading })).toBeVisible();
   }
+  await page
+    .getByText('Show file formats, version, and diagnostic codes', {
+      exact: true,
+    })
+    .click();
   await expect(
     page.getByText(/new Combine output uses schema 2/),
   ).toBeVisible();

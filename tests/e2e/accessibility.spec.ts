@@ -128,3 +128,63 @@ test.describe('browser high-DPI emulation', () => {
     expect(overflow).toBe(false);
   });
 });
+
+test('Help topic links, disclosures and responsive layouts are accessible', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  for (const width of [1280, 800]) {
+    await page.setViewportSize({ width, height: width === 1280 ? 800 : 600 });
+    for (const theme of ['light', 'dark']) {
+      await page.getByLabel(copy.theme.legend).selectOption(theme);
+      const link = page.getByRole('link', {
+        name: 'Common problems',
+        exact: true,
+      });
+      await link.focus();
+      await page.keyboard.press('Enter');
+      await expect(
+        page.getByRole('heading', { name: 'Common problems', exact: true }),
+      ).toBeFocused();
+      const summary = page
+        .locator('summary')
+        .filter({ hasText: 'A report bundle is incomplete' });
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      await expect(summary.locator('..')).toHaveAttribute('open', '');
+      await expect(
+        summary.locator('..').getByText(/Restore the missing original file/),
+      ).toBeVisible();
+      await page.keyboard.press('Space');
+      await expect(summary.locator('..')).not.toHaveAttribute('open', '');
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth + 1,
+        ),
+      ).toBe(false);
+    }
+  }
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '150%';
+  });
+  await page
+    .getByRole('link', {
+      name: 'File formats and version details',
+      exact: true,
+    })
+    .click();
+  await page
+    .getByText('Show file formats, version, and diagnostic codes', {
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByText('unexpected_failure', { exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth + 1,
+    ),
+  ).toBe(false);
+});

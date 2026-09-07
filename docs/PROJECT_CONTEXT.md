@@ -110,4 +110,8 @@ reachable `rngkit-core` revision
 - Frontend checks, 117 unit tests, build and five Edge E2E tests passed. Browser
   layout measurements use simulated state. The user reported successful native
   validation of numeric rules/actions and approved the compact layout.
-- Next proposed product work: revise Help copy and presentation; design pending.
+- Help refresh implemented: responsive topic navigation, Quick start card, current
+  numeric/Session guidance, and native troubleshooting/reference disclosures.
+  Two Help unit tests, six Edge E2E tests, types/build and visual browser checks
+  passed, including keyboard focus, both themes and enlarged text. Native Help
+  acceptance remains pending.

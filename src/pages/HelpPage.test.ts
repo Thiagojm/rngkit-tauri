@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import { copy } from '../copy';
 import { ERROR_CODES } from '../ipc/types';
@@ -31,7 +31,9 @@ describe('HelpPage', () => {
       ),
     ).toBeTruthy();
     expect(screen.getByText(RNGKIT_CORE_REVISION)).toBeTruthy();
-    expect(screen.getByText(/Nothing is selected automatically/i)).toBeTruthy();
+    expect(
+      screen.getAllByText(/Nothing is selected automatically/i).length,
+    ).toBeGreaterThan(0);
     expect(
       screen.getByText(
         /searches for sources automatically when the app opens/i,
@@ -42,11 +44,8 @@ describe('HelpPage', () => {
     expect(screen.getByText(/YYYYMMDDTHHMMSS/)).toBeTruthy();
     expect(
       screen.getAllByText(/BIN-only reports use sample numbers/i),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(screen.getByText(/outcome dialog appears once/i)).toBeTruthy();
-    expect(
-      screen.getByText(/Open working folder in Collect, Reports, or Combine/i),
-    ).toBeTruthy();
     expect(
       screen.getByText(/canonical flat legacy concatenation CSV/i),
     ).toBeTruthy();
@@ -54,11 +53,35 @@ describe('HelpPage', () => {
     for (const code of ERROR_CODES) {
       expect(screen.getByText(code)).toBeTruthy();
     }
-    expect(
-      screen.getByText(/all actions are available from the keyboard/i),
-    ).toBeTruthy();
     expect(screen.queryByText(/p-value/i)).toBeNull();
     expect(screen.queryByText(/desktop side/i)).toBeNull();
     expect(screen.queryByText(/authoritative/i)).toBeNull();
+  });
+  it('provides topic links and current collection guidance', async () => {
+    render(HelpPage);
+    const links = screen
+      .getByRole('navigation', { name: 'On this page' })
+      .querySelectorAll('a');
+    expect(links).toHaveLength(8);
+    for (const link of links) {
+      const target = document.querySelector(link.getAttribute('href')!);
+      expect(target?.textContent?.trim()).toBe(link.textContent?.trim());
+    }
+    const heading = screen.getByRole('heading', { name: 'Creating reports' });
+    heading.scrollIntoView = () => {};
+    await fireEvent.click(
+      screen.getByRole('link', { name: 'Creating reports' }),
+    );
+    expect(document.activeElement).toBe(heading);
+    expect(
+      screen.getByText(/positive whole number divisible by 8/),
+    ).toBeTruthy();
+    expect(screen.getByText(/enter whole seconds greater than 0/)).toBeTruthy();
+    expect(screen.getByText(/collection has not started/)).toBeTruthy();
+    expect(
+      screen.getAllByText(/restore.*missing original file/i).length,
+    ).toBeGreaterThan(0);
+    for (const detail of document.querySelectorAll('details'))
+      expect(detail.open).toBe(false);
   });
 });

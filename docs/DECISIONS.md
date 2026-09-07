@@ -125,3 +125,12 @@ All decisions are accepted. Material changes return to design review.
 - Fit Monitoring at the default 1280x800 viewport by compacting surrounding UI,
   preserving chart dimensions and readable metric labels. Source/session details
   belong in Session. Smaller windows and expanded errors retain normal scrolling.
+
+## Help presentation (2026-09-06)
+
+- Preserve the eight task topics and descriptive statistical boundary. Everyday
+  instructions remain expanded; troubleshooting and technical reference use native
+  disclosures. Topic links focus their headings. Navigation moves above the article
+  below 56rem available width; colors use existing theme tokens.
+- Explain numeric validation and complete-bundle requirements in user language;
+  never recommend deleting manifests to bypass report validation.
