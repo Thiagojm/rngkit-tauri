@@ -109,3 +109,13 @@ All decisions are accepted. Material changes return to design review.
   WebView2. Uninstall/session-data preservation, SmartScreen, signing,
   publication, updater, release, and deployment remain unverified or separate
   approvals.
+
+## Session configuration validation (2026-09-06)
+
+- Session keeps numeric edits as local drafts until Start. Start requires a positive
+  integer sample size divisible by 8 and a positive integer interval in seconds,
+  both within the backend u32 range. Invalid input opens an explanatory dialog
+  and returns focus to the field; collection never uses stale accepted settings.
+- Start awaits both backend setting updates and aborts on failure or supersession.
+- Open session folder and Start another session are in Session, retaining their
+  existing availability rules. Native interactive acceptance remains pending.

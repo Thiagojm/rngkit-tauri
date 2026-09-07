@@ -44,3 +44,10 @@
   scaling and screen-reader sampling; symlink inspect privilege coverage.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume, and statistical
   inference remain non-goals or future work.
+
+## Session validation follow-up (2026-09-06)
+
+- Implemented Start-time numeric validation with explanatory dialogs and moved
+  terminal session actions into Session. Focused regression tests passed.
+- Next: native acceptance of invalid bits/interval, correction and Start, and
+  terminal action placement. No hardware collection is required for this check.

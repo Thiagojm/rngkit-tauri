@@ -647,6 +647,43 @@ export class AppViewState {
     }
   }
 
+  async startWithSettings(bits: number, seconds: number): Promise<void> {
+    if (
+      !Number.isInteger(bits) ||
+      bits < 8 ||
+      bits % 8 !== 0 ||
+      bits > 4294967295 ||
+      !Number.isInteger(seconds) ||
+      seconds <= 0 ||
+      seconds > 4294967295
+    )
+      return;
+    if (!this.controls.start.enabled) return;
+    if (!isTauri()) {
+      this.setSampleBits(bits);
+      this.setIntervalSeconds(seconds);
+      this.startCollection();
+      return;
+    }
+    const generation = ++this.loadGeneration;
+    const fallback = $state.snapshot(this.snapshot);
+    try {
+      await setSampleBits(bits);
+      if (generation !== this.loadGeneration) return;
+      const snapshot = await setIntervalSeconds(seconds);
+      if (generation !== this.loadGeneration) return;
+      this.reconcile(snapshot);
+      if (this.controls.start.enabled) this.startCollection();
+    } catch (error) {
+      await this.reconcileCommandFailure(
+        generation,
+        fallback,
+        error,
+        'preferencesWarning',
+      );
+    }
+  }
+
   startCollection(): void {
     if (isTauri()) {
       const generation = ++this.loadGeneration;

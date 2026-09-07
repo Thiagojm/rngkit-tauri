@@ -104,3 +104,12 @@ reachable `rngkit-core` revision
 - Approved historical artifacts remain under `docs/specs/` and `docs/plans/`;
   current contracts and remaining gates are summarized here and in
   `docs/DECISIONS.md` and `TODO.md`.
+
+## Session validation update (2026-09-06)
+
+- Numeric edits remain local until Start, which validates both fields and awaits
+  backend acceptance before collection. Invalid settings open a corrective dialog.
+  Terminal folder/restart actions now live in Session.
+- Validation: focused component and mocked-IPC tests, frontend type checks/lint,
+  production build, and the existing five Edge E2E tests passed. E2E covers the
+  shell, not native collection IPC; native acceptance of this change is pending.

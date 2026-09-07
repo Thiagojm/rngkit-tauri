@@ -1507,7 +1507,7 @@ fn start_reason(state: CollectionState) -> &'static str {
         CollectionState::Collecting => "A session is already collecting.",
         CollectionState::Stopping => "Wait for the current session to finish stopping.",
         CollectionState::Completed | CollectionState::Failed => {
-            "Use Start another session from the summary."
+            "Use Start another session in Session."
         }
     }
 }

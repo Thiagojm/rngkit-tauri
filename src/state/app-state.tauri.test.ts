@@ -218,3 +218,42 @@ describe('AppViewState native collection channel', () => {
     expect(state.snapshot.collection.state).toBe('failed');
   });
 });
+
+it('waits for both settings and never starts after a rejected configuration', async () => {
+  const ready = structuredClone(MOCK_SCENARIOS.ready);
+  let acceptBits!: (snapshot: AppSnapshot) => void;
+  const setSampleBits = vi.fn(
+    () =>
+      new Promise<AppSnapshot>((resolve) => {
+        acceptBits = resolve;
+      }),
+  );
+  const setIntervalSeconds = vi.fn(async () => {
+    throw new Error('Rejected');
+  });
+  const startCollection = vi.fn();
+  vi.resetModules();
+  vi.doMock('@tauri-apps/api/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@tauri-apps/api/core')>()),
+    isTauri: () => true,
+  }));
+  vi.doMock('../ipc/client', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('../ipc/client')>()),
+    setSampleBits,
+    setIntervalSeconds,
+    startCollection,
+    getAppState: vi.fn(async () => ready),
+  }));
+  const { AppViewState } = await import('./app-state.svelte');
+  const state = new AppViewState();
+  await state.hydrate();
+  await state.startWithSettings(2049, 1);
+  expect(setSampleBits).not.toHaveBeenCalled();
+  const pending = state.startWithSettings(2048, 3);
+  expect(setIntervalSeconds).not.toHaveBeenCalled();
+  expect(startCollection).not.toHaveBeenCalled();
+  acceptBits(ready);
+  await pending;
+  expect(setIntervalSeconds).toHaveBeenCalledWith(3);
+  expect(startCollection).not.toHaveBeenCalled();
+});

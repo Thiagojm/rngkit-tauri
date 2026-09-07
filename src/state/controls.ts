@@ -26,7 +26,7 @@ function startReason(state: CollectionState): string {
       return 'Wait for the current session to finish stopping.';
     case 'completed':
     case 'failed':
-      return 'Use Start another session from the summary.';
+      return 'Use Start another session in Session.';
   }
 }
 

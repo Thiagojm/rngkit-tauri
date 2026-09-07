@@ -24,10 +24,14 @@ describe('SessionConfiguration', () => {
     render(CollectPage);
 
     const bits = screen.getByLabelText(copy.sampleBits);
-    await fireEvent.change(bits, { target: { value: '7' } });
+    await fireEvent.input(bits, { target: { value: '7' } });
 
     expect(appState.snapshot.collection.sampleBits).toBe(2048);
-    expect(appState.snapshot.preferencesWarning).toMatch(/multiple of 8/i);
+    await fireEvent.click(screen.getByRole('button', { name: copy.start }));
+    expect(
+      screen.getByRole('dialog', { name: 'Cannot start collection' }),
+    ).toBeTruthy();
+    expect(appState.snapshot.collection.state).toBe('ready');
     expect(screen.getByRole('button', { name: copy.start })).toHaveProperty(
       'disabled',
       false,
@@ -38,13 +42,14 @@ describe('SessionConfiguration', () => {
     appState.applyScenario('ready');
     render(CollectPage);
 
-    await fireEvent.change(screen.getByLabelText(copy.sampleInterval), {
+    await fireEvent.input(screen.getByLabelText(copy.sampleInterval), {
       target: { value: '2' },
     });
     await fireEvent.change(screen.getByLabelText(copy.fold.label), {
       target: { value: '2' },
     });
 
+    await fireEvent.click(screen.getByRole('button', { name: copy.start }));
     expect(appState.snapshot.collection.intervalSeconds).toBe(2);
     expect(appState.snapshot.collection.fold).toBe(2);
   });
