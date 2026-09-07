@@ -85,10 +85,12 @@ reachable `rngkit-core` revision
   manifest previewed and generated/replaced XLSX, and its outcome displayed a
   normal `D:\...` path without the internal `\\?\` prefix. The manifest stored
   local offset `-03:00`. The workbook was not visually inspected in Excel.
-- **Remaining native acceptance:** flat/standalone legacy/current and BIN-only
-  report variants, selected-BIN chart title, cross-folder mixed Combine and
-  derived report, artifact open/folder actions, Help/theme/keyboard/minimum
-  window, hardware/unplug behavior, and native 100k/1M chart interaction.
+- **User-reported manual acceptance (2026-09-07):** refreshed Help and Reports/Combine
+  work correctly, including standalone current/legacy CSV/BIN, cross-folder
+  combinations and XLSX titles, timestamps and charts inspected in Excel.
+  This is user-reported evidence, without a separate execution log.
+- **Remaining native acceptance:** artifact open/folder actions, hardware/unplug
+  behavior, native scaling and native 100k/1M chart interaction.
 - **Still unverified:** native hardware/unplug behavior, native 100k/1M chart
   rendering, scaling/screen-reader sampling, NSIS uninstall/session-data
   preservation, and signing/publication. Physical hardware and NSIS
@@ -113,5 +115,5 @@ reachable `rngkit-core` revision
 - Help refresh implemented: responsive topic navigation, Quick start card, current
   numeric/Session guidance, and native troubleshooting/reference disclosures.
   Two Help unit tests, six Edge E2E tests, types/build and visual browser checks
-  passed, including keyboard focus, both themes and enlarged text. Native Help
-  acceptance remains pending.
+  passed, including keyboard focus, both themes and enlarged text. The user
+  reported successful native Help acceptance on 2026-09-07.

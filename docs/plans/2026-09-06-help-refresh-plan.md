@@ -1,6 +1,6 @@
 # Help refresh implementation plan
 
-Status: Implemented; automated/browser checks passed, user native acceptance pending.
+Status: Complete; automated/browser checks passed and the user reported successful native acceptance on 2026-09-07.
 
 ## Goal and scope
 
