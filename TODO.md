@@ -18,12 +18,16 @@
   titles, timestamps and charts in Excel.
 - Device setup Phase 1: offline Help disclosures and Collect navigation; automated
   checks passed and the user reported successful native acceptance.
+- Device setup Phase 2 kit and Linux helper implemented; user kit review passed
+  on 2026-09-07.
 
 ## Next steps
 
-1. Implement Device setup Phase 2: reviewed offline kit and Linux helper.
-2. Confirm completion of the Collect layout CI run.
-3. Validate remaining artifact open/folder actions and native scaling acceptance.
+1. Implement Device setup Phase 3: open_device_setup_folder and packaging.
+2. Separately authorize Ubuntu/Debian hardware validation (both devices after
+   login/reconnect, repeated setup, unrelated FTDI unchanged) when a host exists.
+3. Confirm completion of the Collect layout CI run.
+4. Validate remaining artifact open/folder actions and native scaling acceptance.
 
 ## Backlog
 

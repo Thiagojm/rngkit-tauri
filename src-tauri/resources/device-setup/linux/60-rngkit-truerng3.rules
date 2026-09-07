@@ -1,0 +1,4 @@
+# RngKit TrueRNG3 tty access and device-scoped ModemManager exclusion.
+# Match only USB ID 04d8:f5fe. Do not create a shared symlink.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="04d8", ATTR{idProduct}=="f5fe", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f5fe", ENV{ID_MM_PORT_IGNORE}="1", MODE="0660", GROUP="rngkit"

@@ -70,6 +70,15 @@ jobs:
       - run: npm run lint
       - run: npm run test:unit -- --run
 
+      - name: Check Linux device-setup helper
+        if: runner.os == 'Linux'
+        run: |
+          bash -n src-tauri/resources/device-setup/linux/setup-rng-devices.sh
+          bash tests/device-setup/linux-setup.test.sh
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck src-tauri/resources/device-setup/linux/setup-rng-devices.sh tests/device-setup/linux-setup.test.sh
+          fi
+
       - name: Install Playwright Chromium
         if: runner.os == 'Linux'
         run: npx playwright install --with-deps chromium

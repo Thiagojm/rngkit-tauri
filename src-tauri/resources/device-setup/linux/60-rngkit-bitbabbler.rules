@@ -1,0 +1,3 @@
+# RngKit BitBabbler USB access.
+# Match only USB device nodes 0403:7840. Do not match other FTDI devices.
+SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="7840", MODE="0660", GROUP="rngkit"

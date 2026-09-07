@@ -129,4 +129,16 @@ reachable `rngkit-core` revision
 - Frontend checks: 27 Vitest files/124 tests, types, lint, format, and 7 Edge
   E2E tests passed. The user reported successful native Collect-link, Help
   focus/disclosures, and return-to-collection acceptance on 2026-09-07. This does
-  not establish driver installation. Phase 2 is the next authorized slice.
+  not establish driver installation.
+
+## Device setup Phase 2 (2026-09-07)
+
+- Kit lives at `src-tauri/resources/device-setup/` and is not installer-registered
+  yet. Windows: Zadig 2.9 (Authenticode Akeo Consulting) and TrueRNG INF/CAT for
+  `04d8:f5fe` only. Linux: `setup-rng-devices.sh` plus narrow udev rules. Hashes
+  and notices are in `SOURCES.md`. The app still never launches tools.
+- Isolated helper tests passed on this Windows host via Git Bash; symlink and
+  mode-666 cases were skipped here and remain for Ubuntu CI. `udevadm` rule
+  matching on real hardware was not available. Native Ubuntu/Debian hardware
+  acceptance remains pending. The user reported successful kit review on
+  2026-09-07. This does not establish driver installation or folder packaging.

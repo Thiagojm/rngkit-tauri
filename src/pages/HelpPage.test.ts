@@ -75,6 +75,9 @@ describe('HelpPage', () => {
     ).toBeGreaterThan(0);
     expect(screen.getByText(/ATTR\{idVendor\}=="0403"/)).toBeTruthy();
     expect(screen.getByText(/ENV\{ID_MM_DEVICE_IGNORE\}="1"/)).toBeTruthy();
+    expect(screen.getAllByText(/setup-rng-devices\.sh/).length).toBeGreaterThan(
+      0,
+    );
     expect(screen.queryByText(/bundled helper/i)).toBeNull();
     expect(
       screen.queryByRole('button', { name: /open device setup folder/i }),

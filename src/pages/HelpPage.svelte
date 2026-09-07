@@ -139,8 +139,9 @@
               </p>
               <ol class="list-decimal space-y-2 ps-5">
                 <li>
-                  Get Zadig from the official Zadig site. You need permission to
-                  change the driver for this device.
+                  Use <code>zadig-2.9.exe</code> from the device-setup kit, or the
+                  same version from the official Zadig site. You need permission to
+                  change the driver for this device. RngKit never starts Zadig.
                 </li>
                 <li>
                   Plug in the BitBabbler. In Zadig, enable Options → List All
@@ -172,8 +173,9 @@
               </p>
               <ol class="list-decimal space-y-2 ps-5">
                 <li>
-                  Obtain the manufacturer TrueRNG Windows driver (INF and CAT)
-                  for <code>04d8:f5fe</code>. You need permission to install it.
+                  Use the manufacturer TrueRNG INF and CAT in the device-setup
+                  kit for <code>04d8:f5fe</code>. You need permission to install
+                  them. RngKit never starts the installer.
                 </li>
                 <li>
                   Plug in the TrueRNG3 and install that CDC / usbser driver for
@@ -194,37 +196,39 @@
             <div class="space-y-3 p-4">
               <p>
                 These steps only set USB permissions on Ubuntu or Debian with
-                systemd/udev. Linux hardware acceptance is pending.
+                systemd/udev. Linux hardware acceptance is pending. The
+                device-setup kit includes <code>setup-rng-devices.sh</code>. Run
+                it yourself; RngKit never starts it.
               </p>
               <ol class="list-decimal space-y-2 ps-5">
                 <li>
-                  Create a dedicated <code>rngkit</code> group and add your login
-                  user. Do not grant world access.
+                  From the kit <code>linux</code> folder, run
+                  <code
+                    >./setup-rng-devices.sh --check --device bitbabbler --user
+                    YOUR_USER</code
+                  >
+                  then the same command with sudo and without
+                  <code>--check</code>.
                 </li>
                 <li>
-                  Install a regular, root-owned file
-                  <code>/etc/udev/rules.d/60-rngkit-bitbabbler.rules</code> with mode
-                  0644. Do not change permissions on the rules directory. If that
-                  name already exists with different contents, leave it and stop.
-                  Identical contents need no change.
+                  The helper creates group <code>rngkit</code> if needed, adds
+                  your login user, and installs
+                  <code>/etc/udev/rules.d/60-rngkit-bitbabbler.rules</code> as a
+                  root-owned 0644 file. It does not chmod the rules directory,
+                  overwrite a different existing file, unload
+                  <code>ftdi_sio</code>, or trigger every device.
                 </li>
                 <li>
-                  Match only USB device nodes <code>0403:7840</code> with group
-                  <code>rngkit</code> and mode 0660:
+                  The rule matches only USB device nodes <code>0403:7840</code>
+                  with group <code>rngkit</code> and mode 0660:
                   <code
                     >{'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="7840", MODE="0660", GROUP="rngkit"'}</code
-                  >. Do not unload or blacklist <code>ftdi_sio</code>.
+                  >.
                 </li>
                 <li>
-                  Reload rules with
-                  <code>udevadm control --reload-rules</code>. Do not trigger
-                  every device. Log out and back in, then reconnect the
-                  BitBabbler.
-                </li>
-                <li>
-                  In Collect, select <strong>Refresh sources</strong>, choose
-                  the BitBabbler, then Start and Stop to confirm a session is
-                  saved.
+                  Log out and back in, reconnect the BitBabbler, then in Collect
+                  select <strong>Refresh sources</strong>, choose the
+                  BitBabbler, and Start and Stop to confirm a session is saved.
                 </li>
               </ol>
             </div>
@@ -236,40 +240,40 @@
                 These steps only set tty permissions on Ubuntu or Debian with
                 systemd/udev. Linux hardware acceptance is pending. RngKit
                 configures serial settings; do not add OS serial hooks or a
-                shared symlink.
+                shared symlink. Run <code>setup-rng-devices.sh</code> yourself; RngKit
+                never starts it.
               </p>
               <ol class="list-decimal space-y-2 ps-5">
                 <li>
-                  Create a dedicated <code>rngkit</code> group and add your login
-                  user. Do not grant world access.
-                </li>
-                <li>
-                  Install a regular, root-owned file
-                  <code>/etc/udev/rules.d/60-rngkit-truerng3.rules</code> with mode
-                  0644. Do not change permissions on the rules directory. If that
-                  name already exists with different contents, leave it and stop.
-                </li>
-                <li>
-                  Ignore ModemManager only for USB ID <code>04d8:f5fe</code>,
-                  and match only that device's tty nodes with group
-                  <code>rngkit</code> and mode 0660:
+                  From the kit <code>linux</code> folder, run
                   <code
-                    >{'ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f5fe", ENV{ID_MM_DEVICE_IGNORE}="1"'}</code
+                    >./setup-rng-devices.sh --check --device truerng3 --user
+                    YOUR_USER</code
+                  >
+                  then the same command with sudo and without
+                  <code>--check</code>.
+                </li>
+                <li>
+                  The helper uses group <code>rngkit</code> and installs
+                  <code>/etc/udev/rules.d/60-rngkit-truerng3.rules</code> as a root-owned
+                  0644 file. It leaves a different existing file unchanged.
+                </li>
+                <li>
+                  The rule ignores ModemManager only for USB ID
+                  <code>04d8:f5fe</code> and matches only that device's tty
+                  nodes with group <code>rngkit</code> and mode 0660:
+                  <code
+                    >{'ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="04d8", ATTR{idProduct}=="f5fe", ENV{ID_MM_DEVICE_IGNORE}="1"'}</code
                   >
                   and
                   <code
-                    >{'SUBSYSTEM=="tty", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f5fe", MODE="0660", GROUP="rngkit"'}</code
+                    >{'SUBSYSTEM=="tty", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="f5fe", ENV{ID_MM_PORT_IGNORE}="1", MODE="0660", GROUP="rngkit"'}</code
                   >.
                 </li>
                 <li>
-                  Reload rules with
-                  <code>udevadm control --reload-rules</code>. Do not trigger
-                  every device. Log out and back in, then reconnect the
-                  TrueRNG3.
-                </li>
-                <li>
-                  In Collect, select <strong>Refresh sources</strong>, choose
-                  TrueRNG, then Start and Stop to confirm a session is saved.
+                  Log out and back in, reconnect the TrueRNG3, then in Collect
+                  select <strong>Refresh sources</strong>, choose TrueRNG, and
+                  Start and Stop to confirm a session is saved.
                 </li>
               </ol>
             </div>

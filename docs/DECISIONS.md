@@ -142,4 +142,8 @@ All decisions are accepted. Material changes return to design review.
   `04d8:f5fe`. Ubuntu/Debian uses group `rngkit`, mode 0660, app-owned rule names,
   and device-scoped ModemManager ignore; do not unload `ftdi_sio` or grant world
   access. Collect may jump to that heading through transient in-memory intent.
-  Phase 1 has no folder command, bundled helper, or installer action.
+- The offline kit is `src-tauri/resources/device-setup/`. The Linux helper is
+  `setup-rng-devices.sh --device bitbabbler|truerng3|both --user USER` with
+  `--check` and `--help`. Apply requires root; check/help do not. Test roots are
+  refused while elevated. The app never launches the helper, Zadig, or INF
+  install. No folder command or installer resource mapping until Phase 3.

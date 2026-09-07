@@ -1,0 +1,13 @@
+Zadig corresponding source
+==========================
+
+Zadig 2.9 is redistributed under GPL-3.0 / LGPL-3.0 terms from libwdi.
+
+Corresponding source for this binary is the libwdi v1.5.1 release tag:
+
+  https://github.com/pbatard/libwdi/tree/v1.5.1
+  git clone https://github.com/pbatard/libwdi.git
+  git checkout v1.5.1
+
+Zadig lives in the examples directory of that tree. COPYING and COPYING-LGPL
+in this folder are the license texts from that tag.
