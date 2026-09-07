@@ -127,5 +127,8 @@ reachable `rngkit-core` revision
   `open_device_setup_folder`; the app never launches Zadig, INF install, or the
   Linux helper. Frontend 27 files/127 tests, 7 Edge E2E, locked Rust/MSRV, and
   clippy passed. The user reported successful native folder-open on 2026-09-07.
-  Packaged NSIS inclusion and installed-app access are not established. Linux
-  hardware acceptance remains pending. This does not establish driver installation.
+  Unsigned NSIS `RngKit_0.1.0_x64-setup.exe` includes the twelve kit files; Zadig,
+  INF, and CAT hashes match `SOURCES.md`. The installer copies them under
+  `$INSTDIR\device-setup` and does not run Zadig, INF install, or the Linux helper.
+  Installed-app offline folder-open is not established. Linux hardware acceptance
+  remains pending. This does not establish driver installation.
