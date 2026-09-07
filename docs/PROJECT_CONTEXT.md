@@ -112,4 +112,15 @@ reachable `rngkit-core` revision
   Terminal folder/restart actions now live in Session.
 - Validation: focused component and mocked-IPC tests, frontend type checks/lint,
   production build, and the existing five Edge E2E tests passed. E2E covers the
-  shell, not native collection IPC; native acceptance of this change is pending.
+  shell, not native collection IPC. The user reported successful native acceptance of all these changes on 2026-09-06.
+
+## Collect layout update (2026-09-06)
+
+- Monitoring uses compact metrics, an inline status, and tighter spacing; source
+  and session-name details live in Session. Chart sizing rules are unchanged.
+- Browser development scenarios Ready/Collecting/Completed fit Monitoring inside
+  a 1280x800 viewport (bottom about 778px, previously 990px for Completed), with
+  unchanged chart height and no width reduction. Session may still scroll.
+  At 800x600 the stacked layout scrolls without horizontal overflow.
+- Frontend checks, 117 unit tests, production build and five Edge E2E tests passed.
+  The layout measurements use simulated browser state; native acceptance is pending.

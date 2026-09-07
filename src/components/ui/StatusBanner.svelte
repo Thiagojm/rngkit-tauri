@@ -6,10 +6,12 @@
     state,
     label,
     detail,
+    compact = false,
   }: {
     state: CollectionState;
     label: string;
     detail?: string | null;
+    compact?: boolean;
   } = $props();
 
   const icon = $derived(
@@ -26,7 +28,9 @@
 </script>
 
 <div
-  class="flex items-start gap-3 rounded-md border border-border bg-surface-muted px-4 py-3"
+  class="flex items-start gap-3 rounded-md border border-border bg-surface-muted {compact
+    ? 'px-2 py-1'
+    : 'px-4 py-3'}"
   role="status"
   aria-live="polite"
 >

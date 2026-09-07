@@ -1,8 +1,18 @@
 <script lang="ts">
-  let { label, value }: { label: string; value: string } = $props();
+  let {
+    label,
+    value,
+    compact = false,
+  }: { label: string; value: string; compact?: boolean } = $props();
 </script>
 
-<div class="rounded-md border border-border bg-surface px-3 py-3">
+<div
+  class="min-w-0 rounded-md border border-border bg-surface px-3 {compact
+    ? 'py-1'
+    : 'py-3'}"
+>
   <p class="text-sm text-text-muted">{label}</p>
-  <p class="mt-1 font-mono text-lg text-text">{value}</p>
+  <p class="break-words font-mono text-lg text-text {compact ? '' : 'mt-1'}">
+    {value}
+  </p>
 </div>

@@ -118,4 +118,10 @@ All decisions are accepted. Material changes return to design review.
   and returns focus to the field; collection never uses stale accepted settings.
 - Start awaits both backend setting updates and aborts on failure or supersession.
 - Open session folder and Start another session are in Session, retaining their
-  existing availability rules. Native interactive acceptance remains pending.
+  existing availability rules. The user reported successful native acceptance on 2026-09-06.
+
+## Collect layout (2026-09-06)
+
+- Fit Monitoring at the default 1280x800 viewport by compacting surrounding UI,
+  preserving chart dimensions and readable metric labels. Source/session details
+  belong in Session. Smaller windows and expanded errors retain normal scrolling.

@@ -49,5 +49,11 @@
 
 - Implemented Start-time numeric validation with explanatory dialogs and moved
   terminal session actions into Session. Focused regression tests passed.
-- Next: native acceptance of invalid bits/interval, correction and Start, and
-  terminal action placement. No hardware collection is required for this check.
+- The user reported successful native validation of all these changes on 2026-09-06.
+
+## Collect layout follow-up (2026-09-06)
+
+- Implemented compact Monitoring and moved source/session details into Session.
+  Browser measurements confirm Monitoring fits 1280x800 without reducing the chart;
+  minimum-window scrolling and existing frontend tests passed.
+- Next: user native validation of the compact layout at the default window size.

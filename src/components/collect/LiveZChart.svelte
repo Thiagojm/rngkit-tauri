@@ -65,7 +65,7 @@
 </script>
 
 <section
-  class="flex min-w-0 flex-col gap-3 rounded-md border border-border bg-surface-muted p-3"
+  class="flex min-w-0 flex-col gap-2 rounded-md border border-border bg-surface-muted p-3"
   aria-labelledby="live-z-heading"
 >
   <div class="flex flex-wrap items-start gap-3">

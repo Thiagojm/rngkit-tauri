@@ -7,6 +7,7 @@
   import Field from '../ui/Field.svelte';
   import CollectionControls from './CollectionControls.svelte';
   import SourceDiscovery from './SourceDiscovery.svelte';
+  import SessionSummary from './SessionSummary.svelte';
 
   const collection = $derived(appState.snapshot.collection);
   const controls = $derived(appState.controls);
@@ -65,7 +66,7 @@
 </script>
 
 <section
-  class="flex flex-col gap-4 rounded-md border border-border p-4"
+  class="flex min-w-0 flex-col gap-3 rounded-md border border-border p-4"
   aria-labelledby="collect-config"
 >
   <h2 id="collect-config" class="text-lg font-medium">Session</h2>
@@ -137,6 +138,7 @@
     >
   </Field>
   <CollectionControls onStart={start} {submitting} />
+  <SessionSummary />
 </section>
 
 <Dialog

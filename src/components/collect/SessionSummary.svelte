@@ -21,5 +21,7 @@
   </p>
 {/if}
 {#if collection.sessionStem}
-  <p class="font-mono text-sm text-text-muted">{collection.sessionStem}</p>
+  <p class="break-all font-mono text-sm text-text-muted">
+    {collection.sessionStem}
+  </p>
 {/if}
