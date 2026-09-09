@@ -72,8 +72,8 @@ reachable `rngkit-core` revision
 ## Evidence and open validation
 
 - **Remote CI:** Windows/Ubuntu repair run `34002608469` and numeric-validation
-  run `34072410813` passed. Collect layout run `34077305701` is in progress
-  as of this maintenance pass (2026-09-06).
+  run `34072410813` passed. Collect layout run `34077305701` and current-HEAD
+  run `34147766895` (`ad5b35f`) passed, verified on 2026-09-09.
 - **Complete deterministic validation (2026-08-25, Windows):** npm install,
   format/check/lint, 27 Vitest files/106 tests, Playwright 5/5, Vite build,
   locked Rust fmt/check/test/clippy/doc, Rust 1.85 check/test, locked no-bundle
@@ -89,18 +89,10 @@ reachable `rngkit-core` revision
   work correctly, including standalone current/legacy CSV/BIN, cross-folder
   combinations and XLSX titles, timestamps and charts inspected in Excel.
   This is user-reported evidence, without a separate execution log.
-- **Remaining native acceptance:** artifact open/folder actions, hardware/unplug
-  behavior, native scaling and native 100k/1M chart interaction.
-- **Still unverified:** native hardware/unplug behavior, native 100k/1M chart
-  rendering, scaling/screen-reader sampling, NSIS uninstall/session-data
-  preservation, and signing/publication. Physical hardware and NSIS
-  are outside this Phase 6 authorization.
-
-## Sources of truth
-
-- Approved historical artifacts remain under `docs/specs/` and `docs/plans/`;
-  current contracts and remaining gates are summarized here and in
-  `docs/DECISIONS.md` and `TODO.md`.
+- **Remaining acceptance:** other artifact open/folder actions, hardware/unplug,
+  native 100k/1M chart rendering/interaction, scaling/screen-reader sampling,
+  NSIS uninstall/session-data preservation, and signing/publication. Hardware
+  remains opt-in; the later authorized NSIS evidence is below.
 
 ## Current Collect behavior and acceptance (2026-09-06)
 
@@ -127,21 +119,30 @@ reachable `rngkit-core` revision
   `open_device_setup_folder`; the app never launches Zadig, INF install, or the
   Linux helper. Frontend 27 files/127 tests, 7 Edge E2E, locked Rust/MSRV, and
   clippy passed. The user reported successful native folder-open on 2026-09-07.
-  The earlier unsigned NSIS `RngKit_0.1.0_x64-setup.exe` included twelve kit files;
-  that packaging evidence predates the review corrections below. It copied them under
-  `$INSTDIR\device-setup` and does not run Zadig, INF install, or the Linux helper.
-  Installed-app offline folder-open is not established. Linux hardware acceptance
-  remains pending. This does not establish driver installation.
+  Linux hardware acceptance remains pending; folder-open does not establish
+  driver installation.
 - Review corrections: Linux instructions invoke Bash explicitly; every apply
   reloads udev so a failed reload can be retried with identical rules. TrueRNG
   INF/CAT are removed pending documented redistribution permission; Help points
-  to the manufacturer package for advance download. Existing installer artifacts
-  are stale and must be rebuilt and reinspected under separate authorization.
+  to the manufacturer package for advance download.
 - Review-fix validation: seven Help unit tests, seven Edge E2E tests, frontend
   check/lint/format and Bash syntax/isolated helper tests passed. The helper
   regression covers repeated reload failure and successful recovery. Git Bash
   skipped symlink/mode cases; this is not native Linux or hardware evidence.
-- CI run `34144732140` at `3798ac8` passed Ubuntu helper tests but failed
-  ShellCheck SC1007 on two `CDPATH= cd` expressions. Both now use `CDPATH=''`.
-  Local Bash syntax/helper checks passed; ShellCheck is unavailable locally,
-  and remote confirmation requires a new committed/pushed revision.
+- Both Bash scripts use `CDPATH=''` to fix SC1007. Local syntax/helper checks
+  and remote run `34147766895` at `ad5b35f` passed (verified 2026-09-09).
+
+## Corrected NSIS validation (2026-09-09)
+
+- Locked NSIS build at `ad5b35f` passed. The unsigned installer is 270227918 bytes;
+  SHA-256 `f4ba396e1dcb32ade4d6d327c7cd65e9156fb7a649b318638e0ab031e1c409ad`.
+- 7-Zip inspection/extraction verified ten kit files matching source hashes,
+  no TrueRNG INF/CAT, and embedded offline WebView2. Generated NSIS installs
+  per user and does not launch device setup tools.
+- Non-elevated `/S /UPDATE` installation exited 0. Installed executable matches
+  the extracted NSIS payload; ten installed kit files match source hashes.
+  Native Collect → Device setup → Open device setup folder opened Explorer at
+  `%LOCALAPPDATA%\RngKit\device-setup`. Network remained connected.
+- Update preserves the previous installation's TrueRNG INF/CAT as extra files;
+  exclusion from the new payload does not remove old copies. Cleanup policy,
+  disconnected installation/folder-open, and clean-machine WebView2 remain pending.

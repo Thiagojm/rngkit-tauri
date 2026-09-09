@@ -11,7 +11,7 @@
 - Cross-platform outcome-path CI repair passed (`34002608469`); numeric-validation
   CI passed (`34072410813`). Numeric rules and Session actions are user-validated.
 - Compact Monitoring preserves chart size; browser checks and user visual approval
-  passed. Layout CI run `34077305701` is in progress at this maintenance pass.
+  passed. Layout CI run `34077305701` passed (verified 2026-09-09).
 
 - User-reported manual acceptance (2026-09-07): refreshed Help and Reports/Combine,
   including standalone current/legacy CSV/BIN, cross-folder combinations and XLSX
@@ -19,23 +19,24 @@
 - Device setup Phases 1–3: Help disclosures, Collect navigation, reviewed kit
   and Linux helper, and Help opens `device-setup` through
   `open_device_setup_folder`. User-reported native acceptance on 2026-09-07
-  covers guidance, kit review, and folder-open. Earlier NSIS inspection predates
-  review corrections; installed-app access is not established.
+  covers guidance, kit review, and folder-open.
 - Review fixes: explicit Bash commands, retryable udev reload, and exclusion of
   TrueRNG INF/CAT pending documented redistribution permission.
 - CI run `34144732140` SC1007 fix: explicit empty CDPATH in both Bash scripts.
-  Local syntax/helper checks passed; remote confirmation pending commit/push.
+  Local syntax/helper checks and remote run `34147766895` at `ad5b35f` passed.
+- Corrected unsigned NSIS rebuilt/inspected 2026-09-09: ten matching kit files,
+  no TrueRNG INF/CAT, offline WebView2 embedded. Non-elevated update and native
+  Help folder-open passed with network connected; old INF/CAT copies remain.
 
 ## Next steps
 
-1. Establish TrueRNG package redistribution permission before bundling INF/CAT.
-   Separately authorize rebuilding/inspecting the corrected unsigned NSIS,
-   then installing it and opening the kit from
-   Help offline, as a standard user. Setup must not run implicitly.
+1. Validate installation and Help kit access with network disconnected as a
+   standard user; clean-machine WebView2 remains untested. Decide cleanup of old
+   TrueRNG INF/CAT retained by updates. Redistribution permission is required
+   only before including them again. Setup must not run implicitly.
 2. Separately authorize Ubuntu/Debian hardware validation (both devices after
    login/reconnect, repeated setup, unrelated FTDI unchanged) when a host exists.
-3. Confirm completion of the Collect layout CI run.
-4. Validate remaining artifact open/folder actions and native scaling acceptance.
+3. Validate remaining artifact open/folder actions and native scaling acceptance.
 
 ## Backlog
 
