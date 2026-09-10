@@ -33,10 +33,10 @@
 - [x] Integrate trng3-rs `08f1889` through reachable rngkit-core `56c0c84`.
 - [x] User reported successful native TrueRNG fix acceptance on 2026-09-10
   using the rebuilt executable; exact latency and saved count were not supplied.
-- [ ] Review BitBabbler (bitb-rs) and RDSEED (intel_seed) plus core adapters for
-  queued old data versus fresh acquisitions. Identify each transport/CPU contract,
-  decide whether analogous corrections are needed, and add targeted validation;
-  do not presume all devices support or need a serial-style flush.
+- [x] Review source freshness: normal BitBabbler/RDSEED paths need no serial-style
+  purge. Evidence and two BitBabbler error-path findings: `docs/source-freshness-review.md`.
+- [ ] Approve/fix BitBabbler reuse after failed I/O and unbounded sync/purge loops;
+  add regressions, integrate exact revisions and validate physical behavior.
 
 1. Validate installation and Help kit access with network disconnected as a
    standard user; clean-machine WebView2 remains untested. Decide cleanup of old
