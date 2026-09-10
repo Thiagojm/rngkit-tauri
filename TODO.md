@@ -5,7 +5,7 @@
 - Windows-first v1 and six workflow phases: Collect/chart/close policy, standalone
   Reports, mixed CSV Combine, Help, accessibility, CI and unsigned NSIS baseline.
 - Artifact outcomes, local-clock report charts, selected-BIN basename and Windows
-  path display fixes; exact rngkit-core revision `3dc969d` remains pinned.
+  path display fixes; exact rngkit-core revision `56c0c84` is pinned.
 - Historical full frontend/Rust/MSRV/no-bundle validation and native PseudoRNG
   Collect/manifest Reports smoke passed; detailed evidence is in PROJECT_CONTEXT.
 - Cross-platform outcome-path CI repair passed (`34002608469`); numeric-validation
@@ -29,6 +29,14 @@
   Help folder-open passed with network connected; old INF/CAT copies remain.
 
 ## Next steps
+
+- [x] Integrate trng3-rs `08f1889` through reachable rngkit-core `56c0c84`.
+- [ ] Repeat 8096-bit / 1-second unplug-after-sample-5 physical acceptance using
+  the rebuilt executable; record terminal error latency and saved sample count.
+- [ ] Review BitBabbler (bitb-rs) and RDSEED (intel_seed) plus core adapters for
+  queued old data versus fresh acquisitions. Identify each transport/CPU contract,
+  decide whether analogous corrections are needed, and add targeted validation;
+  do not presume all devices support or need a serial-style flush.
 
 1. Validate installation and Help kit access with network disconnected as a
    standard user; clean-machine WebView2 remains untested. Decide cleanup of old

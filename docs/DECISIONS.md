@@ -74,7 +74,7 @@ All decisions are accepted. Material changes return to design review.
 ## Artifact feedback and current evidence
 
 - The app pins reachable `rngkit-core` revision
-  `3dc969d983ffa7c981536c46d19afa223f0c490b`.
+  `56c0c84d1f51bad1b56e072985459dff264570a9`.
 - Artifact feedback is transient and typed: one
   monotonic-ID notice is pending at a time, stale acknowledgements fail, and
   only confirmed regular files/directories under backend-known roots may be

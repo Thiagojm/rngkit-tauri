@@ -19,7 +19,7 @@ point and native sessions contain BIN, CSV, and manifest artifacts.
 artifact-feedback/report-chart work and follow-up outcome, local-clock,
 selected-basename, and Windows display-path corrections are integrated against
 reachable `rngkit-core` revision
-`3dc969d983ffa7c981536c46d19afa223f0c490b`.
+`56c0c84d1f51bad1b56e072985459dff264570a9`.
 
 ## Main product flows
 
@@ -146,3 +146,13 @@ reachable `rngkit-core` revision
 - Update preserves the previous installation's TrueRNG INF/CAT as extra files;
   exclusion from the new payload does not remove old copies. Cleanup policy,
   disconnected installation/folder-open, and clean-machine WebView2 remain pending.
+
+## TrueRNG freshness integration (2026-09-09)
+
+- Pins rngkit-core `56c0c84`, bringing trng3-rs `08f1889` input purge before
+  each acquisition. No frontend or adapter API changes. Physical disconnect
+  retest remains pending; host purge does not guarantee immediate detection.
+- Integration validation: 134 Rust tests and 127 frontend tests passed; four
+  physical tests remained ignored. Locked clippy, Rust 1.85 check, format,
+  frontend types/lint and no-bundle release build passed. The rebuilt executable
+  is `src-tauri/target/release/rngkit.exe`; the installed app/NSIS is unchanged.
