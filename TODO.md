@@ -31,8 +31,8 @@
 ## Next steps
 
 - [x] Integrate trng3-rs `08f1889` through reachable rngkit-core `56c0c84`.
-- [ ] Repeat 8096-bit / 1-second unplug-after-sample-5 physical acceptance using
-  the rebuilt executable; record terminal error latency and saved sample count.
+- [x] User reported successful native TrueRNG fix acceptance on 2026-09-10
+  using the rebuilt executable; exact latency and saved count were not supplied.
 - [ ] Review BitBabbler (bitb-rs) and RDSEED (intel_seed) plus core adapters for
   queued old data versus fresh acquisitions. Identify each transport/CPU contract,
   decide whether analogous corrections are needed, and add targeted validation;

@@ -15,11 +15,8 @@ users to 2048 bits, and performs one asynchronous discovery after hydration
 without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
-`main` includes the published workflow improvements through Phase 6. The
-artifact-feedback/report-chart work and follow-up outcome, local-clock,
-selected-basename, and Windows display-path corrections are integrated against
-reachable `rngkit-core` revision
-`56c0c84d1f51bad1b56e072985459dff264570a9`.
+Published workflow, artifact-feedback, report-chart, outcome and path corrections
+use reachable `rngkit-core` revision `56c0c84d1f51bad1b56e072985459dff264570a9`.
 
 ## Main product flows
 
@@ -74,17 +71,11 @@ reachable `rngkit-core` revision
 - **Remote CI:** Windows/Ubuntu repair run `34002608469` and numeric-validation
   run `34072410813` passed. Collect layout run `34077305701` and current-HEAD
   run `34147766895` (`ad5b35f`) passed, verified on 2026-09-09.
-- **Complete deterministic validation (2026-08-25, Windows):** npm install,
-  format/check/lint, 27 Vitest files/106 tests, Playwright 5/5, Vite build,
-  locked Rust fmt/check/test/clippy/doc, Rust 1.85 check/test, locked no-bundle
-  release build, and `git diff --check` passed. Four physical tests remained
-  ignored. Production-asset Edge coverage has no real Tauri IPC or hardware.
-- **Native smoke (2026-08-25):** startup discovery and 2048-bit default were
-  visible; PseudoRNG collection plotted committed samples; Stop immediately
-  displayed all saved artifact paths without another UI action. A collected
-  manifest previewed and generated/replaced XLSX, and its outcome displayed a
-  normal `D:\...` path without the internal `\\?\` prefix. The manifest stored
-  local offset `-03:00`. The workbook was not visually inspected in Excel.
+- **Historical validation (2026-08-25, Windows):** full frontend, Edge, locked
+  Rust/MSRV and no-bundle checks passed; four physical tests were ignored.
+  Native PseudoRNG Collect/Stop and manifest-backed XLSX generation/replacement
+  passed, including artifact paths and local offset `-03:00`; Excel was not
+  visually inspected in that smoke. Browser coverage has no Tauri IPC/hardware.
 - **User-reported manual acceptance (2026-09-07):** refreshed Help and Reports/Combine
   work correctly, including standalone current/legacy CSV/BIN, cross-folder
   combinations and XLSX titles, timestamps and charts inspected in Excel.
@@ -147,11 +138,12 @@ reachable `rngkit-core` revision
   exclusion from the new payload does not remove old copies. Cleanup policy,
   disconnected installation/folder-open, and clean-machine WebView2 remain pending.
 
-## TrueRNG freshness integration (2026-09-09)
-
+## TrueRNG freshness integration (2026-09-09–10)
 - Pins rngkit-core `56c0c84`, bringing trng3-rs `08f1889` input purge before
-  each acquisition. No frontend or adapter API changes. Physical disconnect
-  retest remains pending; host purge does not guarantee immediate detection.
+  each acquisition. No frontend or adapter API changes. The user reported
+  successful native acceptance of the rebuilt executable on 2026-09-10 after
+  the unplug regression. No separate log, exact latency or saved count was supplied;
+  host purge does not guarantee immediate detection.
 - Integration validation: 134 Rust tests and 127 frontend tests passed; four
   physical tests remained ignored. Locked clippy, Rust 1.85 check, format,
   frontend types/lint and no-bundle release build passed. The rebuilt executable
