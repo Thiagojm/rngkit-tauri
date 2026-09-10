@@ -5,7 +5,7 @@
 - Windows-first v1 and six workflow phases: Collect/chart/close policy, standalone
   Reports, mixed CSV Combine, Help, accessibility, CI and unsigned NSIS baseline.
 - Artifact outcomes, local-clock report charts, selected-BIN basename and Windows
-  path display fixes; exact rngkit-core revision `56c0c84` is pinned.
+  path display fixes; exact rngkit-core revision `4e0e43d` is pinned.
 - Historical full frontend/Rust/MSRV/no-bundle validation and native PseudoRNG
   Collect/manifest Reports smoke passed; detailed evidence is in PROJECT_CONTEXT.
 - Cross-platform outcome-path CI repair passed (`34002608469`); numeric-validation
@@ -35,8 +35,9 @@
   using the rebuilt executable; exact latency and saved count were not supplied.
 - [x] Review source freshness: normal BitBabbler/RDSEED paths need no serial-style
   purge. Evidence and two BitBabbler error-path findings: `docs/source-freshness-review.md`.
-- [ ] Approve/fix BitBabbler reuse after failed I/O and unbounded sync/purge loops;
-  add regressions, integrate exact revisions and validate physical behavior.
+- [x] Fix BitBabbler reuse after failed I/O and bound sync/purge locally; regressions pass.
+- [x] Publish BitBabbler `e4cc6c6` and integrate through core `4e0e43d`.
+- [ ] Validate native BitBabbler acquisition, folds and disconnect behavior.
 
 1. Validate installation and Help kit access with network disconnected as a
    standard user; clean-machine WebView2 remains untested. Decide cleanup of old

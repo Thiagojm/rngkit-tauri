@@ -35,7 +35,7 @@ The unsigned installer baseline remains `061f66a`; the current application
 includes the published workflow improvements described below. Uninstall and
 other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
-`56c0c84d1f51bad1b56e072985459dff264570a9`.
+`4e0e43d360b91887fe457a5a984b14d225a82db9`.
 
 The approved 2026-08-25 artifact-feedback/report-charts plan and the subsequent
 terminal-outcome/local-clock corrections are implemented against the exact

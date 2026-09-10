@@ -58,11 +58,23 @@ software behavior under scripted responses, not occurrence on physical hardware.
 
 ## Validation boundary and next action
 
-Implement the two BitBabbler corrections only after approval, with regressions
-for reuse after timeout and continuous unexpected payload. Then integrate exact
-revisions through core/app and repeat native acquisition, folds and disconnect
-acceptance. No RDSEED product change is currently justified. Its standalone
+The user approved implementation on 2026-09-10. Both fixes are implemented locally
+in bitb-rs: acquisition I/O/protocol errors invalidate the handle; later valid
+requests return `DeviceDisconnected` without I/O. Sync/purge have a total limit
+of 64 reads, and Drop performs reset controls/release without draining input.
+Stable/MSRV all-target suites passed (75 deterministic tests; three physical
+ignored), plus clippy and 12 doctests. Four new regression tests cover both
+findings and invalid-argument/cleanup behavior. No physical retest was performed.
+
+Publication and integration were subsequently authorized: bitb-rs `e4cc6c6`
+is published and pinned through rngkit-core `4e0e43d` in the app. Native
+acquisition, folds and disconnect acceptance remain pending. No RDSEED product change is currently justified. Its standalone
 `tests/hardware.rs` is not ignored: use `--lib` for deterministic-only runs.
+
+Integration validation passed on Windows: core workspace and app locked all-target
+tests, clippy and Rust 1.85 checks; app frontend check, 127 tests, format and lint.
+Physical tests stayed ignored. This integration did not rebuild the executable
+or create an installer/release; the previous executable still uses the older pin.
 
 Protocol references: [FTDI MPSSE command definitions](https://www.ftdichip.com/Support/Documents/AppNotes/AN2232C-01_MPSSE_Cmnd.pdf)
 (byte-in length and Send Immediate), and [Intel DRNG implementation guide](https://www.intel.com/content/www/us/en/developer/articles/guide/intel-digital-random-number-generator-drng-software-implementation-guide.html)

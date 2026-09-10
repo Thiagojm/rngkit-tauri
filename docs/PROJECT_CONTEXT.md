@@ -16,7 +16,7 @@ without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
 Published workflow, artifact-feedback, report-chart, outcome and path corrections
-use reachable `rngkit-core` revision `56c0c84d1f51bad1b56e072985459dff264570a9`.
+use reachable `rngkit-core` revision `4e0e43d360b91887fe457a5a984b14d225a82db9`.
 
 ## Main product flows
 

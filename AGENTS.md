@@ -46,7 +46,7 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   published through Help. The 2026-08-25 artifact-feedback/report-chart work,
   terminal-outcome correction, and selected-basename/path-display corrections
   are implemented. The app pins `rngkit-core` revision
-  `56c0c84d1f51bad1b56e072985459dff264570a9`.
+  `4e0e43d360b91887fe457a5a984b14d225a82db9`.
 - Deterministic, browser-integrated, MSRV, no-bundle release, and native
   PseudoRNG Collect/manifest-backed Reports smoke validation passed. Remaining
   native acceptance boundaries are listed in `docs/PROJECT_CONTEXT.md`.
@@ -56,7 +56,7 @@ Unsigned NSIS is local-only. The user reported offline installation, first launc
   hardware. On Windows they use the installed Edge channel. Vitest component
   tests set `resolve.conditions` to `browser` so Svelte client `mount` is used.
 - Final `rngkit-*` dependencies must use the exact reachable Git revision
-  `56c0c84d1f51bad1b56e072985459dff264570a9`. Never a local path.
+  `4e0e43d360b91887fe457a5a984b14d225a82db9`. Never a local path.
 - Default tests must not enumerate or open hardware. Physical tests are ignored,
   opt-in, and serial.
 - Frontend capabilities stay minimal: `core:default` and `dialog:default` only.
