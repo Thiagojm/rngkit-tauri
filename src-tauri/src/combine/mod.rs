@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 
 use rngkit_core::{SOURCE_ID_BITB, SOURCE_ID_PSEUDO, SOURCE_ID_RDSEED, SOURCE_ID_TRNG};
 use rngkit_recording::{
-    ConcatenationPreview, RecordingError, StandaloneInputFormat, create_csv_concatenation,
-    inspect_csv_inputs,
+    ConcatenationCompatibilityField, ConcatenationPreview, MIXED_SOURCE_ID, MIXED_SOURCE_LABEL,
+    RecordingError, StandaloneInputFormat, create_csv_concatenation, inspect_csv_inputs,
 };
 
 use crate::coordinator::{AppCoordinator, ReportKind};
@@ -209,8 +209,14 @@ fn map_combine_ref(error: &RecordingError) -> String {
             "A selected current CSV header is invalid."
         }
         RecordingError::NativeConcatenationInput { .. } => "That current CSV is not supported.",
-        RecordingError::IncompatibleConcatenationInputs { .. } => {
-            "The selected CSV files are not compatible."
+        RecordingError::IncompatibleConcatenationInputs { field, .. } => match field {
+            ConcatenationCompatibilityField::SampleBits => "Sample size must match exactly.",
+            ConcatenationCompatibilityField::Interval => {
+                "Sampling interval must match exactly. Matching average bits per second is not enough."
+            }
+            ConcatenationCompatibilityField::Source | ConcatenationCompatibilityField::Fold => {
+                "The selected CSV files are not compatible."
+            }
         }
         RecordingError::DecreasingConcatenationTimestamp { .. } => {
             "A selected CSV file has decreasing timestamps."
@@ -252,10 +258,17 @@ fn row_from_preview(
         ordinal,
         basename: entry.basename().to_owned(),
         format: entry.format().map(format_label).unwrap_or("unknown").into(),
-        source: source_label(preview.source_id().as_str()),
+        source: source_label(
+            entry
+                .source_id()
+                .map_or(preview.source_id().as_str(), |id| id.as_str()),
+        ),
         sample_bits: preview.sample_bits().get(),
         interval_seconds: preview.interval().get(),
-        fold: preview.fold().map(|fold| u32::from(fold.get())),
+        fold: entry
+            .fold()
+            .or(preview.fold())
+            .map(|fold| u32::from(fold.get())),
         first_timestamp: rfc3339(entry.first_timestamp()),
         last_timestamp: rfc3339(entry.last_timestamp()),
         rows: entry.row_count(),
@@ -385,6 +398,7 @@ fn source_label(id: &str) -> String {
         SOURCE_ID_TRNG => "TrueRNG v1/v2/v3".into(),
         SOURCE_ID_RDSEED => "RDSEED".into(),
         SOURCE_ID_PSEUDO => "PseudoRNG".into(),
+        MIXED_SOURCE_ID => MIXED_SOURCE_LABEL.into(),
         other => other.into(),
     }
 }
@@ -416,8 +430,16 @@ pub(crate) fn map_combine(error: RecordingError) -> SafeError {
         RecordingError::NativeConcatenationInput { .. } => {
             SafeError::unsupported_input("That current CSV is not supported.")
         }
-        RecordingError::IncompatibleConcatenationInputs { .. } => {
-            SafeError::invalid_configuration("The selected CSV files are not compatible.")
+        RecordingError::IncompatibleConcatenationInputs { field, .. } => {
+            SafeError::invalid_configuration(match field {
+                ConcatenationCompatibilityField::SampleBits => "Sample size must match exactly.",
+                ConcatenationCompatibilityField::Interval => {
+                    "Sampling interval must match exactly. Matching average bits per second is not enough."
+                }
+                ConcatenationCompatibilityField::Source | ConcatenationCompatibilityField::Fold => {
+                    "The selected CSV files are not compatible."
+                }
+            })
         }
         RecordingError::DecreasingConcatenationTimestamp { .. } => {
             SafeError::invalid_configuration("A selected CSV file has decreasing timestamps.")

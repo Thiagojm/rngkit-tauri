@@ -51,12 +51,16 @@ All decisions are accepted. Material changes return to design review.
   explicit Cancel/Replace and preserves input bytes. The selected artifact
   basename remains authoritative even when a `.bin` uses a valid CSV sibling
   for recorded timestamps.
-- Combine is CSV-only and accepts distinct compatible current, legacy, or mixed
-  inputs. Ordered canonical paths stay backend-only behind transient opaque
-  input IDs. Add appends, Remove targets one row, Clear resets selection, and
-  changed/duplicate/overlap/incompatible/BIN inputs fail safely.
-- Schema-1 derived bundles remain readable. New output is schema 2,
-  `csv_concatenation`, with per-input format metadata and no absolute paths.
+- Combine is CSV-only and accepts distinct current, legacy, or mixed-format
+  CSVs when sample bits and interval match exactly. Source and fold may
+  differ; equal average throughput is not enough. Ordered canonical paths stay
+  backend-only behind transient opaque input IDs. Add appends, Remove targets
+  one row, Clear resets selection, and changed/duplicate/overlap/incompatible/BIN
+  inputs fail safely.
+- Schema-1 derived bundles remain readable. Homogeneous output is schema 2
+  `csv_concatenation`. Heterogeneous output is schema 3 with the same kind,
+  token `mixed`, label `Mixed sources`, no fold, and per-input source/fold.
+  Manifests store no absolute paths.
 - Cumulative Z is `(2*C - N) / sqrt(N)` for descriptive monitoring only; no
   p-values, confidence claims, or statistical pass/fail interpretation.
 
@@ -74,7 +78,7 @@ All decisions are accepted. Material changes return to design review.
 ## Artifact feedback and current evidence
 
 - The app pins reachable `rngkit-core` revision
-  `4e0e43d360b91887fe457a5a984b14d225a82db9`.
+  `23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
 - Artifact feedback is transient and typed: one
   monotonic-ID notice is pending at a time, stale acknowledgements fail, and
   only confirmed regular files/directories under backend-known roots may be

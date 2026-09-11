@@ -19,12 +19,12 @@ tauri = { version = "2.11.5", features = [] }
 tauri-plugin-dialog = "2.7.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rngkit-core = { git = "https://github.com/Thiagojm/rngkit-core", rev = "4e0e43d360b91887fe457a5a984b14d225a82db9" }
-rngkit-sources = { git = "https://github.com/Thiagojm/rngkit-core", rev = "4e0e43d360b91887fe457a5a984b14d225a82db9" }
-rngkit-analysis = { git = "https://github.com/Thiagojm/rngkit-core", rev = "4e0e43d360b91887fe457a5a984b14d225a82db9" }
-rngkit-recording = { git = "https://github.com/Thiagojm/rngkit-core", rev = "4e0e43d360b91887fe457a5a984b14d225a82db9" }
-rngkit-engine = { git = "https://github.com/Thiagojm/rngkit-core", rev = "4e0e43d360b91887fe457a5a984b14d225a82db9" }
-rngkit-xlsx = { git = "https://github.com/Thiagojm/rngkit-core", rev = "4e0e43d360b91887fe457a5a984b14d225a82db9" }
+rngkit-core = { git = "https://github.com/Thiagojm/rngkit-core", rev = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2" }
+rngkit-sources = { git = "https://github.com/Thiagojm/rngkit-core", rev = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2" }
+rngkit-analysis = { git = "https://github.com/Thiagojm/rngkit-core", rev = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2" }
+rngkit-recording = { git = "https://github.com/Thiagojm/rngkit-core", rev = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2" }
+rngkit-engine = { git = "https://github.com/Thiagojm/rngkit-core", rev = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2" }
+rngkit-xlsx = { git = "https://github.com/Thiagojm/rngkit-core", rev = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2" }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "=0.61.2", features = ["Win32_Storage_FileSystem"] }

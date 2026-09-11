@@ -16,7 +16,7 @@ without opening or selecting a source. The live chart retains every committed
 point and native sessions contain BIN, CSV, and manifest artifacts.
 
 Published workflow, artifact-feedback, report-chart, outcome and path corrections
-use reachable `rngkit-core` revision `4e0e43d360b91887fe457a5a984b14d225a82db9`.
+use reachable `rngkit-core` revision `23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
 
 ## Main product flows
 
@@ -25,9 +25,10 @@ use reachable `rngkit-core` revision `4e0e43d360b91887fe457a5a984b14d225a82db9`.
 2. **Reports:** inspect native or derived bundles, current standalone CSV/BIN,
    legacy v3 CSV/BIN, or flat canonical legacy concatenation CSVs and write
    same-stem XLSX with explicit Replace.
-3. **Combine:** accumulate compatible current, legacy, or mixed CSVs across
-   folders and create a no-overwrite schema-2 derived bundle without changing
-   inputs.
+3. **Combine:** accumulate current, legacy, or mixed-format CSVs across folders
+   when bits and interval match exactly, including different sources or folds,
+   and create a no-overwrite schema-2 or mixed schema-3 derived bundle without
+   changing inputs.
 4. **Help:** Quick start, source choice, safe collection, reports, Combine,
    chart interpretation, common problems, and file/version details.
 
@@ -57,14 +58,17 @@ use reachable `rngkit-core` revision `4e0e43d360b91887fe457a5a984b14d225a82db9`.
   concatenation kind. Inputs are read-only and existing XLSX requires Replace;
   recorded timestamp versus sample-index chart context is retained from
   inspection and revalidated at generation.
-- Combine is CSV-only, accepts compatible current/legacy/mixed inputs, keeps
-  ordered backend paths behind opaque IDs, supports Add/Remove/Clear, rejects
-  overlap/incompatibility/BIN, preserves schema-1 reading, and writes schema 2
-  `csv_concatenation` output with no absolute input paths.
+- Combine is CSV-only, accepts current/legacy/mixed-format CSVs when bits and
+  interval match exactly, keeps ordered backend paths behind opaque IDs,
+  supports Add/Remove/Clear, rejects overlap/incompatibility/BIN, preserves
+  schema-1 reading, writes homogeneous schema 2 or mixed schema 3
+  `csv_concatenation` with no absolute input paths, and labels mixed output
+  `Mixed sources`.
 - Help preserves the approved boundary: `Z shows balance over time; it does not
   certify randomness.` It documents the default folder, discovery behavior,
-  Fit all, standalone inputs, timestamp provenance, mixed Combine, and recovery
-  actions in direct task order.
+  Fit all, standalone inputs, timestamp provenance, bits/interval Combine
+  (including mixed sources labeled `Mixed sources`), and recovery actions in
+  direct task order.
 
 ## Evidence and open validation
 
@@ -80,6 +84,8 @@ use reachable `rngkit-core` revision `4e0e43d360b91887fe457a5a984b14d225a82db9`.
   work correctly, including standalone current/legacy CSV/BIN, cross-folder
   combinations and XLSX titles, timestamps and charts inspected in Excel.
   This is user-reported evidence, without a separate execution log.
+- **User-reported mixed-source Combine (2026-09-11):** native `tauri dev`
+  acceptance after pinning `23a67aa`. No separate log.
 - **Remaining acceptance:** other artifact open/folder actions, hardware/unplug,
   native 100k/1M chart rendering/interaction, scaling/screen-reader sampling,
   NSIS uninstall/session-data preservation, and signing/publication. Hardware

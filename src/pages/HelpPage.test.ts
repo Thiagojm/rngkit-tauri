@@ -57,7 +57,14 @@ describe('HelpPage', () => {
       ),
     ).toBeTruthy();
     expect(screen.getByText(/Inputs are read-only/i)).toBeTruthy();
-    expect(screen.getByText(/new Combine output uses schema 2/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Homogeneous Combine output uses schema 2/i),
+    ).toBeTruthy();
+    expect(screen.getByText(/mixed output uses schema 3/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Heterogeneous output is labeled Mixed sources/i),
+    ).toBeTruthy();
+    expect(screen.getByText(/Sources and folds may differ/i)).toBeTruthy();
     expect(screen.getByText(/YYYYMMDDTHHMMSS/)).toBeTruthy();
     expect(
       screen.getAllByText(/BIN-only reports use sample numbers/i),

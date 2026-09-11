@@ -424,8 +424,11 @@
         </ol>
         <p>
           Combine accepts current CSV, legacy v3 CSV, or a compatible mixture.
-          It does not accept BIN files. Inputs must have matching source, sample
-          size, interval, and fold, and their time ranges cannot overlap.
+          It does not accept BIN files. Sample size and sampling interval must
+          match exactly. Sources and folds may differ. Matching average bits per
+          second is not enough. Files are concatenated in time order; values are
+          not XOR'd or resampled. Time ranges cannot overlap, including equal
+          boundaries. Heterogeneous output is labeled Mixed sources.
         </p>
         <p>
           The result dialog lists the saved CSV, manifest, and folder paths. Use
@@ -503,12 +506,11 @@
           <details>
             <summary>Combine says the files are incompatible</summary>
             <p>
-              Check the invalid row. Source, sample size, interval, and fold
-              must match, and time ranges cannot overlap. Use <strong
-                >Remove</strong
-              >
-              or <strong>Clear all</strong> and select a compatible set. The input
-              files are not changed.
+              Check the invalid row. Sample size and sampling interval must
+              match exactly. Matching average bits per second is not enough.
+              Time ranges cannot overlap. Use <strong>Remove</strong> or
+              <strong>Clear all</strong> and select a compatible set. The input files
+              are not changed.
             </p>
           </details>
           <details>
@@ -566,9 +568,10 @@
               </li>
               <li>
                 A derived bundle contains a same-stem CSV and manifest. Schema-1
-                <code>legacy_csv_concatenation</code> bundles remain supported,
-                while new Combine output uses schema 2 and
-                <code>csv_concatenation</code>.
+                <code>legacy_csv_concatenation</code> bundles remain supported.
+                Homogeneous Combine output uses schema 2
+                <code>csv_concatenation</code>; mixed output uses schema 3 with
+                the same kind.
               </li>
             </ul>
             <p>RngKit application 0.1.0.</p>

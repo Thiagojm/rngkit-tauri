@@ -125,7 +125,7 @@ test('renders the four-destination shell without hardware or mock-scenario contr
     })
     .click();
   await expect(
-    page.getByText(/new Combine output uses schema 2/),
+    page.getByText(/Homogeneous Combine output uses schema 2/),
   ).toBeVisible();
   await expect(
     page.getByText(/searches for sources automatically when the app opens/),

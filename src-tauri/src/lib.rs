@@ -23,7 +23,7 @@ use reports::ReportsHandle;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
 
 /// Reachable `rngkit-core` git revision pinned by this application.
-pub const RNGKIT_CORE_REVISION: &str = "4e0e43d360b91887fe457a5a984b14d225a82db9";
+pub const RNGKIT_CORE_REVISION: &str = "23a67aa4c87d8fa3bbcf049f25786d54966e39d2";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

@@ -206,6 +206,45 @@ fn mixed_current_and_legacy_csvs_create_schema_two_bundle() {
 }
 
 #[test]
+fn mixed_source_csvs_create_schema_three_bundle() {
+    let _lock = combine_test_lock();
+    let root = temp_root();
+    let bitb = write_csv(&root, "20260821T183000_bitb_s16_i1_f0", FILE_A);
+    let trng = write_csv(&root, STEM_B, FILE_B);
+
+    let mut coordinator = ready_combine(&root, &[trng, bitb]);
+    let snapshot = coordinator.snapshot();
+    assert!(snapshot.combine.compatible);
+    assert_eq!(snapshot.combine.inputs.len(), 2);
+    assert_eq!(snapshot.combine.inputs[0].source, "BitBabbler");
+    assert_eq!(snapshot.combine.inputs[0].fold, Some(0));
+    assert_eq!(snapshot.combine.inputs[1].source, "TrueRNG v1/v2/v3");
+    assert_eq!(snapshot.combine.inputs[1].fold, None);
+    assert!(snapshot.combine.inputs.iter().all(|row| row.valid));
+
+    create_previewed(&mut coordinator).expect("create mixed-source bundle");
+    let result = coordinator.snapshot().combine.result.expect("result");
+    assert!(result.stem.contains("_concat_mixed_s16_i1"));
+    assert!(!result.stem.contains("_f"));
+    let reports = coordinator
+        .snapshot()
+        .reports
+        .preview
+        .expect("derived preview");
+    assert_eq!(reports.source, "Mixed sources");
+    assert_eq!(reports.fold, None);
+
+    let directory = coordinator.combine_directory().expect("dir");
+    let manifest = fs::read_to_string(directory.join("manifest.json")).expect("manifest");
+    assert!(manifest.contains(CSV_CONCATENATION_KIND));
+    assert!(manifest.contains("\"schema_version\": 3"));
+    assert!(manifest.contains("\"source_id\": \"mixed\""));
+    assert!(manifest.contains("\"source_id\": \"bitb\""));
+    assert!(manifest.contains("\"source_id\": \"trng\""));
+    assert_safe_json(&manifest);
+}
+
+#[test]
 fn current_only_csv_creates_schema_two_bundle() {
     let _lock = combine_test_lock();
     let root = temp_root();
@@ -299,14 +338,51 @@ fn overlapping_and_mismatched_inputs_fail_before_a_bundle() {
     assert!(created.is_empty());
 
     let bits = write_csv(&root, "20260821T184000_trng_s8_i1", "20260821T18:40:00,4\n");
-    preview_csvs(&mut coordinator, &[a, bits]).expect("mismatch");
+    preview_csvs(&mut coordinator, &[a.clone(), bits]).expect("mismatch");
     let mismatch = coordinator.snapshot();
     assert!(!mismatch.combine.compatible);
     assert_eq!(mismatch.combine.inputs.len(), 2);
     assert!(mismatch.combine.inputs.iter().all(|row| !row.valid));
     assert_eq!(
         mismatch.combine.incompatibility.as_deref(),
-        Some("The selected CSV files are not compatible.")
+        Some("Sample size must match exactly.")
+    );
+
+    let interval = write_csv(
+        &root,
+        "20260821T183010_trng_s16_i2",
+        "20260821T18:30:10,4\n20260821T18:30:12,4\n",
+    );
+    preview_csvs(&mut coordinator, &[a.clone(), interval]).expect("interval mismatch");
+    let interval_mismatch = coordinator.snapshot();
+    assert!(!interval_mismatch.combine.compatible);
+    assert_eq!(
+        interval_mismatch.combine.incompatibility.as_deref(),
+        Some(
+            "Sampling interval must match exactly. Matching average bits per second is not enough."
+        )
+    );
+
+    let equal_throughput_left = write_csv(
+        &root,
+        "20260821T184000_trng_s2048_i2",
+        "20260821T18:40:00,8\n",
+    );
+    let equal_throughput_right = write_csv(
+        &root,
+        "20260821T184010_trng_s1024_i1",
+        "20260821T18:40:10,4\n",
+    );
+    preview_csvs(
+        &mut coordinator,
+        &[equal_throughput_left, equal_throughput_right],
+    )
+    .expect("equal-throughput mismatch");
+    let throughput = coordinator.snapshot();
+    assert!(!throughput.combine.compatible);
+    assert_eq!(
+        throughput.combine.incompatibility.as_deref(),
+        Some("Sample size must match exactly.")
     );
 }
 
