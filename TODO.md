@@ -40,7 +40,8 @@
 - [x] Mixed-source Combine: pin `23a67aa`, per-input source/fold, bits/interval
   copy, and Help. User reported successful native acceptance on 2026-09-11
   via `tauri dev`; no separate log.
-- [ ] Validate native BitBabbler acquisition, folds and disconnect behavior.
+- [x] User reported successful native BitBabbler acquisition, folds and disconnect
+  validation on 2026-09-11; no separate execution log or fold matrix supplied.
 
 1. Validate installation and Help kit access with network disconnected as a
    standard user; clean-machine WebView2 remains untested. Decide cleanup of old
@@ -52,8 +53,11 @@
 
 ## Backlog
 
-- Native hardware collection, unplug-during-read, other devices/folds and Linux
-  physical behavior; opt-in only.
+- [ ] Optional sample-count limit with automatic collection finalization.
+- [ ] Session name and notes for experiment identification in manifests/reports.
+  Both features await design and implementation; sample-count limit comes first.
+- Additional hardware/device coverage beyond reported TrueRNG and BitBabbler
+  acceptance, and Linux physical behavior; opt-in only.
 - Native 100k/1M chart interaction, Reports/Combine dialogs, screen-reader sampling
   and symlink inspection privilege coverage.
 - NSIS uninstall/session-data preservation, signing, releases, updater, Store,

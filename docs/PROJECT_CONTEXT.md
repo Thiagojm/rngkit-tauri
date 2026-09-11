@@ -86,7 +86,9 @@ use reachable `rngkit-core` revision `23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
   This is user-reported evidence, without a separate execution log.
 - **User-reported mixed-source Combine (2026-09-11):** native `tauri dev`
   acceptance after pinning `23a67aa`. No separate log.
-- **Remaining acceptance:** other artifact open/folder actions, hardware/unplug,
+- **User-reported BitBabbler acceptance (2026-09-11):** acquisition, folds and
+  disconnect behavior passed. No separate execution log or fold matrix supplied.
+- **Remaining acceptance:** other artifact open/folder actions, additional hardware coverage,
   native 100k/1M chart rendering/interaction, scaling/screen-reader sampling,
   NSIS uninstall/session-data preservation, and signing/publication. Hardware
   remains opt-in; the later authorized NSIS evidence is below.
