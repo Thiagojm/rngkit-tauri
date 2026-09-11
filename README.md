@@ -31,8 +31,7 @@ restricted CSP. Open commands use backend-known paths only.
 Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
 `src-tauri/tests/hardware.rs`; default tests do not run them.
 
-The unsigned installer baseline remains `061f66a`; the current application
-includes the published workflow improvements described below. Uninstall and
+The current unsigned NSIS evidence is local HEAD `a505141`; uninstall and
 other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
 `23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
@@ -93,20 +92,23 @@ https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 ## Packaging
 
 v1 ships an unsigned per-user English NSIS installer with an embedded offline
-WebView2 installer (about 127 MB extra). Signing, SmartScreen, publication,
-and updater setup are out of scope. Uninstall must leave user session output
-intact.
+WebView2 installer (about 203 MB extra in the 2026-09-11 payload). Signing,
+SmartScreen, publication, and updater setup are out of scope. Uninstall must
+leave user session output intact.
 
 ```text
 npm run tauri -- build --bundles nsis -- --locked
 ```
 
-Local 2026-08-24 evidence (unsigned, not published):
+Local 2026-09-11 evidence (unsigned, not published):
 `src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
-208.4 MiB, SHA-256 `612BC8F006FA974AE961DDDB4348CE29E8ACBFB7758EF7A7683D6F8B8DDE8DE7`.
-The file is not tracked. The user reported offline installation, first launch,
-and basic app functionality on Windows. Uninstall and session-data preservation
-remain unverified. Windows may warn because the package is unsigned.
+223732125 bytes, SHA-256
+`dbc0ca20db58e5bc870a66bcbab92cc424c710459e4d8551bc7f59cab8faab50`.
+The file is not tracked. Non-elevated `/S /UPDATE` installed that payload on
+this Windows host with network connected. The user reported that installation
+and the installed app work as expected. Uninstall, session-data preservation,
+disconnected install, and clean-machine WebView2 remain unverified. Windows may
+warn because the package is unsigned.
 
 ## License
 

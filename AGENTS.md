@@ -38,7 +38,7 @@ git diff --check
 Observed remote success for `061f66a` (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes use `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`; replace `bitb` with `trng`, `rdseed`, or `discover`.
-Unsigned NSIS is local-only. The user reported offline installation, first launch, and basic app functionality on this Windows host; do not claim uninstall/session-data preservation, signing, or native long-session chart render/interaction. Data-only 100k/1M retention was remeasured in Checkpoint 18.
+Unsigned NSIS is local-only. The user reported the 2026-09-11 installed release app launches and works on this Windows host with network connected; do not claim uninstall/session-data preservation, signing, disconnected install, or native long-session chart render/interaction. Data-only 100k/1M retention was remeasured in Checkpoint 18.
 
 ## Repository conventions
 
