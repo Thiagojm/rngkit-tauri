@@ -34,7 +34,7 @@ git status --short --branch
 git diff --check
 ```
 
-`.github/workflows/ci.yml` runs the locked suite without the NSIS step. Ubuntu is compile evidence, not Linux desktop support.
+`.github/workflows/ci.yml` runs the locked suite without installer bundles. Ubuntu is compile evidence, not Linux desktop support. `.github/workflows/release.yml` builds unsigned NSIS and amd64 `.deb` only on tags `v*` (draft Release) or `workflow_dispatch`; it does not run on ordinary branch pushes. Publishing the draft, signing, and Linux hardware acceptance remain separate.
 Observed remote success for `061f66a` (2026-08-24): https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 
 Run the native window with `npm run tauri dev`. Opt-in serial physical smokes use `cargo test --manifest-path src-tauri/Cargo.toml --test hardware bitb -- --ignored --test-threads=1 --nocapture`; replace `bitb` with `trng`, `rdseed`, or `discover`.

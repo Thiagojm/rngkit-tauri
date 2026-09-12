@@ -41,7 +41,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": ["nsis", "deb"],
     "publisher": "Thiagojm",
     "copyright": "Copyright (c) 2026 Thiagojm",
     "category": "Utility",
@@ -70,6 +70,11 @@
         "installMode": "currentUser",
         "languages": ["English"],
         "displayLanguageSelector": false
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libusb-1.0-0"]
       }
     }
   }

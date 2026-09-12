@@ -24,6 +24,7 @@ const OPEN_COMBINE: &str = include_str!("../src/commands/combine.rs");
 const OPEN_DEVICE_SETUP: &str = include_str!("../src/commands/device_setup.rs");
 const REPORTS_IMPL: &str = include_str!("../src/reports/mod.rs");
 const CI_WORKFLOW: &str = include_str!("../../.github/workflows/ci.yml");
+const RELEASE_WORKFLOW: &str = include_str!("../../.github/workflows/release.yml");
 
 static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -425,7 +426,7 @@ fn nsis_bundle_is_unsigned_per_user_english_offline() {
         "identifier {identifier} ends with .app"
     );
     let bundle = &conf["bundle"];
-    assert_eq!(bundle["targets"], serde_json::json!(["nsis"]));
+    assert_eq!(bundle["targets"], serde_json::json!(["nsis", "deb"]));
     assert_eq!(bundle["createUpdaterArtifacts"], false);
     let windows = &bundle["windows"];
     assert_eq!(
@@ -439,6 +440,72 @@ fn nsis_bundle_is_unsigned_per_user_english_offline() {
     assert!(windows["digestAlgorithm"].is_null());
     assert!(windows["signCommand"].is_null());
     assert!(windows["timestampUrl"].is_null());
+}
+
+#[test]
+fn linux_deb_does_not_install_udev_or_run_setup() {
+    let conf: serde_json::Value = serde_json::from_str(TAURI_CONF).expect("json");
+    let deb = &conf["bundle"]["linux"]["deb"];
+    assert_eq!(deb["depends"], serde_json::json!(["libusb-1.0-0"]));
+    assert!(deb["files"].is_null(), "{deb}");
+    assert!(deb["preInstallScript"].is_null(), "{deb}");
+    assert!(deb["postInstallScript"].is_null(), "{deb}");
+    assert!(deb["preRemoveScript"].is_null(), "{deb}");
+    assert!(deb["postRemoveScript"].is_null(), "{deb}");
+}
+
+#[test]
+fn release_workflow_is_tag_draft_only() {
+    assert!(RELEASE_WORKFLOW.contains("tags:"), "{RELEASE_WORKFLOW}");
+    assert!(RELEASE_WORKFLOW.contains("'v*'"), "{RELEASE_WORKFLOW}");
+    assert!(
+        !RELEASE_WORKFLOW.contains("branches:"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("workflow_dispatch:"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("draft: true"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("startsWith(github.ref, 'refs/tags/v')"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("bundle: nsis"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("bundle: deb"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("build --bundles ${{ matrix.bundle }} -- --locked"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("ubuntu-22.04"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        !RELEASE_WORKFLOW.contains("--ignored"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        !RELEASE_WORKFLOW.contains("setup-rng-devices"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        !RELEASE_WORKFLOW.contains("createUpdaterArtifacts"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("contents: write"),
+        "{RELEASE_WORKFLOW}"
+    );
 }
 
 #[test]

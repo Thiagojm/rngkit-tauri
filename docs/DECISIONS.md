@@ -109,10 +109,14 @@ All decisions are accepted. Material changes return to design review.
 - Locked versions live in `package-lock.json` and `src-tauri/Cargo.lock`.
   Floors are Node `^20.19.0 || >=22.12.0`, npm `>=10`, Rust edition 2024/MSRV
   1.85; prereleases and local crate paths are forbidden.
-- v1 packaging is an unsigned per-user English NSIS installer with offline
-  WebView2. Uninstall/session-data preservation, SmartScreen, signing,
-  publication, updater, release, and deployment remain unverified or separate
-  approvals.
+- v1 packaging is unsigned per-user English NSIS (Windows, offline WebView2)
+  plus amd64 `.deb` (Ubuntu 22.04 baseline, extra depends `libusb-1.0-0`).
+  CI on `main`/PRs stays `--no-bundle`. `.github/workflows/release.yml` builds
+  installers only on tags `v*` or `workflow_dispatch`; tag runs open a GitHub
+  Release **draft**. Publishing that draft, signing, updater, Store, and Linux
+  hardware acceptance remain separate. The `.deb` does not install udev rules
+  or run the device-setup helper. Uninstall/session-data preservation and
+  SmartScreen remain unverified.
 
 ## Session configuration validation (2026-09-06)
 

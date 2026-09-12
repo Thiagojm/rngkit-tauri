@@ -45,8 +45,9 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   chains never cross IPC or persist. Statistical Z and `+/-1.96` are descriptive
   visual guides, never inference or pass/fail evidence.
 - Exact locked floors are Node `^20.19.0 || >=22.12.0`, npm `>=10`, Rust
-  edition 2024/MSRV 1.85. Commit, push, release, signing, publication, and
-  deployment remain separate approvals.
+  edition 2024/MSRV 1.85. Commit, push, publishing a GitHub Release, signing,
+  and deployment remain separate approvals. Tag-triggered installer drafts are
+  authorized; they do not run on ordinary branch pushes.
 
 ## Durable file and workflow contracts
 
@@ -84,8 +85,9 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   launching and working as expected. No separate logs or fold matrix.
 - **Remaining:** other artifact open/folder actions, additional hardware,
   native 100k/1M chart interaction, scaling/screen-reader sampling, NSIS
-  uninstall/session-data preservation, and signing/publication. Hardware
-  remains opt-in.
+  uninstall/session-data preservation, signing, and publishing a GitHub
+  Release draft. Hardware remains opt-in. Linux `.deb` packaging is configured;
+  a published Linux release and hardware acceptance are not.
 
 ## Unsigned NSIS (2026-09-11)
 
@@ -105,3 +107,12 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
 - Update still preserves the previous installation's TrueRNG INF/CAT as extra
   files. Cleanup policy, disconnected installation/folder-open, and
   clean-machine WebView2 remain pending.
+
+## GitHub Release drafts
+
+- `bundle.targets` are `nsis` and `deb`. CI is unchanged (`--no-bundle` on
+  `main`/PRs). `.github/workflows/release.yml` packages Windows NSIS and
+  Ubuntu 22.04 `.deb` only for tags `v*` or manual `workflow_dispatch`.
+  Tag runs attach installers and `SHA256SUMS.txt` to a **draft** Release.
+  `workflow_dispatch` from a branch leaves artifacts on the Actions run.
+  No tag has been pushed and no GitHub Release has been published.

@@ -14,6 +14,9 @@
   TrueRNG INF/CAT in the payload, offline WebView2, non-elevated `/S /UPDATE`.
   User reported installation and the installed app work as expected.
   Previous-install INF/CAT leftovers remain. Disconnected install untested.
+- Tag-only GitHub Release drafts: Windows NSIS + Ubuntu 22.04 amd64 `.deb`.
+  CI on push/PR stays `--no-bundle`. Drafts stay unpublished until a tag is
+  pushed and Publish is clicked. Linux hardware acceptance is still separate.
 
 ## Next steps
 
@@ -34,7 +37,7 @@
   acceptance, and Linux physical behavior; opt-in only.
 - Native 100k/1M chart interaction, Reports/Combine dialogs, screen-reader sampling
   and symlink inspection privilege coverage.
-- NSIS uninstall/session-data preservation, signing, releases, updater, Store,
-  Linux packaging and deployment; separate authorization remains required.
+- NSIS uninstall/session-data preservation, signing, updater, Store, and
+  publishing a GitHub Release; separate authorization remains required.
 - TrueRNGpro, RngKitPSG v2, multi-source/XOR, reconnect, resume and statistical
   inference remain non-goals or future work.

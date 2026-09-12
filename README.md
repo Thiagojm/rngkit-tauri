@@ -89,15 +89,22 @@ Ubuntu, then `npm run tauri -- build --no-bundle -- --locked`. It does not run i
 physical tests or build an installer. Observed remote success for `061f66a`:
 https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 
+`.github/workflows/release.yml` does **not** run on ordinary commits. It builds
+installers only for tags `v*` (draft GitHub Release) or manual
+`workflow_dispatch` (Actions artifacts). Publishing the draft is a separate
+click. Ubuntu packaging is not Linux hardware acceptance.
+
 ## Packaging
 
 v1 ships an unsigned per-user English NSIS installer with an embedded offline
-WebView2 installer (about 203 MB extra in the 2026-09-11 payload). Signing,
-SmartScreen, publication, and updater setup are out of scope. Uninstall must
-leave user session output intact.
+WebView2 installer (about 203 MB extra in the 2026-09-11 payload) and an amd64
+`.deb` built on Ubuntu 22.04. The `.deb` does not install udev rules. Signing,
+SmartScreen, updater, and Store remain out of scope. Uninstall must leave user
+session output intact.
 
 ```text
 npm run tauri -- build --bundles nsis -- --locked
+npm run tauri -- build --bundles deb -- --locked
 ```
 
 Local 2026-09-11 evidence (unsigned, not published):
