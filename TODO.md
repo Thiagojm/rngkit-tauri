@@ -15,8 +15,13 @@
   User reported installation and the installed app work as expected.
   Previous-install INF/CAT leftovers remain. Disconnected install untested.
 - Tag-only GitHub Release drafts: Windows NSIS + Ubuntu 22.04 amd64 `.deb`.
-  CI on push/PR stays `--no-bundle`. Drafts stay unpublished until a tag is
-  pushed and Publish is clicked. Linux hardware acceptance is still separate.
+  CI on push/PR stays `--no-bundle`. Version/lockfile agreement and exact-SHA
+  CI (Windows+Ubuntu) are required before packaging. Drafts stay unpublished
+  until a tag is pushed and Publish is clicked. User reported the app works
+  on Linux without specifying distro, install method, or hardware tests.
+  Linux hardware acceptance is still separate.
+- Release version tests derive the real repository tag dynamically; fixed
+  stable/prerelease scenarios use isolated fixtures so version bumps keep CI valid.
 
 ## Next steps
 

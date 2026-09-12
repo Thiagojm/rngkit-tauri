@@ -82,7 +82,9 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   folder-open; 2026-09-10 TrueRNG freshness (`56c0c84` / trng3-rs `08f1889`);
   2026-09-11 mixed Combine via `tauri dev` after pin `23a67aa`, BitBabbler
   acquisition, folds and disconnect, and the installed unsigned NSIS app
-  launching and working as expected. No separate logs or fold matrix.
+  launching and working as expected. The user also reported that the app
+  works on Linux; distro, install method, version, and hardware coverage
+  were not specified. No separate logs or fold matrix.
 - **Remaining:** other artifact open/folder actions, additional hardware,
   native 100k/1M chart interaction, scaling/screen-reader sampling, NSIS
   uninstall/session-data preservation, signing, and publishing a GitHub
@@ -113,6 +115,11 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
 - `bundle.targets` are `nsis` and `deb`. CI is unchanged (`--no-bundle` on
   `main`/PRs). `.github/workflows/release.yml` packages Windows NSIS and
   Ubuntu 22.04 `.deb` only for tags `v*` or manual `workflow_dispatch`.
-  Tag runs attach installers and `SHA256SUMS.txt` to a **draft** Release.
+  Verify requires matching `v<version>` on tags (internal agreement only on
+  branch dispatch) plus successful `ci.yml` Windows and Ubuntu jobs on the
+  exact packaged SHA. Tag runs attach installers and `SHA256SUMS.txt` to a
+  **draft** Release; prerelease drafts follow the semver prerelease label.
   `workflow_dispatch` from a branch leaves artifacts on the Actions run.
-  No tag has been pushed and no GitHub Release has been published.
+- Rechecked 2026-09-12: origin/main is `2130997` with CI
+  `34636008998` green on Windows and Ubuntu. No remote tags, GitHub
+  Releases, or Release workflow runs. Local `b046666` is not on origin.

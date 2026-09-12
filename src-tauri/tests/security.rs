@@ -414,6 +414,14 @@ fn ci_is_locked_and_skips_hardware_and_installer() {
     );
     assert!(!CI_WORKFLOW.contains("--ignored"), "{CI_WORKFLOW}");
     assert!(!CI_WORKFLOW.contains("--bundles"), "{CI_WORKFLOW}");
+    assert!(
+        CI_WORKFLOW.contains("tests/release/validate-version.test.sh"),
+        "{CI_WORKFLOW}"
+    );
+    assert!(
+        CI_WORKFLOW.contains("tests/release/require-ci.test.sh"),
+        "{CI_WORKFLOW}"
+    );
 }
 
 #[test]
@@ -504,6 +512,38 @@ fn release_workflow_is_tag_draft_only() {
     );
     assert!(
         RELEASE_WORKFLOW.contains("contents: write"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("actions: read"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("needs: verify"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("needs: [verify, package]"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("scripts/release/validate-version.py"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("scripts/release/require-ci.py"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("--sha \"${{ github.sha }}\""),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        RELEASE_WORKFLOW.contains("prerelease: ${{ needs.verify.outputs.prerelease == 'true' }}"),
+        "{RELEASE_WORKFLOW}"
+    );
+    assert!(
+        !RELEASE_WORKFLOW.contains("prerelease: false"),
         "{RELEASE_WORKFLOW}"
     );
 }

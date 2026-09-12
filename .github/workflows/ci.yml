@@ -79,6 +79,16 @@ jobs:
             shellcheck src-tauri/resources/device-setup/linux/setup-rng-devices.sh tests/device-setup/linux-setup.test.sh
           fi
 
+      - name: Check release gate scripts
+        if: runner.os == 'Linux'
+        run: |
+          python3 -m py_compile scripts/release/validate-version.py scripts/release/require-ci.py
+          bash tests/release/validate-version.test.sh
+          bash tests/release/require-ci.test.sh
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck tests/release/validate-version.test.sh tests/release/require-ci.test.sh
+          fi
+
       - name: Install Playwright Chromium
         if: runner.os == 'Linux'
         run: npx playwright install --with-deps chromium

@@ -1,9 +1,12 @@
 # Installer packaging only. This is not CI.
 # Push/PR to main still uses ci.yml (`--no-bundle`) and never builds installers.
-# Tags `v*` (example: v0.1.0) build NSIS + .deb and open a GitHub Release draft.
-# workflow_dispatch from a branch builds the same artifacts without publishing.
-# Ubuntu packaging is not Linux desktop hardware acceptance. The .deb does not
-# install udev rules or run the device-setup helper.
+# Tags `v*` (example: v0.1.0) validate version + exact-SHA CI, then build NSIS
+# + .deb and open a GitHub Release draft.
+# workflow_dispatch from a branch validates internal versions and the same SHA
+# CI barrier, then builds Actions artifacts without publishing.
+# Semver prerelease versions (0.1.0-rc.1) mark the draft as prerelease; stable
+# versions do not. Ubuntu packaging is not Linux desktop hardware acceptance.
+# The .deb does not install udev rules or run the device-setup helper.
 
 name: Release
 
@@ -15,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -24,8 +28,43 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  verify:
+    name: Verify version and CI
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.validate-version.outputs.version }}
+      prerelease: ${{ steps.validate-version.outputs.prerelease }}
+
+    steps:
+      - run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v6
+
+      - name: Validate versions
+        id: validate-version
+        env:
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$RELEASE_REF_TYPE" = tag ]; then
+            python3 scripts/release/validate-version.py --tag "$RELEASE_REF_NAME"
+          else
+            python3 scripts/release/validate-version.py
+          fi
+
+      - name: Require CI on this commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/release/require-ci.py \
+            --sha "${{ github.sha }}" \
+            --repo "${{ github.repository }}"
+
   package:
     name: ${{ matrix.os }} ${{ matrix.bundle }}
+    needs: verify
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     strategy:
@@ -97,7 +136,7 @@ jobs:
 
   publish-draft:
     name: Draft GitHub Release
-    needs: package
+    needs: [verify, package]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     timeout-minutes: 15
@@ -121,7 +160,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: RngKit ${{ github.ref_name }}
           draft: true
-          prerelease: false
+          prerelease: ${{ needs.verify.outputs.prerelease == 'true' }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |

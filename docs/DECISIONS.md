@@ -111,12 +111,18 @@ All decisions are accepted. Material changes return to design review.
   1.85; prereleases and local crate paths are forbidden.
 - v1 packaging is unsigned per-user English NSIS (Windows, offline WebView2)
   plus amd64 `.deb` (Ubuntu 22.04 baseline, extra depends `libusb-1.0-0`).
-  CI on `main`/PRs stays `--no-bundle`. `.github/workflows/release.yml` builds
-  installers only on tags `v*` or `workflow_dispatch`; tag runs open a GitHub
-  Release **draft**. Publishing that draft, signing, updater, Store, and Linux
-  hardware acceptance remain separate. The `.deb` does not install udev rules
-  or run the device-setup helper. Uninstall/session-data preservation and
-  SmartScreen remain unverified.
+  CI on `main`/PRs stays `--no-bundle`. `.github/workflows/release.yml` runs
+  only on tags `v*` or `workflow_dispatch`. Before packaging it requires the
+  tag `v<version>` (tag runs) or internal agreement (dispatch) across
+  `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and the
+  lockfiles, then a successful `ci.yml` run on that exact SHA with both
+  `windows-latest` and `ubuntu-22.04`. Absent, pending, failed, or
+  different-SHA CI is rejected. Semver prerelease versions mark the draft
+  `prerelease`; stable versions do not. Tag runs open a GitHub Release
+  **draft**; branch dispatch leaves Actions artifacts. Publishing that draft,
+  signing, updater, Store, and Linux hardware acceptance remain separate. The
+  `.deb` does not install udev rules or run the device-setup helper.
+  Uninstall/session-data preservation and SmartScreen remain unverified.
 
 ## Session configuration validation (2026-09-06)
 

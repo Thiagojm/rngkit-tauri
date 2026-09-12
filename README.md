@@ -91,7 +91,10 @@ https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
 
 `.github/workflows/release.yml` does **not** run on ordinary commits. It builds
 installers only for tags `v*` (draft GitHub Release) or manual
-`workflow_dispatch` (Actions artifacts). Publishing the draft is a separate
+`workflow_dispatch` (Actions artifacts). Tag runs require `v<version>` to match
+`package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and the
+lockfiles, plus a successful `ci.yml` run on that exact SHA. Branch dispatch
+checks the same files and SHA without a tag. Publishing the draft is a separate
 click. Ubuntu packaging is not Linux hardware acceptance.
 
 ## Packaging
