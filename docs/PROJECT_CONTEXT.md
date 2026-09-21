@@ -91,6 +91,20 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   Release draft. Hardware remains opt-in. Linux `.deb` packaging is configured;
   a published Linux release and hardware acceptance are not.
 
+## Windows installer configuration (2026-09-21)
+
+- NSIS remains `.exe`; WebView2 is no longer embedded. `downloadBootstrapper`
+  downloads and installs it when missing, requiring internet in that case.
+  This supersedes the original offline WebView2 packaging requirement.
+- Local locked NSIS build passed: `RngKit_0.1.0_x64-setup.exe` is 8223459 bytes
+  (96.3% smaller than the 223732125-byte offline build). SHA-256:
+  `5bd2e176c4b1677485e013eee39602ea41833addd4a0f123c931c5a20c0ccda0`.
+  7-Zip integrity check passed; listing shows no embedded WebView2 and retains
+  ten device-setup files. Generated NSIS uses `downloadBootstrapper`.
+  The 12 security tests and changed-file formatting checks passed. The new
+  installer has not been installed; present/missing WebView2 setup is untested.
+  The artifact evidence below describes the previous offline configuration.
+
 ## Unsigned NSIS (2026-09-11)
 
 - Locked NSIS at `a505141` (pin `23a67aa`) passed. The unsigned installer
@@ -120,6 +134,8 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   exact packaged SHA. Tag runs attach installers and `SHA256SUMS.txt` to a
   **draft** Release; prerelease drafts follow the semver prerelease label.
   `workflow_dispatch` from a branch leaves artifacts on the Actions run.
-- Rechecked 2026-09-12: origin/main is `2130997` with CI
-  `34636008998` green on Windows and Ubuntu. No remote tags, GitHub
-  Releases, or Release workflow runs. Local `b046666` is not on origin.
+- Rechecked 2026-09-21 before the WebView2 change: origin/main and annotated
+  tag `v0.1.0` resolve to `6790926`. Existing unpublished draft `387605724`
+  contains Windows NSIS, Linux `.deb`, and `SHA256SUMS.txt`. The user authorized
+  commit/push and updating this draft with the smaller Windows installer;
+  publishing remains separate.

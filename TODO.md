@@ -2,6 +2,10 @@
 
 ## Done
 
+- Windows NSIS configuration uses `downloadBootstrapper` instead of embedded
+  offline WebView2 (2026-09-21); internet is needed when WebView2 is missing.
+  Locked local build passed: 8223459 bytes, 96.3% smaller. 7-Zip integrity and
+  payload inspection passed; 12 security tests passed. Installation pending.
 - Windows-first v1: Collect/chart/close, Reports, mixed Combine, Help,
   accessibility, CI, and unsigned NSIS.
 - Exact rngkit-core `23a67aa` is pinned. Mixed Combine: per-input source/fold,
@@ -25,8 +29,9 @@
 
 ## Next steps
 
-1. Validate installation and Help kit access with network disconnected as a
-   standard user; clean-machine WebView2 remains untested. Decide cleanup of old
+1. Validate the smaller NSIS installer setup with WebView2
+   present and missing (online), plus offline setup with WebView2 already present
+   and Help kit access as a standard user. Decide cleanup of old
    TrueRNG INF/CAT retained by updates. Redistribution permission is required
    only before including them again. Setup must not run implicitly.
 2. Separately authorize Ubuntu/Debian hardware validation (both devices after

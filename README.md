@@ -31,7 +31,7 @@ restricted CSP. Open commands use backend-known paths only.
 Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
 `src-tauri/tests/hardware.rs`; default tests do not run them.
 
-The current unsigned NSIS evidence is local HEAD `a505141`; uninstall and
+The latest unsigned NSIS build is the local 2026-09-21 configuration; uninstall and
 other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
 [rngkit-core](https://github.com/Thiagojm/rngkit-core) at
 `23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
@@ -99,9 +99,11 @@ click. Ubuntu packaging is not Linux hardware acceptance.
 
 ## Packaging
 
-v1 ships an unsigned per-user English NSIS installer with an embedded offline
-WebView2 installer (about 203 MB extra in the 2026-09-11 payload) and an amd64
-`.deb` built on Ubuntu 22.04. The `.deb` does not install udev rules. Signing,
+v1 ships an unsigned per-user English NSIS installer (`.exe`) without embedded
+WebView2. Setup downloads and installs WebView2 if missing, requiring internet
+in that case. This replaces the offline installer (about 203 MB extra in the
+2026-09-11 payload). Linux uses an amd64 `.deb` built on Ubuntu 22.04.
+The `.deb` does not install udev rules. Signing,
 SmartScreen, updater, and Store remain out of scope. Uninstall must leave user
 session output intact.
 
@@ -110,7 +112,14 @@ npm run tauri -- build --bundles nsis -- --locked
 npm run tauri -- build --bundles deb -- --locked
 ```
 
-Local 2026-09-11 evidence (unsigned, not published):
+Local 2026-09-21 build (unsigned, not published):
+`src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
+8223459 bytes (8.2 MB), 96.3% smaller than the previous offline build. SHA-256
+`5bd2e176c4b1677485e013eee39602ea41833addd4a0f123c931c5a20c0ccda0`.
+7-Zip integrity and payload inspection passed; WebView2 is not embedded.
+This installer has not been installed or tested on a machine missing WebView2.
+
+Historical 2026-09-11 evidence (previous offline configuration):
 `src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
 223732125 bytes, SHA-256
 `dbc0ca20db58e5bc870a66bcbab92cc424c710459e4d8551bc7f59cab8faab50`.

@@ -425,7 +425,7 @@ fn ci_is_locked_and_skips_hardware_and_installer() {
 }
 
 #[test]
-fn nsis_bundle_is_unsigned_per_user_english_offline() {
+fn nsis_bundle_is_unsigned_per_user_english_downloads_webview_if_missing() {
     let conf: serde_json::Value = serde_json::from_str(TAURI_CONF).expect("json");
     let identifier = conf["identifier"].as_str().expect("identifier");
     assert_eq!(identifier, "com.rngkit.desktop");
@@ -439,7 +439,7 @@ fn nsis_bundle_is_unsigned_per_user_english_offline() {
     let windows = &bundle["windows"];
     assert_eq!(
         windows["webviewInstallMode"]["type"].as_str(),
-        Some("offlineInstaller")
+        Some("downloadBootstrapper")
     );
     assert_eq!(windows["nsis"]["installMode"].as_str(), Some("currentUser"));
     assert_eq!(windows["nsis"]["languages"], serde_json::json!(["English"]));

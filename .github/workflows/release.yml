@@ -173,7 +173,8 @@ jobs:
             remain out of scope.
 
             - **Windows:** per-user NSIS setup. Windows may warn because the
-              package is unsigned.
+              package is unsigned. Internet is required if WebView2 is missing;
+              setup downloads it instead of embedding the runtime.
             - **Linux:** amd64 `.deb` built on Ubuntu 22.04. This package is not
               Linux hardware acceptance. It does not install udev rules or run
               the device-setup helper; use Help → Choosing a source after install.

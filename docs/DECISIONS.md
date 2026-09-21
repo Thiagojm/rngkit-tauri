@@ -109,7 +109,8 @@ All decisions are accepted. Material changes return to design review.
 - Locked versions live in `package-lock.json` and `src-tauri/Cargo.lock`.
   Floors are Node `^20.19.0 || >=22.12.0`, npm `>=10`, Rust edition 2024/MSRV
   1.85; prereleases and local crate paths are forbidden.
-- v1 packaging is unsigned per-user English NSIS (Windows, offline WebView2)
+- v1 packaging is unsigned per-user English NSIS (Windows, WebView2 downloaded
+  if missing via `downloadBootstrapper`, requiring internet in that case)
   plus amd64 `.deb` (Ubuntu 22.04 baseline, extra depends `libusb-1.0-0`).
   CI on `main`/PRs stays `--no-bundle`. `.github/workflows/release.yml` runs
   only on tags `v*` or `workflow_dispatch`. Before packaging it requires the
