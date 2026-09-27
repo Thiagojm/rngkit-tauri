@@ -51,6 +51,10 @@ The app has four screens, reachable from the left-hand navigation.
   **Replace** is a separate, explicit choice.
 - Input files are only read, never changed.
 
+![Generated XLSX report](docs/screenshots/report-xlsx.png)
+
+The generated XLSX: per-sample data and the cumulative Z chart.
+
 ### Combine
 
 ![Combine screen](docs/screenshots/combine.png)
