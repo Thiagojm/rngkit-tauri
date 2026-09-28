@@ -139,3 +139,102 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   contains Windows NSIS, Linux `.deb`, and `SHA256SUMS.txt`. The user authorized
   commit/push and updating this draft with the smaller Windows installer;
   publishing remains separate.
+
+## README status history (moved)
+
+Moved verbatim from `README.md` on 2026-09-27 when the README was rewritten
+for end users. Only the headings were demoted one level; the text is unchanged.
+
+### Original introduction
+
+RngKit is a Windows-first desktop application for collecting entropy samples
+from explicitly selected hardware or pseudo-random sources, recording native
+sessions, monitoring descriptive cumulative statistics, creating XLSX reports,
+and safely combining compatible current and RngKitPSG v3 CSV files.
+
+### Status
+
+The four-destination shell is connected to a Rust coordinator through
+discovery, selection, session-draft, preference, and collection commands.
+Startup restores safe settings, prepares `Documents/RngKit` when no valid saved
+output root exists, and displays 2048-bit new-user defaults. After frontend
+hydration, one asynchronous discovery runs without opening or selecting a
+source; manual Refresh remains available. Default tests inject fake discovery
+and fake sources. Safe settings survive restart. Start opens the
+selected source, collects until cooperative Stop, and records a native
+BIN/CSV/manifest bundle. Open session folder uses a backend-known path.
+Closing while collecting confirms Keep collecting or Stop and exit. Debug
+builds include a scenario switch that calls `apply_dev_scenario`; production
+omits that command and the switch. The live chart retains every committed
+descriptive cumulative Z point. Copied diagnostics are bounded and redacted.
+Reports inspect a native session directory, a current or legacy v3 BIN/CSV
+file, or a derived concatenation bundle and generate a same-stem XLSX with an
+explicit Cancel/Replace round trip. Combine accumulates compatible current,
+legacy, or mixed CSV files across folders and creates a provenance-bearing
+derived bundle without modifying inputs.
+Production capabilities stay `core:default` and `dialog:default` with a
+restricted CSP. Open commands use backend-known paths only.
+
+Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
+`src-tauri/tests/hardware.rs`; default tests do not run them.
+
+The latest unsigned NSIS build is the local 2026-09-21 configuration; uninstall and
+other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
+[rngkit-core](https://github.com/Thiagojm/rngkit-core) at
+`23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
+
+The approved 2026-08-25 artifact-feedback/report-charts plan and the subsequent
+terminal-outcome/local-clock corrections are implemented against the exact
+library revision above. App Phase 2 is `b946c4d`, backend Phase 3 is `44e0d65`,
+and UI Phase 4 is `b137419`. Native integrated workflow validation remains the
+active user gate.
+
+### Sources of truth
+
+- Product contract: `docs/specs/2026-08-22-rngkit-tauri-design.md`
+- Execution plan: `docs/plans/2026-08-22-rngkit-tauri-plan.md`
+- Approved improvements: `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
+- Approved phased improvements plan: `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
+- Approved artifact-feedback design: `docs/specs/2026-08-25-rngkit-artifact-feedback-and-report-charts-design.md`
+- Approved artifact-feedback plan: `docs/plans/2026-08-25-rngkit-artifact-feedback-and-report-charts-plan.md`
+- Current state: `docs/PROJECT_CONTEXT.md`
+- Durable decisions: `docs/DECISIONS.md`
+- Roadmap: `TODO.md`
+
+### Stack
+
+Exact versions are locked in `package-lock.json` and `src-tauri/Cargo.lock`.
+
+- Tauri 2.11.5, `@tauri-apps/cli` 2.11.4, `@tauri-apps/api` 2.11.1
+- Svelte 5.56.10, Vite 8.2.2, TypeScript 6.0.3
+- Tailwind CSS 4.3.3 via `@tailwindcss/vite`
+- uPlot 1.6.32
+- Playwright 1.62.1 for browser-level scaffold and later mocked-IPC tests
+- Rust edition 2024, MSRV 1.85
+- Node.js `^20.19.0 || >=22.12.0`, npm `>=10`
+
+### CI evidence (from Development)
+
+`.github/workflows/ci.yml` runs locked frontend and Rust checks on Windows and
+Ubuntu, then `npm run tauri -- build --no-bundle -- --locked`. It does not run ignored
+physical tests or build an installer. Observed remote success for `061f66a`:
+https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
+
+### Local installer builds (from Packaging)
+
+Local 2026-09-21 build (unsigned, not published):
+`src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
+8223459 bytes (8.2 MB), 96.3% smaller than the previous offline build. SHA-256
+`5bd2e176c4b1677485e013eee39602ea41833addd4a0f123c931c5a20c0ccda0`.
+7-Zip integrity and payload inspection passed; WebView2 is not embedded.
+This installer has not been installed or tested on a machine missing WebView2.
+
+Historical 2026-09-11 evidence (previous offline configuration):
+`src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
+223732125 bytes, SHA-256
+`dbc0ca20db58e5bc870a66bcbab92cc424c710459e4d8551bc7f59cab8faab50`.
+The file is not tracked. Non-elevated `/S /UPDATE` installed that payload on
+this Windows host with network connected. The user reported that installation
+and the installed app work as expected. Uninstall, session-data preservation,
+disconnected install, and clean-machine WebView2 remain unverified. Windows may
+warn because the package is unsigned.

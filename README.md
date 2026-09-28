@@ -1,72 +1,196 @@
 # RngKit
 
-RngKit is a Windows-first desktop application for collecting entropy samples
-from explicitly selected hardware or pseudo-random sources, recording native
-sessions, monitoring descriptive cumulative statistics, creating XLSX reports,
-and safely combining compatible current and RngKitPSG v3 CSV files.
+RngKit is a desktop app for recording data from a random number generator and
+reviewing it afterwards. You pick one source (a BitBabbler or TrueRNG USB
+device, your CPU's RDSEED instruction, or a built-in pseudo-random generator),
+and RngKit reads a fixed-size sample at a regular interval (2048 bits every
+second by default), counts the ones in each sample, and draws a live cumulative
+Z-score chart while it saves everything to disk. Finished sessions can be turned
+into Excel (XLSX) reports, and compatible recordings can be merged into one
+combined dataset. It is meant for anyone running collection sessions with a
+TRNG, including users with files from the older RngKitPSG v3 format, which
+RngKit can still read. RngKit is Windows-first; a Linux `.deb` is also provided.
 
-## Status
+![Collecting data](docs/screenshots/collect-running.png)
 
-The four-destination shell is connected to a Rust coordinator through
-discovery, selection, session-draft, preference, and collection commands.
-Startup restores safe settings, prepares `Documents/RngKit` when no valid saved
-output root exists, and displays 2048-bit new-user defaults. After frontend
-hydration, one asynchronous discovery runs without opening or selecting a
-source; manual Refresh remains available. Default tests inject fake discovery
-and fake sources. Safe settings survive restart. Start opens the
-selected source, collects until cooperative Stop, and records a native
-BIN/CSV/manifest bundle. Open session folder uses a backend-known path.
-Closing while collecting confirms Keep collecting or Stop and exit. Debug
-builds include a scenario switch that calls `apply_dev_scenario`; production
-omits that command and the switch. The live chart retains every committed
-descriptive cumulative Z point. Copied diagnostics are bounded and redacted.
-Reports inspect a native session directory, a current or legacy v3 BIN/CSV
-file, or a derived concatenation bundle and generate a same-stem XLSX with an
-explicit Cancel/Replace round trip. Combine accumulates compatible current,
-legacy, or mixed CSV files across folders and creates a provenance-bearing
-derived bundle without modifying inputs.
-Production capabilities stay `core:default` and `dialog:default` with a
-restricted CSP. Open commands use backend-known paths only.
+## Features
 
-Ignored BitBabbler, TrueRNG, RDSEED, and unified discovery smokes live in
-`src-tauri/tests/hardware.rs`; default tests do not run them.
+The app has four screens, reachable from the left-hand navigation.
 
-The latest unsigned NSIS build is the local 2026-09-21 configuration; uninstall and
-other unverified evidence are listed in `docs/PROJECT_CONTEXT.md`. The reusable library is
-[rngkit-core](https://github.com/Thiagojm/rngkit-core) at
-`23a67aa4c87d8fa3bbcf049f25786d54966e39d2`.
+### Collect
 
-The approved 2026-08-25 artifact-feedback/report-charts plan and the subsequent
-terminal-outcome/local-clock corrections are implemented against the exact
-library revision above. App Phase 2 is `b946c4d`, backend Phase 3 is `44e0d65`,
-and UI Phase 4 is `b137419`. Native integrated workflow validation remains the
-active user gate.
+![Collect screen](docs/screenshots/collect-idle.png)
 
-## Sources of truth
+- Sources are discovered automatically when the app opens. Nothing is selected
+  for you: choose one source per session, or select **Refresh sources** to
+  search again.
+- Set the sample size in bits (a multiple of 8; default 2048), the interval in
+  whole seconds (default 1), the fold for BitBabbler (0 - Raw, 1, 2, 3, or 4),
+  and the output folder (default `Documents/RngKit`). Settings are remembered
+  between launches.
+- While collecting, the Monitoring panel shows samples, elapsed time, observed
+  one proportion, descriptive cumulative Z, and timing overruns, plus a live
+  chart with a zero line and ±1.96 reference lines. You can zoom and pan; **Fit
+  all** shows the whole session. Every point of the session is kept.
+- **Stop** lets the current sample finish and save. If you close the window
+  while collecting, RngKit asks whether to keep collecting or stop and exit.
 
-- Product contract: `docs/specs/2026-08-22-rngkit-tauri-design.md`
-- Execution plan: `docs/plans/2026-08-22-rngkit-tauri-plan.md`
-- Approved improvements: `docs/specs/2026-08-24-rngkit-workflow-improvements-design.md`
-- Approved phased improvements plan: `docs/plans/2026-08-24-rngkit-workflow-improvements-plan.md`
-- Approved artifact-feedback design: `docs/specs/2026-08-25-rngkit-artifact-feedback-and-report-charts-design.md`
-- Approved artifact-feedback plan: `docs/plans/2026-08-25-rngkit-artifact-feedback-and-report-charts-plan.md`
-- Current state: `docs/PROJECT_CONTEXT.md`
-- Durable decisions: `docs/DECISIONS.md`
-- Roadmap: `TODO.md`
+> Z shows balance over time; it does not certify randomness. The ±1.96 lines
+> are visual guides only, not a pass/fail test.
 
-## Stack
+### Reports
 
-Exact versions are locked in `package-lock.json` and `src-tauri/Cargo.lock`.
+![Reports screen](docs/screenshots/reports.png)
 
-- Tauri 2.11.5, `@tauri-apps/cli` 2.11.4, `@tauri-apps/api` 2.11.1
-- Svelte 5.56.10, Vite 8.2.2, TypeScript 6.0.3
-- Tailwind CSS 4.3.3 via `@tailwindcss/vite`
-- uPlot 1.6.32
-- Playwright 1.62.1 for browser-level scaffold and later mocked-IPC tests
-- Rust edition 2024, MSRV 1.85
-- Node.js `^20.19.0 || >=22.12.0`, npm `>=10`
+- Select **Choose input** and pick a file from a recorded session, a combined
+  (derived) bundle, a current CSV or BIN file, or a legacy RngKitPSG v3 CSV or
+  BIN file.
+- Review the preview, then select **Generate report**. RngKit writes an XLSX
+  file with the same name, next to the input.
+- An existing report is never overwritten silently: **Cancel** keeps it and
+  **Replace** is a separate, explicit choice.
+- Input files are only read, never changed.
+
+![Generated XLSX report](docs/screenshots/report-xlsx.png)
+
+The generated XLSX: per-sample data and the cumulative Z chart.
+
+### Combine
+
+![Combine screen](docs/screenshots/combine.png)
+
+- Select **Add files** to pick CSV files, and repeat to add files from other
+  folders. Current CSVs, legacy v3 CSVs, or a mix are accepted; BIN files are
+  not.
+- Each row shows format, source, sample size, interval, fold, time range, row
+  count, and whether it is valid. Use **Remove** or **Clear all** to adjust the
+  selection.
+- Files can be combined only when sample size and interval match exactly and
+  their time ranges do not overlap. Sources and folds may differ; such output is
+  labeled "Mixed sources". Files are joined in time order; values are not XOR'd
+  or resampled.
+- **Create derived bundle** writes the combined data to a new folder, then
+  **Generate XLSX** creates its report. Your input files are unchanged.
+
+### Help
+
+![Help screen](docs/screenshots/help.png)
+
+- A built-in guide covering quick start, choosing a source, device setup,
+  collecting and stopping safely, creating reports, combining files,
+  understanding the chart, common problems, and file formats.
+- **Open device setup folder** opens the driver and permission kit that ships
+  with the app (see [Device setup](#device-setup)).
+- Choose a System, Light, or Dark theme in the top bar.
+
+## Supported sources
+
+RngKit supports exactly one of these sources per session:
+
+| Source           | What it is                                                                              | Setup needed                                          |
+| ---------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| BitBabbler       | USB hardware RNG, USB ID `0403:7840`. Supports fold 0 (raw) to 4.                       | Windows: WinUSB driver. Linux: USB permissions.       |
+| TrueRNG v1/v2/v3 | USB hardware RNG, USB ID `04d8:f5fe` (not TrueRNGpro).                                  | Windows: CDC/`usbser` driver. Linux: tty permissions. |
+| Intel RDSEED     | Hardware random instruction built into the CPU. Appears only when your CPU provides it. | None                                                  |
+| PseudoRNG        | Software pseudo-random generator.                                                       | None                                                  |
+
+If a device disappears, refresh and choose a source again; RngKit never
+switches devices on its own.
+
+## Installation
+
+Download the latest version from the
+[Releases page](https://github.com/Thiagojm/rngkit-tauri/releases/latest).
+
+- **Windows 10/11 (x64):** run `RngKit_<version>_x64-setup.exe`. It installs
+  for the current user only. The installer is not signed, so Windows may show a
+  warning. If Microsoft WebView2 is missing, setup downloads and installs it,
+  which needs an internet connection.
+- **Linux (amd64, Ubuntu/Debian):** install the `.deb` with
+  `sudo apt install ./RngKit_<version>_amd64.deb`. The package depends on
+  `libusb-1.0-0` and does not install device permission (udev) rules; see
+  below. Formal Linux hardware validation is still pending.
+
+Each release also includes `SHA256SUMS.txt` for checking your download.
+
+### Device setup
+
+Hardware devices need a one-time driver or permission setup. The files are
+bundled with the app: open **Help → Choosing a source → Device setup** and
+select **Open device setup folder**. RngKit never runs these tools for you.
+
+- **Windows / BitBabbler:** run the bundled `zadig-2.9.exe`, enable Options →
+  List All Devices, select the device with USB ID `0403:7840`, and install
+  **WinUSB** for it (not the FTDI VCP driver, and not for any other FTDI
+  device). Unplug and reconnect.
+- **Windows / TrueRNG:** Windows often uses its built-in CDC / `usbser` driver.
+  If the device is not available, get the manufacturer driver package from
+  [euler357/TrueRNG](https://github.com/euler357/TrueRNG) (`Windows_Drivers`);
+  it is not bundled. Do not bind WinUSB to this device. Unplug and reconnect.
+- **Ubuntu / Debian:** from the kit's `linux` folder, check and then apply the
+  permission rules (replace `bitbabbler` with `truerng3` or `both` as needed):
+
+  ```text
+  bash setup-rng-devices.sh --check --device bitbabbler --user YOUR_USER
+  sudo bash setup-rng-devices.sh --device bitbabbler --user YOUR_USER
+  ```
+
+  Then log out and back in and reconnect the device.
+
+After setup, select **Refresh sources** in Collect and run a short Start/Stop
+to confirm a session is saved.
+
+## Quick start
+
+1. **Connect your device.** Plug in your BitBabbler or TrueRNG (complete
+   [Device setup](#device-setup) the first time). RDSEED and PseudoRNG need no
+   device.
+2. **Pick a source.** Open RngKit on the **Collect** screen, wait for discovery
+   (or select **Refresh sources**), and select one source.
+3. **Check your settings.** Sample size, interval, fold (BitBabbler only), and
+   output folder.
+4. **Start.** Select **Start** and watch the samples and the cumulative Z chart
+   update.
+5. **Stop.** Select **Stop** and wait while the last sample is saved. Use **Open
+   session folder** to see the files.
+6. **Generate a report.** Go to **Reports**, select **Choose input**, pick the
+   session's CSV file, and select **Generate report**. Open the XLSX from the
+   result dialog.
+
+## Output files
+
+Every session is saved in its own folder inside your output folder (default
+`Documents/RngKit`). The folder and its files share one name:
+
+```text
+<YYYYMMDDTHHMMSS>_<source>_s<bits>_i<seconds>[_f<fold>]
+```
+
+The timestamp is the local start time, `<source>` is `bitb`, `trng`, `rdseed`,
+or `pseudo`, and `_f<fold>` appears only for BitBabbler. Example:
+`20260927T154500_trng_s2048_i1`.
+
+| File            | Contents                                                                                                                                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<name>.bin`    | The raw sample bytes, in order.                                                                                                                                                                                 |
+| `<name>.csv`    | One row per sample: `sample_index`, `captured_at_utc` (RFC 3339), `elapsed_ms`, `acquisition_ms`, `ones`, `byte_offset`, `byte_length`.                                                                         |
+| `manifest.json` | Session metadata.                                                                                                                                                                                               |
+| `<name>.xlsx`   | Created by Reports. A **Summary** sheet (source, fold, sample bits, interval, start/end, samples, ones, proportion, descriptive final Z, overruns, and more) and a **Samples** sheet with a cumulative Z chart. |
+
+**Combine** creates a new derived-bundle folder in your output folder with the
+combined CSV and a `manifest.json` that records the inputs (without their
+absolute paths). **Generate XLSX** saves the report in that folder.
+
+Reports for standalone or legacy files are saved next to the chosen file, with
+the same name and an `.xlsx` extension.
 
 ## Development
+
+Requirements: Node.js `^20.19.0 || >=22.12.0`, npm `>=10`, and Rust (edition
+2024, MSRV 1.85). The app uses Tauri 2, Svelte 5, TypeScript, Vite, Tailwind
+CSS 4, and uPlot; the Rust side builds on
+[rngkit-core](https://github.com/Thiagojm/rngkit-core). Exact versions are
+locked in `package-lock.json` and `src-tauri/Cargo.lock`.
 
 ```text
 npm ci
@@ -84,10 +208,13 @@ npm run test:e2e
 npm run build
 ```
 
+Physical-device tests for BitBabbler, TrueRNG, RDSEED, and discovery live in
+`src-tauri/tests/hardware.rs`. They are ignored by default and never run in
+normal test runs.
+
 `.github/workflows/ci.yml` runs locked frontend and Rust checks on Windows and
-Ubuntu, then `npm run tauri -- build --no-bundle -- --locked`. It does not run ignored
-physical tests or build an installer. Observed remote success for `061f66a`:
-https://github.com/Thiagojm/rngkit-tauri/actions/runs/32755861549
+Ubuntu, then `npm run tauri -- build --no-bundle -- --locked`. It does not run
+ignored physical tests or build an installer.
 
 `.github/workflows/release.yml` does **not** run on ordinary commits. It builds
 installers only for tags `v*` (draft GitHub Release) or manual
@@ -112,23 +239,16 @@ npm run tauri -- build --bundles nsis -- --locked
 npm run tauri -- build --bundles deb -- --locked
 ```
 
-Local 2026-09-21 build (unsigned, not published):
-`src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
-8223459 bytes (8.2 MB), 96.3% smaller than the previous offline build. SHA-256
-`5bd2e176c4b1677485e013eee39602ea41833addd4a0f123c931c5a20c0ccda0`.
-7-Zip integrity and payload inspection passed; WebView2 is not embedded.
-This installer has not been installed or tested on a machine missing WebView2.
+Build sizes, checksums, and installer test evidence are recorded in
+[`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md).
 
-Historical 2026-09-11 evidence (previous offline configuration):
-`src-tauri/target/release/bundle/nsis/RngKit_0.1.0_x64-setup.exe`
-223732125 bytes, SHA-256
-`dbc0ca20db58e5bc870a66bcbab92cc424c710459e4d8551bc7f59cab8faab50`.
-The file is not tracked. Non-elevated `/S /UPDATE` installed that payload on
-this Windows host with network connected. The user reported that installation
-and the installed app work as expected. Uninstall, session-data preservation,
-disconnected install, and clean-machine WebView2 remain unverified. Windows may
-warn because the package is unsigned.
+## Project history
+
+Current state, validation evidence, and the previous README status notes are in
+[`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md). Durable decisions are in
+[`docs/DECISIONS.md`](docs/DECISIONS.md), the roadmap is in [`TODO.md`](TODO.md),
+and design specs and plans are under `docs/specs/` and `docs/plans/`.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [`LICENSE`](LICENSE).
