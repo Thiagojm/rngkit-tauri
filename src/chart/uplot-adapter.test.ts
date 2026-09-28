@@ -1,3 +1,4 @@
+import uPlot from 'uplot';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createChartAdapter,
@@ -306,5 +307,76 @@ describe('uPlot adapter', () => {
     expect(FakePlot.instances).toHaveLength(1);
     expect(plot?.redraw).toHaveBeenCalledWith(false, true);
     expect(onViewportStateChange).not.toHaveBeenCalled();
+  });
+
+  it('draws reference labels left-aligned and scaled by the pixel ratio', () => {
+    const originalPxRatio = uPlot.pxRatio;
+    uPlot.pxRatio = 2;
+    try {
+      const { adapter, host } = adapterHarness();
+      adapter.mount(host);
+      const plot = FakePlot.instances[0];
+      const opts = FakePlot.opts[0] as uPlot.Options;
+      const drawHook = opts.plugins?.[0]?.hooks.draw;
+      const draw = Array.isArray(drawHook) ? drawHook[0] : drawHook;
+      expect(plot).toBeDefined();
+      expect(draw).toBeDefined();
+      if (!plot || !draw) {
+        return;
+      }
+      const drawn: {
+        label: string;
+        x: number;
+        y: number;
+        textAlign: CanvasTextAlign;
+        textBaseline: CanvasTextBaseline;
+        font: string;
+      }[] = [];
+      const ctx = {
+        // uPlot leaves the context right-aligned after drawing y-axis values.
+        textAlign: 'right' as CanvasTextAlign,
+        textBaseline: 'middle' as CanvasTextBaseline,
+        font: '10px sans-serif',
+        save() {},
+        restore() {},
+        beginPath() {},
+        rect() {},
+        clip() {},
+        moveTo() {},
+        lineTo() {},
+        stroke() {},
+        setLineDash() {},
+        fillText(label: string, x: number, y: number) {
+          drawn.push({
+            label,
+            x,
+            y,
+            textAlign: this.textAlign,
+            textBaseline: this.textBaseline,
+            font: this.font,
+          });
+        },
+      };
+      plot.ctx = ctx as unknown as CanvasRenderingContext2D;
+      plot.bbox = { left: 40, top: 0, width: 100, height: 100 };
+      plot.valToPos = () => 50;
+
+      draw(plot as unknown as uPlot);
+
+      expect(drawn.map((entry) => entry.label)).toEqual([
+        'Zero',
+        'Reference +1.96',
+        'Reference -1.96',
+      ]);
+      for (const entry of drawn) {
+        expect(entry.textAlign).toBe('left');
+        expect(entry.textBaseline).toBe('bottom');
+        expect(entry.font).toBe('24px sans-serif');
+        expect(entry.x).toBe(52);
+        expect(entry.y).toBe(46);
+      }
+    } finally {
+      uPlot.pxRatio = originalPxRatio;
+    }
   });
 });
