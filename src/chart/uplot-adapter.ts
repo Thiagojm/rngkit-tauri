@@ -103,6 +103,13 @@ function referenceLinesPlugin(
   };
 }
 
+// Sample indices are whole numbers, so only offer integer tick steps. uPlot's
+// default increments include fractions, which at 1-2 samples produced ticks
+// like 0.2, 0.4 that rounded to duplicate labels ("0 0 0 1 1 1").
+const X_TICK_INCRS = Array.from({ length: 16 }, (_, exp) =>
+  [1, 2, 5].map((mult) => mult * 10 ** exp),
+).flat();
+
 function yRange(
   _plot: uPlot,
   dataMin: number,
@@ -156,7 +163,36 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
     }
     const next = pending;
     pending = null;
-    plot.setData(next.data, next.resetScales);
+    if (next.data[0].length === 0 && plot.data[0]?.length && target) {
+      // Data was cleared (e.g. "Start another session"). uPlot cannot unset a
+      // scale, so rebuild the plot to get back the pristine empty chart: no
+      // stale line and no leftover pan/zoom.
+      adapter.mount(target);
+      return;
+    }
+    const xMin = plot.scales.x?.min;
+    const xMax = plot.scales.x?.max;
+    const yMin = plot.scales.y?.min;
+    const yMax = plot.scales.y?.max;
+    if (
+      next.resetScales ||
+      next.data[0].length === 0 ||
+      xMin == null ||
+      xMax == null ||
+      yMin == null ||
+      yMax == null
+    ) {
+      plot.setData(next.data, true);
+      return;
+    }
+    // setData(data, false) swaps the data without redrawing, so re-apply the
+    // current view explicitly: new points inside it are drawn and a paused
+    // viewport does not move.
+    plot.batch(() => {
+      plot?.setData(next.data, false);
+      plot?.setScale('x', { min: xMin, max: xMax });
+      plot?.setScale('y', { min: yMin, max: yMax });
+    });
   }
 
   function remember(data: AlignedChartData): void {
@@ -316,6 +352,7 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
           ticks: {
             stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
+          incrs: X_TICK_INCRS,
           values: (_plot, splits) =>
             splits.map((value) => String(Math.round(value))),
         },
@@ -343,7 +380,7 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
     };
   }
 
-  return {
+  const adapter: ChartAdapter = {
     mount(host) {
       this.destroy();
       target = host;
@@ -413,4 +450,5 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       target = null;
     },
   };
+  return adapter;
 }
