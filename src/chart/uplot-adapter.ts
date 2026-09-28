@@ -61,6 +61,7 @@ function referenceLinesPlugin(
           }
           const zero = cssColor(target, '--color-chart-zero', '#4a5a70');
           const ref = cssColor(target, '--color-chart-ref', '#b54708');
+          const px = uPlot.pxRatio;
           ctx.save();
           ctx.beginPath();
           ctx.rect(bbox.left, bbox.top, bbox.width, bbox.height);
@@ -84,9 +85,13 @@ function referenceLinesPlugin(
             ctx.stroke();
             ctx.setLineDash([]);
             ctx.fillStyle = color;
-            ctx.font = '12px sans-serif';
+            // uPlot's canvas is sized in physical pixels, and uPlot leaves
+            // textAlign as 'right' after drawing y-axis values, so set both
+            // explicitly or the label ends at the left edge and is clipped.
+            ctx.font = `${12 * px}px sans-serif`;
+            ctx.textAlign = 'left';
             ctx.textBaseline = 'bottom';
-            ctx.fillText(label, bbox.left + 6, y - 2);
+            ctx.fillText(label, bbox.left + 6 * px, y - 2 * px);
           };
           drawLine(0, zero, false, labels.zero);
           drawLine(REFERENCE_Z, ref, true, labels.refPlus);
