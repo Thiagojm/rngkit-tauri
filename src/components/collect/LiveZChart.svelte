@@ -88,10 +88,14 @@
       aria-label={copy.chart.caption}
     ></div>
     {#if empty}
+      <!-- Sit between the +1 and +2 gridlines so the message clears the zero
+           line and its label; the surface pill masks any gridline behind it. -->
       <p
-        class="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-text-muted"
+        class="pointer-events-none absolute inset-x-0 top-[24%] flex -translate-y-1/2 justify-center px-4 text-center text-sm text-text-muted"
       >
-        {copy.chart.empty}
+        <span class="rounded-sm bg-surface px-2 py-0.5">
+          {copy.chart.empty}
+        </span>
       </p>
     {/if}
   </div>
