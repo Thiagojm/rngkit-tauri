@@ -18,10 +18,17 @@ const labels: ChartLabels = {
 class FakePlot {
   static instances: FakePlot[] = [];
   static opts: unknown[] = [];
-  setData = vi.fn();
+  data: unknown[][] = [[], []];
+  setData = vi.fn<(data: unknown[][], resetScales?: boolean) => void>(
+    (data) => {
+      this.data = data;
+    },
+  );
   setScale = vi.fn();
   setSize = vi.fn();
-  destroy = vi.fn();
+  destroy = vi.fn(() => {
+    this.root.remove();
+  });
   valToPos = () => 0;
   posToVal = () => 0;
   root = document.createElement('div');
@@ -44,6 +51,9 @@ class FakePlot {
     y: { min: -2, max: 2 },
   };
   redraw = vi.fn();
+  batch = vi.fn((txn: (plot: FakePlot) => void) => {
+    txn(this);
+  });
 
   constructor(opts: unknown, _data: unknown, target: HTMLElement) {
     FakePlot.opts.push(opts);
@@ -264,6 +274,66 @@ describe('uPlot adapter', () => {
     expect(adapter.isFollowing()).toBe(false);
     expect(onViewportStateChange).toHaveBeenCalledWith(false);
     expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
+  });
+
+  it('rebuilds a clean plot when the data is cleared', () => {
+    const { adapter, host, frames } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    frames.length = 0;
+    adapter.setData([[1], [0.1]], true);
+    frames[0]?.(0);
+    frames.length = 0;
+    adapter.setData([[1], [0.1]], false);
+    frames[0]?.(0);
+    frames.length = 0;
+    const oldPlot = FakePlot.instances[0];
+
+    adapter.setData([[], []], false);
+    frames[0]?.(0);
+
+    // The stale line and any pan/zoom go away with the old plot.
+    expect(oldPlot?.destroy).toHaveBeenCalledTimes(1);
+    expect(FakePlot.instances).toHaveLength(2);
+    expect(host.querySelectorAll('.uplot')).toHaveLength(1);
+    const newPlot = FakePlot.instances[1];
+    frames.at(-1)?.(0);
+    expect(newPlot?.setData).toHaveBeenCalledWith([[], []], true);
+    expect(newPlot?.data).toEqual([[], []]);
+  });
+
+  it('draws new points in a paused view without moving it', () => {
+    const { adapter, host, frames } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    frames.length = 0;
+    const plot = FakePlot.instances[0];
+    plot?.setData.mockClear();
+    const data: [number[], number[]] = [
+      [1, 2],
+      [0.1, 0.2],
+    ];
+
+    adapter.setData(data, false);
+    frames[0]?.(0);
+
+    expect(plot?.batch).toHaveBeenCalledTimes(1);
+    expect(plot?.setData).toHaveBeenCalledWith(data, false);
+    expect(plot?.setScale).toHaveBeenCalledWith('x', { min: 1, max: 10 });
+    expect(plot?.setScale).toHaveBeenCalledWith('y', { min: -2, max: 2 });
+  });
+
+  it('uses only whole-number x-axis tick increments', () => {
+    const { adapter, host } = adapterHarness();
+    adapter.mount(host);
+    const opts = FakePlot.opts[0] as uPlot.Options;
+    const incrs = opts.axes?.[0]?.incrs;
+
+    expect(Array.isArray(incrs)).toBe(true);
+    const steps = incrs as number[];
+    expect(steps[0]).toBe(1);
+    expect(steps.every((step) => Number.isInteger(step))).toBe(true);
+    expect(steps).toEqual([...steps].sort((a, b) => a - b));
   });
 
   it('resizes the mounted plot without replacing it', () => {
