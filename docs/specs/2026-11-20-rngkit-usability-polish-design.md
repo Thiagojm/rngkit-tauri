@@ -1,6 +1,8 @@
 # RngKit Usability and Visual Polish Design
 
-**Status:** Draft — awaiting user approval. No implementation is authorized.
+**Status:** Approved 2026-11-20 with the recommended answers to section 8.
+Implementation follows `docs/plans/2026-11-20-rngkit-usability-polish-plan.md`
+and still requires separate authorization to start.
 
 **Date:** 2026-11-20
 
@@ -47,8 +49,8 @@ for some actions, and dense or repeated technical copy.
 
 Each requirement lists the current behavior, the required behavior, and its
 acceptance criteria. Priority: **P1** must ship together; **P2** should ship
-in the same change set; **P3** is copy work that needs explicit approval of the
-wording in section 5.
+in the same change set; **P3** is copy work using the approved wording in
+section 5.
 
 ### UX-1 (P1) Collect layout at narrow widths
 
@@ -109,8 +111,8 @@ retains the authoritative source basename for generation.
   file name only, never a path, consistent with Combine rows.
 - Show it first in the preview as **Input file** (monospace, `break-all`).
 - Show the resulting report name as **Report file** (`<stem>.xlsx`), so
-  "same-stem" no longer needs explaining in the intro. If the backend cannot
-  state it without new authority, omit this line (see Q3).
+  "same-stem" no longer needs explaining in the intro. The name is derived
+  from the same backend stem used by generation; it is a file name only.
 
 **Acceptance.**
 - Rust DTO/inspection tests assert the basename for native, derived, standalone
@@ -140,10 +142,13 @@ collecting/stopping.
 **Current.** Start and Stop both use the primary blue
 (`CollectionControls.svelte:16,24`).
 
-**Required.** Add a `stop` button variant with its own theme token
-(`--color-action-stop`, `--color-action-stop-hover`) in light, dark, and
-system-dark blocks of `src/styles/theme.css`, plus a square stop glyph marked
-`aria-hidden`. Label text stays `Stop`. Start keeps the primary variant.
+**Required.** Add a neutral dark `stop` button variant (Stop saves the
+session, so it must not suggest data loss) with its own theme tokens
+(`--color-action-stop`, `--color-action-stop-hover`, `--color-action-stop-text`)
+in the light, dark, and system-dark blocks of `src/styles/theme.css`: light uses
+the inverse surface (`#152033`) with inverse text; dark uses a light neutral
+(`#e8eef5`) with dark text. Add a square stop glyph marked `aria-hidden`. Label
+text stays `Stop`. Start keeps the primary blue.
 
 **Acceptance.** `theme.contrast.test.ts` asserts at least 4.5:1 for stop text on
 the stop background in both themes; component test asserts the variant.
@@ -233,7 +238,7 @@ time; it does not certify randomness.` is unchanged.
 **Acceptance.** `copy.audit.test.ts` still passes; Help references to renamed
 labels are updated; e2e and unit tests use `copy` constants, not literals.
 
-## 5. Proposed wording (needs approval)
+## 5. Approved wording
 
 | Location | Current | Proposed |
 | --- | --- | --- |
@@ -278,13 +283,11 @@ formats and version details" section and in documentation.
 - On completion: update `docs/DECISIONS.md` (Collect layout amendment, Reports
   basename, Combine step layout, copy), `TODO.md`, and Help.
 
-## 8. Open questions
+## 8. Resolved decisions (2026-11-20)
 
-1. **Copy (UX-11):** approve section 5 as written, adjust specific rows, or
-   defer P3 entirely?
-2. **Stop color (UX-5):** red stop styling, or a neutral dark style to avoid
-   suggesting data loss (Stop saves the session)?
-3. **Report file line (UX-3):** include the predicted `<stem>.xlsx` name, or
-   show only the input file?
-4. **Combine cards (UX-2):** stacked cards below the breakpoint, or keep the
-   table with State and Remove pinned to the right edge?
+1. **Copy (UX-11):** section 5 is approved as written.
+2. **Stop color (UX-5):** neutral dark, not red, because Stop saves the session.
+3. **Report file line (UX-3):** show both the input file and the predicted
+   `<stem>.xlsx` report name.
+4. **Combine at narrow widths (UX-2):** stacked cards below the breakpoint;
+   the table remains at wider sizes.
