@@ -102,23 +102,24 @@ no break rule and overlaps the Inputs value.
 
 **Current.** The preview (`ReportPreview`, `src/ipc/types.ts:121`,
 `src-tauri/src/dto/state.rs:156`) shows kind, origin, source, bits, interval,
-fold, status, and rows, but not which file was chosen. The backend already
-retains the authoritative source basename for generation.
+fold, status, and rows, but not which file was chosen. Bundle inspection
+resolves the selection to a directory for generation.
 
 **Required.**
-- Add `basename: String` to the `ReportPreview` DTO, filled from the same
-  basename the backend treats as authoritative for the same-stem XLSX. It is a
-  file name only, never a path, consistent with Combine rows.
-- Show it first in the preview as **Input file** (monospace, `break-all`).
-- Show the resulting report name as **Report file** (`<stem>.xlsx`), so
-  "same-stem" no longer needs explaining in the intro. The name is derived
-  from the same backend stem used by generation; it is a file name only.
+- Add `input_basename` and `report_basename` to `ReportPreview`. Show the
+  actual selected file as **Input file** (monospace, `break-all`), including
+  the manifest, BIN, or CSV when chosen inside a bundle.
+- Show **Report file** as the basename of the XLSX destination computed by
+  the backend. Both fields contain filenames only. The generation input,
+  report options, and workbook contents stay the same.
 
 **Acceptance.**
-- Rust DTO/inspection tests assert the basename for native, derived, standalone
-  current, standalone legacy, BIN-with-CSV-sibling, and `_concat_` inputs, and
-  assert that no path separator appears in it.
-- Frontend test asserts the Input file row; mocks and fixtures are updated.
+- Rust inspection tests assert both basenames for native, derived,
+  standalone current, standalone legacy, BIN-with-CSV-sibling, and
+  `_concat_` inputs. Verify that bundle selections keep the chosen filename,
+  neither basename contains a path separator, and the predicted XLSX basename
+  matches generation.
+- Frontend tests assert both rows; mocks and fixtures are updated.
 
 ### UX-4 (P1) Chart status line matches state
 
@@ -165,10 +166,11 @@ enabled ones only by text color.
 - Button width depends only on its label. Reasons are rendered by the action
   group, below the group, one line per distinct reason, and stay linked to each
   button through `aria-describedby`.
-- When collection locks the Session panel, show one note at the top of Session
-  — `Settings are locked while a session is collecting.` (or `…stopping.`) —
-  instead of per-control reasons for Refresh, Choose folder, and Open working
-  folder. Each locked control references that note via `aria-describedby`.
+- When collection locks the Session panel, show one note below the Refresh
+  sources / Device setup row near the top of Session. Use
+  `Settings are locked while a session is collecting.` (or `…stopping.`).
+  Refresh sources, Choose folder, and Open working folder reference that note
+  via `aria-describedby`.
 - Disabled secondary/ghost buttons use a muted background, transparent border,
   muted text, and `cursor-not-allowed`.
 
@@ -262,7 +264,7 @@ formats and version details" section and in documentation.
 ## 6. Preserved constraints
 
 - Capabilities stay `core:default` and `dialog:default`; CSP unchanged; no new
-  IPC command. UX-3 adds one DTO field carrying a basename only.
+  IPC command. UX-3 adds two DTO fields carrying basenames only.
 - No entropy, seeds, serials, device paths, or absolute paths cross IPC beyond
   what the 2026-08-25 outcome-dialog contract already allows.
 - Z and ±1.96 remain descriptive visual guides; the boundary sentence is kept.
