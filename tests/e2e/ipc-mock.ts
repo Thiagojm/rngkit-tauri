@@ -18,7 +18,7 @@ type Responses = Record<string, AppSnapshot>;
  */
 export async function installIpcMock(
   page: Page,
-  scenario: ScenarioId,
+  scenario: ScenarioId | AppSnapshot,
   responses: Responses = {},
 ): Promise<void> {
   await page.addInitScript(
@@ -66,7 +66,11 @@ export async function installIpcMock(
         callbacks.get(channelId)?.({ index: index++, message });
       };
     },
-    { initial: MOCK_SCENARIOS[scenario], responses },
+    {
+      initial:
+        typeof scenario === 'string' ? MOCK_SCENARIOS[scenario] : scenario,
+      responses,
+    },
   );
 }
 

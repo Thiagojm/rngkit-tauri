@@ -92,7 +92,7 @@
   </div>
 
   <div
-    class="relative min-h-[18rem] min-w-0 rounded-sm border border-border bg-surface p-1 @[32rem]/monitor:min-h-[20rem] @[32rem]/monitor:h-[min(42vh,30rem)] @[52rem]/collect:p-2"
+    class="relative min-h-[18rem] min-w-0 rounded-sm border border-border bg-surface px-0.5 py-1 @[32rem]/monitor:min-h-[20rem] @[32rem]/monitor:h-[min(42vh,30rem)] @[52rem]/collect:p-2"
   >
     <div
       bind:this={host}

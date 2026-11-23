@@ -13,6 +13,7 @@
 >
   <p class="text-sm text-text-muted">{label}</p>
   <p
+    data-testid="metric-value"
     class="whitespace-nowrap font-mono text-lg tabular-nums text-text {compact
       ? ''
       : 'mt-1'}"

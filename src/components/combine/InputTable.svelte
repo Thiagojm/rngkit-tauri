@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { copy, FOLD_OPTIONS } from '../../copy';
   import { appState } from '../../state/app-state.svelte';
 
@@ -22,18 +23,45 @@
   }
 
   const caption = 'CSV inputs in derived chronological order';
-  // Cards below 56rem of available width, table at or above it.
   let width = $state(0);
+  let inputList: HTMLDivElement | undefined = $state();
   const wide = $derived(
     width >=
-      56 * parseFloat(getComputedStyle(document.documentElement).fontSize),
+      60 * parseFloat(getComputedStyle(document.documentElement).fontSize),
   );
+  let renderedWide = false;
+
+  $effect.pre(() => {
+    if (wide === renderedWide) return;
+    renderedWide = wide;
+
+    const active = document.activeElement;
+    if (
+      !(active instanceof HTMLButtonElement) ||
+      !inputList?.contains(active)
+    ) {
+      return;
+    }
+    const inputId = active.dataset.inputId;
+    if (!inputId) return;
+
+    void tick().then(() => {
+      if (document.activeElement === document.body) {
+        inputList
+          ?.querySelector<HTMLButtonElement>(
+            `[data-input-id="${CSS.escape(inputId)}"]`,
+          )
+          ?.focus();
+      }
+    });
+  });
 </script>
 
 {#snippet remove(row: (typeof combine.inputs)[number])}
   <button
     class="text-sm text-status-failed underline disabled:text-text-muted disabled:no-underline"
     type="button"
+    data-input-id={row.inputId}
     disabled={!controls.combine.enabled}
     aria-label={`${copy.removeCombineInput} ${row.basename} #${row.ordinal}`}
     onclick={() => appState.removeCombineInput(row.inputId)}
@@ -52,7 +80,12 @@
 {#if combine.inputs.length === 0}
   <p class="text-sm text-text-muted">{copy.noCombineInputs}</p>
 {:else}
-  <div class="min-w-0" bind:clientWidth={width} data-testid="combine-inputs">
+  <div
+    class="min-w-0 overflow-x-auto"
+    bind:this={inputList}
+    bind:clientWidth={width}
+    data-testid="combine-inputs"
+  >
     {#if !wide}
       <ol class="flex flex-col gap-2" aria-label={caption}>
         {#each combine.inputs as row (row.inputId)}
@@ -100,8 +133,7 @@
             <th class="px-2 py-2 font-medium">Bits</th>
             <th class="px-2 py-2 font-medium">Interval</th>
             <th class="px-2 py-2 font-medium">{copy.fold.label}</th>
-            <th class="px-2 py-2 font-medium">First</th>
-            <th class="px-2 py-2 font-medium">Last</th>
+            <th class="px-2 py-2 font-medium">Time range</th>
             <th class="px-2 py-2 font-medium">Rows</th>
             <th class="px-2 py-2 font-medium">State</th>
             <th class="px-2 py-2 font-medium"
@@ -119,12 +151,10 @@
               <td class="whitespace-nowrap px-2 py-2">{row.sampleBits}</td>
               <td class="whitespace-nowrap px-2 py-2">{row.intervalSeconds}</td>
               <td class="whitespace-nowrap px-2 py-2">{foldLabel(row.fold)}</td>
-              <td class="whitespace-nowrap px-2 py-2 font-mono"
-                >{row.firstTimestamp}</td
-              >
-              <td class="whitespace-nowrap px-2 py-2 font-mono"
-                >{row.lastTimestamp}</td
-              >
+              <td class="whitespace-nowrap px-2 py-2 font-mono">
+                <span class="block">{row.firstTimestamp}</span>
+                <span class="block">{row.lastTimestamp}</span>
+              </td>
               <td class="whitespace-nowrap px-2 py-2">{row.rows}</td>
               <td class="px-2 py-2">{@render stateLabel(row)}</td>
               <td class="px-2 py-2">{@render remove(row)}</td>

@@ -43,6 +43,10 @@ Execution state:
   this nested worktree, Vitest fails at startup with a Vite dependency-optimizer
   `node:module` resolve error after `npm ci`, a local environment anomaly); NSIS bundle not rebuilt. DECISIONS, PROJECT_CONTEXT, TODO,
   and the spec updated. Status: Implemented.
+- Follow-up review fixes verified in Edge: the 800x600 plot is 482 CSS px
+  wide with a 16 px scrollbar, the 1M tick fits, and all five metrics fit.
+  Combine switches at 60rem, stacks timestamps, and preserves Remove focus.
+  Frontend unit 150/150 and e2e 27/27.
 - Next action: user native `npm run tauri dev` smoke at the minimum window;
   record the result only as reported.
 

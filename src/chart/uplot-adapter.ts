@@ -363,9 +363,8 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       height: Math.max(host.clientHeight, 288),
       class: 'live-z-uplot',
       legend: { show: false },
-      // Right inset leaves room for the last X tick label; Y axis is kept
-      // compact so the stacked 800x600 layout keeps a >= 480 px plot.
-      padding: [null, 12, null, null],
+      // Leave room for the centered final tick in long sessions.
+      padding: [null, 26, null, null],
       cursor: {
         drag: { x: true, y: true, setScale: true },
         bind: { dblclick: () => null },

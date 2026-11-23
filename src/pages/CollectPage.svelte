@@ -19,7 +19,7 @@
       <SessionConfiguration />
 
       <section
-        class="@container/monitor flex min-w-0 flex-col gap-2 self-start rounded-md border border-border p-3 @[52rem]/collect:p-4"
+        class="@container/monitor flex min-w-0 flex-col gap-2 self-start rounded-md border border-border px-2 py-3 @[52rem]/collect:p-4"
         aria-labelledby="collect-monitor"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">

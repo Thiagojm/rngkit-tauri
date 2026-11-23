@@ -89,7 +89,9 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   `claude/revisar-plano-proposto-bee7f7`):** Edge browser coverage through a
   test-only IPC mock at 800x600 and 1280x800, light and dark (Collect states,
   Reports names/replace, Combine cards/table), plus the locked Rust/MSRV and
-  no-bundle suite. Native `tauri dev` smoke of these changes is pending.
+  no-bundle suite. Follow-up Edge tests cover a 16 px scrollbar at 800x600,
+  the 1M axis tick, all five metrics, and Combine with fractional timestamps
+  and focus preserved on resize. Native `tauri dev` smoke is pending.
 - **Remaining:** other artifact open/folder actions, additional hardware,
   native 100k/1M chart interaction, scaling/screen-reader sampling, NSIS
   uninstall/session-data preservation, signing, and publishing a GitHub

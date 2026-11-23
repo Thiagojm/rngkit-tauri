@@ -2,9 +2,9 @@
 
 ## Done
 
-- Usability polish (2026-11-23): neutral Stop, lock note, container-based
-  Collect layout, truthful chart phrases, Reports file names, step-ordered
-  Combine, plain wording. Browser and locked suites passed; native smoke pending.
+- Usability polish (2026-11-23): Collect/chart, Reports file names,
+  step-ordered Combine, and plain wording. Browser and locked suites passed,
+  including scrollbar and focus regressions. Native smoke is pending.
 - Windows NSIS configuration uses `downloadBootstrapper` instead of embedded
   offline WebView2 (2026-09-21); internet is needed when WebView2 is missing.
   Locked local build passed: 8223459 bytes, 96.3% smaller. 7-Zip integrity and
