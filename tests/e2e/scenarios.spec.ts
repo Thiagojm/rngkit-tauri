@@ -96,3 +96,30 @@ test('drag-zoom pauses following and double-click resumes it', async ({
   await page.mouse.dblclick(over.x + 100, over.y + 60);
   await expect(status).toContainText(copy.chart.following);
 });
+
+for (const [size, layout] of [
+  ['min', 'list'],
+  ['wide', 'table'],
+] as const) {
+  test(`Combine inputs render as a ${layout} at ${size}`, async ({ page }) => {
+    await installIpcMock(page, 'combineCompatible');
+    await page.setViewportSize(VIEWPORTS[size]);
+    await page.goto('/');
+    await page.getByRole('button', { name: copy.destinations.combine }).click();
+    const name = 'CSV inputs in derived chronological order';
+    await expect(page.getByRole(layout, { name })).toBeVisible();
+    await expect(
+      page.getByRole(layout === 'list' ? 'table' : 'list', { name }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('button', {
+        name: 'Remove 20260101T010000_bitb_s8_i1.csv #1',
+      }),
+    ).toBeVisible();
+    const overflow = await page.evaluate(() => {
+      const main = document.getElementById('main-content')!;
+      return main.scrollWidth - main.clientWidth;
+    });
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+}

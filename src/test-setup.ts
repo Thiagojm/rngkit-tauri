@@ -63,6 +63,15 @@ if (typeof HTMLDialogElement !== 'undefined') {
   }
 }
 
+// jsdom has no ResizeObserver; Svelte `bind:clientWidth` needs one (width stays 0).
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
 afterEach(() => {
   cleanup();
   resetAppState();

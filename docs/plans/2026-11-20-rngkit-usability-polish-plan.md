@@ -23,7 +23,12 @@ Execution state:
   (selected file basename; `manifest.json` for bundle directories), shown first
   in the preview; `ActionGroup` renders deduplicated reasons below Report
   actions. Rust suite, unit 145/145, e2e 11/11.
-- Next action: Phase 5, then Phases 6–7 in order.
+- Phase 5 implemented: Combine header carries ghost Open working folder; steps
+  run Add/Clear → inputs → Create → result card (Generate XLSX, Open folder
+  only with a result). Inputs switch card/table at 56rem of measured width
+  (`bind:clientWidth`, one tree in the a11y DOM; jsdom gets a no-op
+  ResizeObserver). Unit 148/148, e2e 13/13.
+- Next action: Phase 6, then Phase 7.
 
 ## Goal and scope
 

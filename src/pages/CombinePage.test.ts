@@ -50,4 +50,38 @@ describe('CombinePage', () => {
       screen.getByRole('button', { name: copy.openWorkingFolder }),
     ).toHaveProperty('disabled', false);
   });
+
+  it('orders the steps: add/clear, inputs, create, then result actions', () => {
+    appState.applyScenario('combineCompatible');
+    render(CombinePage);
+    const names = screen.getAllByRole('button').map((b) => b.textContent);
+    const at = (name: string) => names.findIndex((n) => n?.trim() === name);
+    expect(at(copy.openWorkingFolder)).toBe(0);
+    expect(at(copy.chooseCsvInputs)).toBeLessThan(at(copy.clearCombineInputs));
+    expect(at(copy.clearCombineInputs)).toBeLessThan(
+      at(copy.removeCombineInput),
+    );
+    expect(at(copy.removeCombineInput)).toBeLessThan(at(copy.createDerived));
+    expect(at(copy.createDerived)).toBeLessThan(at(copy.generateXlsx));
+    expect(at(copy.generateXlsx)).toBeLessThan(at(copy.openFolder));
+  });
+
+  it('renders inputs as cards in a narrow container', () => {
+    appState.applyScenario('combineCompatible');
+    render(CombinePage);
+    const list = screen.getByRole('list', {
+      name: 'CSV inputs in derived chronological order',
+    });
+    expect(list.querySelectorAll('li').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('table')).toBeNull();
+  });
+
+  it('hides result actions until a combined result exists', () => {
+    appState.applyScenario('combineIncompatible');
+    render(CombinePage);
+    expect(
+      screen.queryByRole('button', { name: copy.generateXlsx }),
+    ).toBeNull();
+    expect(screen.queryByRole('button', { name: copy.openFolder })).toBeNull();
+  });
 });
