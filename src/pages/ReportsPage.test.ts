@@ -20,6 +20,8 @@ describe('ReportsPage', () => {
   it('shows legacy preview metadata', () => {
     appState.applyScenario('reportsPreview');
     appState.snapshot.reports.preview = {
+      inputBasename: 'legacy.csv',
+      reportBasename: 'legacy.xlsx',
       kindLabel: 'Legacy v3',
       origin: 'CSV only',
       source: 'TrueRNG v1/v2/v3',
@@ -42,6 +44,8 @@ describe('ReportsPage', () => {
   it('shows derived preview metadata', () => {
     appState.applyScenario('reportsPreview');
     appState.snapshot.reports.preview = {
+      inputBasename: 'manifest.json',
+      reportBasename: 'derived.xlsx',
       kindLabel: 'Derived bundle',
       origin: 'Concatenated legacy v3 CSV',
       source: 'TrueRNG v1/v2/v3',
@@ -65,6 +69,10 @@ describe('ReportsPage', () => {
     appState.applyScenario('reportsPreview');
     render(ReportsPage);
     expect(screen.getByText('Native session')).toBeTruthy();
+    expect(screen.getByText(copy.inputFile)).toBeTruthy();
+    expect(screen.getByText('manifest.json')).toBeTruthy();
+    expect(screen.getByText(copy.reportFile)).toBeTruthy();
+    expect(screen.getByText('20260822T101500_bitb_s8_i1_f0.xlsx')).toBeTruthy();
     expect(screen.getByText(copy.fold.raw)).toBeTruthy();
   });
 

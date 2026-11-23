@@ -119,6 +119,8 @@ export interface CollectionSnapshot {
 }
 
 export interface ReportPreview {
+  inputBasename: string;
+  reportBasename: string;
   kindLabel: string;
   origin: string;
   source: string;

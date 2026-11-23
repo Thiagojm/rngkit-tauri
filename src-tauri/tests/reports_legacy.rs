@@ -13,6 +13,20 @@ use rngkit_xlsx::{REF_MINUS, REF_PLUS, SAMPLES_SHEET, SUMMARY_SHEET, with_workbo
 
 static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
 
+/// Preview names are single basenames; the report name predicts `report_dest`.
+fn assert_preview_names(coordinator: &AppCoordinator, input: &str) {
+    let preview = coordinator.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.input_basename, input);
+    let dest = coordinator.report_dest().expect("dest");
+    assert_eq!(
+        Some(preview.report_basename.as_str()),
+        dest.file_name().and_then(|name| name.to_str())
+    );
+    for name in [&preview.input_basename, &preview.report_basename] {
+        assert!(!name.contains(['/', '\\']), "{name}");
+    }
+}
+
 fn temp_root() -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
         "rngkit-legacy-{}-{}-{}",
@@ -60,6 +74,7 @@ fn csv_only_bin_only_and_paired_generate_without_mutation() {
 
     let mut coordinator = AppCoordinator::new();
     inspect_picked(&mut coordinator, &csv_path).expect("paired inspect");
+    assert_preview_names(&coordinator, &format!("{stem}.csv"));
     let preview = coordinator.snapshot().reports.preview.expect("preview");
     assert_eq!(preview.kind_label, "Legacy v3 CSV");
     assert_eq!(preview.origin, "Paired BIN and CSV");
@@ -115,6 +130,8 @@ fn csv_only_bin_only_and_paired_generate_without_mutation() {
     fs::write(&bin_path, sample).expect("restore bin");
     fs::remove_file(&csv_path).expect("remove csv");
     let bin_only = inspect_legacy(&bin_path).expect("bin only");
+    assert_eq!(bin_only.preview.input_basename, format!("{stem}.bin"));
+    assert_eq!(bin_only.preview.report_basename, format!("{stem}.xlsx"));
     assert_eq!(bin_only.preview.origin, "BIN only");
     assert_eq!(
         bin_only.preview.warning.as_deref(),
@@ -172,6 +189,7 @@ fn flat_legacy_concatenation_generates_as_recorded_without_mutation() {
 
     let mut coordinator = AppCoordinator::new();
     inspect_picked(&mut coordinator, &input).expect("inspect flat concatenation");
+    assert_preview_names(&coordinator, "20260824T145947_concat_trng_s16_i1.csv");
     let preview = coordinator.snapshot().reports.preview.expect("preview");
     assert_eq!(preview.kind_label, "Legacy concatenated CSV");
     assert_eq!(

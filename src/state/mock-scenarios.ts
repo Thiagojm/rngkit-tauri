@@ -125,6 +125,8 @@ const live: Partial<CollectionSnapshot> = {
 };
 
 const nativePreview = {
+  inputBasename: 'manifest.json',
+  reportBasename: '20260822T101500_bitb_s8_i1_f0.xlsx',
   kindLabel: 'Native session',
   origin: 'Collected session',
   source: 'BitBabbler',

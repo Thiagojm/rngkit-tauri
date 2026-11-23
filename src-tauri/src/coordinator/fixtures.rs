@@ -258,6 +258,8 @@ fn live_collection(state: CollectionState, status_label: &str) -> CollectionSnap
 
 fn native_preview(conflict: bool) -> ReportPreview {
     ReportPreview {
+        input_basename: "manifest.json".into(),
+        report_basename: "20260822T101500_bitb_s8_i1_f0.xlsx".into(),
         kind_label: "Native session".into(),
         origin: "Collected session".into(),
         source: "BitBabbler".into(),

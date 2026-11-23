@@ -27,6 +27,20 @@ const STEM_B: &str = "20260821T183010_trng_s16_i1";
 const STEM_C: &str = "20260821T183001_trng_s16_i1";
 static COMBINE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
+/// Preview names are single basenames; the report name predicts `report_dest`.
+fn assert_preview_names(coordinator: &AppCoordinator, input: &str) {
+    let preview = coordinator.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.input_basename, input);
+    let dest = coordinator.report_dest().expect("dest");
+    assert_eq!(
+        Some(preview.report_basename.as_str()),
+        dest.file_name().and_then(|name| name.to_str())
+    );
+    for name in [&preview.input_basename, &preview.report_basename] {
+        assert!(!name.contains(['/', '\\']), "{name}");
+    }
+}
+
 fn combine_test_lock() -> MutexGuard<'static, ()> {
     COMBINE_TEST_LOCK
         .lock()
@@ -475,6 +489,7 @@ fn derived_report_matches_ordered_rows_and_existing_xlsx_needs_replace() {
     let directory = coordinator.combine_directory().expect("dir").to_path_buf();
 
     inspect_picked(&mut coordinator, &directory).expect("inspect derived");
+    assert_preview_names(&coordinator, "manifest.json");
     let preview = coordinator.snapshot().reports.preview.expect("preview");
     assert_eq!(preview.kind_label, "Derived bundle");
     assert_eq!(preview.origin, "Concatenated legacy v3 CSV");
@@ -489,6 +504,21 @@ fn derived_report_matches_ordered_rows_and_existing_xlsx_needs_replace() {
     let manifest = directory.join("manifest.json");
     let mut manifest_coordinator = AppCoordinator::new();
     inspect_picked(&mut manifest_coordinator, &manifest).expect("inspect manifest");
+    assert_preview_names(&manifest_coordinator, "manifest.json");
+    let bundle_csv = fs::read_dir(&directory)
+        .expect("bundle dir")
+        .map(|entry| entry.expect("entry").path())
+        .find(|path| path.extension().is_some_and(|ext| ext == "csv"))
+        .expect("bundle csv");
+    let mut csv_coordinator = AppCoordinator::new();
+    inspect_picked(&mut csv_coordinator, &bundle_csv).expect("inspect bundle csv");
+    assert_preview_names(
+        &csv_coordinator,
+        bundle_csv
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("name"),
+    );
     assert_eq!(
         manifest_coordinator
             .snapshot()
@@ -500,6 +530,8 @@ fn derived_report_matches_ordered_rows_and_existing_xlsx_needs_replace() {
     );
 
     generate_derived_report(&mut coordinator, false).expect("xlsx");
+    // The Combine generate path shows the bundle manifest as its input.
+    assert_preview_names(&coordinator, "manifest.json");
     let dest = coordinator.report_dest().expect("dest").to_path_buf();
     assert_eq!(
         dest.file_stem().and_then(|name| name.to_str()),

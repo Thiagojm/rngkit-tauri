@@ -19,7 +19,11 @@ Execution state:
 - Phase 3 implemented: adapter reports `(following, mode)`; uPlot dblclick
   routed to Fit all; inactive phrases whole/zoomed; count hidden when empty;
   guide labels on `--color-surface` backdrops. Unit 143/143, e2e 11/11.
-- Next action: Phase 4, then Phases 5–7 in order.
+- Phase 4 implemented: `ReportPreview` carries `inputBasename`/`reportBasename`
+  (selected file basename; `manifest.json` for bundle directories), shown first
+  in the preview; `ActionGroup` renders deduplicated reasons below Report
+  actions. Rust suite, unit 145/145, e2e 11/11.
+- Next action: Phase 5, then Phases 6–7 in order.
 
 ## Goal and scope
 

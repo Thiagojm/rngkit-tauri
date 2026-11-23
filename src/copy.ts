@@ -25,6 +25,8 @@ export const copy = {
   entropySource: 'Entropy source',
   refreshSources: 'Refresh sources',
   errorPanelHeading: 'What happened',
+  inputFile: 'Input file',
+  reportFile: 'Report file',
   sessionName: 'Session name',
   sessionLocked: {
     collecting: 'Settings are locked while a session is collecting.',

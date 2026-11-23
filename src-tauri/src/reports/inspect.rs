@@ -17,6 +17,7 @@ use crate::coordinator::ReportKind;
 use crate::dto::ReportPreview;
 use crate::errors::SafeError;
 
+const MANIFEST: &str = "manifest.json";
 const KIND_LABEL: &str = "Native session";
 const ORIGIN: &str = "Collected session";
 const LEGACY_KIND: &str = "Legacy v3 CSV";
@@ -48,7 +49,12 @@ pub fn inspect_input(
     live_recording: Option<&Path>,
 ) -> Result<InspectedReport, SafeError> {
     if let Some(directory) = bundle_directory(path)? {
-        return inspect_bundle(&directory, live_recording);
+        let mut inspected = inspect_bundle(&directory, live_recording)?;
+        // Name the exact manifest, CSV, or BIN the user chose.
+        if path.is_file() {
+            inspected.preview.input_basename = basename(path)?;
+        }
+        return Ok(inspected);
     }
     if path.is_file() {
         return inspect_standalone(path);
@@ -56,6 +62,16 @@ pub fn inspect_input(
     Err(SafeError::unsupported_input(
         "That input is not a supported RngKit report source.",
     ))
+}
+
+/// Lossless UTF-8 single path component; never a directory or full path.
+fn basename(path: &Path) -> Result<String, SafeError> {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(str::to_owned)
+        .ok_or_else(|| {
+            SafeError::unsupported_input("That file name cannot be shown as a report input.")
+        })
 }
 
 fn inspect_bundle(
@@ -167,6 +183,8 @@ pub fn inspect_standalone(path: &Path) -> Result<InspectedReport, SafeError> {
         .to_path_buf();
     Ok(InspectedReport {
         preview: ReportPreview {
+            input_basename: basename(path)?,
+            report_basename: basename(&dest)?,
             kind_label,
             origin: origin.into(),
             source: meta.source_label.clone(),
@@ -211,6 +229,8 @@ pub fn inspect_native(
     let directory = native.directory().to_path_buf();
     Ok(InspectedReport {
         preview: ReportPreview {
+            input_basename: MANIFEST.into(),
+            report_basename: basename(&dest)?,
             kind_label: KIND_LABEL.into(),
             origin: ORIGIN.into(),
             source: native.manifest().source_label().to_owned(),
@@ -245,6 +265,8 @@ pub fn inspect_legacy(path: &Path) -> Result<InspectedReport, SafeError> {
         .to_path_buf();
     Ok(InspectedReport {
         preview: ReportPreview {
+            input_basename: basename(path)?,
+            report_basename: basename(&dest)?,
             kind_label: LEGACY_KIND.into(),
             origin: legacy_origin(path).into(),
             source: meta.source_label.clone(),
@@ -271,6 +293,8 @@ pub fn inspect_derived(path: &Path) -> Result<InspectedReport, SafeError> {
     let directory = path.to_path_buf();
     Ok(InspectedReport {
         preview: ReportPreview {
+            input_basename: MANIFEST.into(),
+            report_basename: basename(&dest)?,
             kind_label: DERIVED_KIND.into(),
             origin: DERIVED_ORIGIN.into(),
             source: session.meta().source_label.clone(),

@@ -16,6 +16,20 @@ use rngkit_xlsx::{
     REF_MINUS, REF_PLUS, SAMPLES_SHEET, SUMMARY_SHEET, native_report_path, with_report_promote_hook,
 };
 
+/// Preview names are single basenames; the report name predicts `report_dest`.
+fn assert_preview_names(coordinator: &AppCoordinator, input: &str) {
+    let preview = coordinator.snapshot().reports.preview.expect("preview");
+    assert_eq!(preview.input_basename, input);
+    let dest = coordinator.report_dest().expect("dest");
+    assert_eq!(
+        Some(preview.report_basename.as_str()),
+        dest.file_name().and_then(|name| name.to_str())
+    );
+    for name in [&preview.input_basename, &preview.report_basename] {
+        assert!(!name.contains(['/', '\\']), "{name}");
+    }
+}
+
 static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn temp_root() -> PathBuf {
@@ -71,6 +85,7 @@ fn completed_native_session_inspects_and_generates() {
     let (root, directory) = completed_session();
     let mut coordinator = AppCoordinator::new();
     inspect_picked(&mut coordinator, &directory).expect("inspect");
+    assert_preview_names(&coordinator, "manifest.json");
     let snapshot = coordinator.snapshot();
     let preview = snapshot.reports.preview.as_ref().expect("preview");
     assert_eq!(preview.kind_label, "Native session");
@@ -83,9 +98,21 @@ fn completed_native_session_inspects_and_generates() {
     assert_eq!(snapshot.file_job, FileJobState::Idle);
     assert_safe_json(&serde_json::to_string(&snapshot).expect("json"));
 
+    let predicted = coordinator
+        .snapshot()
+        .reports
+        .preview
+        .expect("p")
+        .report_basename;
     generate_inspected(&mut coordinator, false).expect("generate");
     let snapshot = coordinator.snapshot();
     assert!(snapshot.reports.report_ready);
+    assert!(
+        coordinator
+            .report_dest()
+            .expect("dest")
+            .ends_with(&predicted)
+    );
     assert!(snapshot.reports.preview.as_ref().expect("preview").conflict);
     let dest = coordinator.report_dest().expect("dest").to_path_buf();
     assert_eq!(dest.extension().and_then(|ext| ext.to_str()), Some("xlsx"));
@@ -116,6 +143,24 @@ fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
 
     let mut bundle_file = AppCoordinator::new();
     inspect_picked(&mut bundle_file, native.csv_path()).expect("bundle csv");
+    assert_preview_names(
+        &bundle_file,
+        native
+            .csv_path()
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("name"),
+    );
+    let mut bundle_bin = AppCoordinator::new();
+    inspect_picked(&mut bundle_bin, native.bin_path()).expect("bundle bin");
+    assert_preview_names(
+        &bundle_bin,
+        native
+            .bin_path()
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("name"),
+    );
     assert_eq!(
         bundle_file
             .snapshot()
@@ -127,6 +172,7 @@ fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
     );
     let mut manifest_file = AppCoordinator::new();
     inspect_picked(&mut manifest_file, &directory.join("manifest.json")).expect("bundle manifest");
+    assert_preview_names(&manifest_file, "manifest.json");
     assert_eq!(
         manifest_file
             .snapshot()
@@ -145,6 +191,13 @@ fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
 
     let mut current_csv = AppCoordinator::new();
     inspect_picked(&mut current_csv, &standalone_csv).expect("standalone csv");
+    assert_preview_names(
+        &current_csv,
+        standalone_csv
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("name"),
+    );
     let preview = current_csv.snapshot().reports.preview.expect("preview");
     assert_eq!(preview.kind_label, "Current standalone CSV");
     assert_eq!(preview.origin, "Standalone current CSV");
@@ -165,6 +218,13 @@ fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
     let bin_before = fs::read(&standalone_bin).expect("bin bytes");
     let mut current_bin = AppCoordinator::new();
     inspect_picked(&mut current_bin, &standalone_bin).expect("standalone bin");
+    assert_preview_names(
+        &current_bin,
+        standalone_bin
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("name"),
+    );
     let preview = current_bin.snapshot().reports.preview.expect("preview");
     assert_eq!(preview.kind_label, "Standalone BIN");
     assert_eq!(preview.origin, "Standalone binary input");
@@ -186,6 +246,13 @@ fn bundle_artifacts_and_standalone_current_inputs_use_the_unified_reader() {
     fs::copy(native.csv_path(), &paired_csv).expect("restore csv sibling");
     let mut paired_bin = AppCoordinator::new();
     inspect_picked(&mut paired_bin, &standalone_bin).expect("paired standalone bin");
+    assert_preview_names(
+        &paired_bin,
+        standalone_bin
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("name"),
+    );
     assert_eq!(
         paired_bin
             .report_options()

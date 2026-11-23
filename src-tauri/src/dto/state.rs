@@ -154,6 +154,10 @@ pub struct CollectionSnapshot {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportPreview {
+    /// Single basename of the file the user chose (or `manifest.json`).
+    pub input_basename: String,
+    /// Single basename of the XLSX report this input generates.
+    pub report_basename: String,
     pub kind_label: String,
     pub origin: String,
     pub source: String,

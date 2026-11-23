@@ -19,6 +19,14 @@
   <dl
     class="grid grid-cols-1 gap-3 rounded-md border border-border p-4 sm:grid-cols-2"
   >
+    <div class="sm:col-span-2">
+      <dt class="text-sm text-text-muted">{copy.inputFile}</dt>
+      <dd class="break-all font-mono">{preview.inputBasename}</dd>
+    </div>
+    <div class="sm:col-span-2">
+      <dt class="text-sm text-text-muted">{copy.reportFile}</dt>
+      <dd class="break-all font-mono">{preview.reportBasename}</dd>
+    </div>
     <div>
       <dt class="text-sm text-text-muted">Kind</dt>
       <dd>{preview.kindLabel}</dd>

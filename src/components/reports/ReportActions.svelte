@@ -1,37 +1,38 @@
 <script lang="ts">
   import { copy } from '../../copy';
   import { appState } from '../../state/app-state.svelte';
+  import ActionGroup from '../ui/ActionGroup.svelte';
   import Button from '../ui/Button.svelte';
   import Dialog from '../ui/Dialog.svelte';
 
   const controls = $derived(appState.controls);
 </script>
 
-<div class="flex flex-wrap gap-2">
-  <Button
-    variant="primary"
-    disabled={!controls.generateReport.enabled}
-    disabledReason={controls.generateReport.reason}
-    onclick={() => appState.generateReport()}>{copy.generateReport}</Button
-  >
-  <Button
-    disabled={!controls.openReport.enabled}
-    disabledReason={controls.openReport.reason}
-    onclick={() => appState.openReport()}>{copy.openReport}</Button
-  >
-  <Button
-    disabled={!controls.openContainingFolder.enabled}
-    disabledReason={controls.openContainingFolder.reason}
-    onclick={() => appState.openReportFolder()}
-    >{copy.openContainingFolder}</Button
-  >
-  <Button
-    disabled={!controls.openReportWorkingFolder.enabled}
-    disabledReason={controls.openReportWorkingFolder.reason}
-    onclick={() => appState.openReportWorkingFolder()}
-    >{copy.openWorkingFolder}</Button
-  >
-</div>
+<ActionGroup
+  actions={[
+    {
+      label: copy.generateReport,
+      variant: 'primary',
+      ...controls.generateReport,
+      onclick: () => appState.generateReport(),
+    },
+    {
+      label: copy.openReport,
+      ...controls.openReport,
+      onclick: () => appState.openReport(),
+    },
+    {
+      label: copy.openContainingFolder,
+      ...controls.openContainingFolder,
+      onclick: () => appState.openReportFolder(),
+    },
+    {
+      label: copy.openWorkingFolder,
+      ...controls.openReportWorkingFolder,
+      onclick: () => appState.openReportWorkingFolder(),
+    },
+  ]}
+/>
 
 <Dialog
   title={copy.replaceTitle}
