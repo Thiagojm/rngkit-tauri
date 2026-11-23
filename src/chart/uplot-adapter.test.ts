@@ -140,7 +140,7 @@ describe('uPlot adapter', () => {
     adapter.setData([[1], [0.1]], true);
 
     expect(adapter.isFollowing()).toBe(true);
-    expect(onViewportStateChange).toHaveBeenCalledWith(true);
+    expect(onViewportStateChange).toHaveBeenCalledWith(true, 'full');
   });
 
   it('stays paused when mounted with an already completed collection', () => {
@@ -185,7 +185,7 @@ describe('uPlot adapter', () => {
     );
     expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
     expect(adapter.isFollowing()).toBe(true);
-    expect(onViewportStateChange).toHaveBeenCalledWith(true);
+    expect(onViewportStateChange).toHaveBeenCalledWith(true, 'full');
   });
 
   it('cancels stale frames when Fit all supersedes a pending append', () => {
@@ -255,8 +255,79 @@ describe('uPlot adapter', () => {
     window.dispatchEvent(
       new MouseEvent('mouseup', { clientX: 30, clientY: 10 }),
     );
-    expect(onViewportStateChange).toHaveBeenCalledWith(false);
+    expect(onViewportStateChange).toHaveBeenCalledWith(false, 'zoomed');
     expect(adapter.isFollowing()).toBe(false);
+  });
+
+  it('tracks viewport mode through zoom, completion, Fit all, and double-click', () => {
+    const { adapter, host, frames, onViewportStateChange } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    frames.length = 0;
+    const plot = FakePlot.instances[0];
+    const over = plot?.over;
+    const zoom = () => {
+      over?.dispatchEvent(
+        new MouseEvent('mousedown', { button: 0, clientX: 10, clientY: 10 }),
+      );
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { clientX: 40, clientY: 10 }),
+      );
+    };
+    const last = () => onViewportStateChange.mock.calls.at(-1);
+    const data: [number[], number[]] = [
+      [1, 2],
+      [0.1, 0.2],
+    ];
+
+    adapter.setData(data, true);
+    frames.shift()?.(0);
+    expect(last()).toEqual([true, 'full']);
+    zoom();
+    expect(last()).toEqual([false, 'zoomed']);
+    adapter.setData(data, true);
+    frames.shift()?.(0);
+    expect(plot?.setData.mock.calls.at(-1)?.[1]).toBe(false);
+
+    // Collection ends: full-scale reset and whole-session mode.
+    adapter.setData(data, false);
+    frames.shift()?.(0);
+    expect(plot?.setData.mock.calls.at(-1)?.[1]).toBe(true);
+    expect(last()).toEqual([false, 'full']);
+
+    zoom();
+    expect(last()).toEqual([false, 'zoomed']);
+    adapter.fitAll(data, false);
+    expect(last()).toEqual([false, 'full']);
+    expect(plot?.setData.mock.calls.at(-1)?.[1]).toBe(true);
+    zoom();
+    expect(last()).toEqual([false, 'zoomed']);
+    plot?.setData.mockClear();
+    over?.dispatchEvent(new MouseEvent('dblclick'));
+    expect(last()).toEqual([false, 'full']);
+    expect(plot?.setData).toHaveBeenCalledWith(data, true);
+    const opts = FakePlot.opts[0] as uPlot.Options;
+    expect(opts.cursor?.bind?.dblclick).toBeTypeOf('function');
+  });
+
+  it('resumes following when double-clicking a zoomed live view', () => {
+    const { adapter, host, frames, onViewportStateChange } = adapterHarness();
+    adapter.mount(host);
+    frames[0]?.(0);
+    adapter.setData([[1], [0.1]], true);
+    const over = FakePlot.instances[0]?.over;
+    over?.dispatchEvent(
+      new MouseEvent('mousedown', { button: 0, clientX: 10, clientY: 10 }),
+    );
+    window.dispatchEvent(
+      new MouseEvent('mouseup', { clientX: 40, clientY: 10 }),
+    );
+    expect(adapter.isFollowing()).toBe(false);
+
+    over?.dispatchEvent(new MouseEvent('dblclick'));
+
+    expect(adapter.isFollowing()).toBe(true);
+    expect(onViewportStateChange.mock.calls.at(-1)).toEqual([true, 'full']);
   });
 
   it('stops following and frames the final data when collection ends', () => {
@@ -272,7 +343,7 @@ describe('uPlot adapter', () => {
     frames[0]?.(0);
 
     expect(adapter.isFollowing()).toBe(false);
-    expect(onViewportStateChange).toHaveBeenCalledWith(false);
+    expect(onViewportStateChange).toHaveBeenCalledWith(false, 'full');
     expect(FakePlot.instances[0]?.setData.mock.calls.at(-1)?.[1]).toBe(true);
   });
 
@@ -394,6 +465,7 @@ describe('uPlot adapter', () => {
       if (!plot || !draw) {
         return;
       }
+      const order: string[] = [];
       const drawn: {
         label: string;
         x: number;
@@ -416,7 +488,13 @@ describe('uPlot adapter', () => {
         lineTo() {},
         stroke() {},
         setLineDash() {},
+        fillStyle: '',
+        measureText: (label: string) => ({ width: label.length * 10 }),
+        fillRect() {
+          order.push(`rect:${this.fillStyle}`);
+        },
         fillText(label: string, x: number, y: number) {
+          order.push(`text:${label}`);
           drawn.push({
             label,
             x,
@@ -445,6 +523,13 @@ describe('uPlot adapter', () => {
         expect(entry.x).toBe(52);
         expect(entry.y).toBe(46);
       }
+      // Each label sits on a surface backdrop drawn just before it.
+      expect(order).toEqual(
+        drawn.flatMap((entry) => [
+          expect.stringMatching(/^rect:/),
+          `text:${entry.label}`,
+        ]),
+      );
     } finally {
       uPlot.pxRatio = originalPxRatio;
     }

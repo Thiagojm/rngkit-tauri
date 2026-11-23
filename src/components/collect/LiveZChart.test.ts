@@ -20,6 +20,7 @@ describe('LiveZChart', () => {
       screen.getByRole('button', { name: copy.chart.fitAll }),
     ).toHaveProperty('disabled', true);
     expect(screen.queryByText(copy.chart.boundary)).toBeNull();
+    expect(screen.queryByTestId('chart-point-count')).toBeNull();
     expect(
       screen.queryByRole('button', { name: /Reset view|Return to live/i }),
     ).toBeNull();
@@ -56,13 +57,35 @@ describe('LiveZChart', () => {
     ).toHaveProperty('disabled', false);
   });
 
-  it('does not claim to follow new samples for an already completed session', () => {
+  it('describes a completed session as whole or zoomed, never paused', async () => {
     appState.applyScenario('completed');
-    render(CollectPage);
+    const { container } = render(CollectPage);
+    const status = screen.getByTestId('chart-point-count');
+    expect(status.textContent).toContain(copy.chart.wholeSession);
+    expect(status.textContent).not.toContain(copy.chart.paused);
 
-    expect(screen.getByTestId('chart-point-count').textContent).toContain(
-      copy.chart.paused,
+    const over = container.querySelector('.u-over');
+    over?.dispatchEvent(
+      new MouseEvent('mousedown', { button: 0, clientX: 10, clientY: 10 }),
     );
+    window.dispatchEvent(
+      new MouseEvent('mouseup', { clientX: 40, clientY: 10 }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(status.textContent).toContain(copy.chart.zoomed);
+
+    await fireEvent.click(
+      screen.getByRole('button', { name: copy.chart.fitAll }),
+    );
+    expect(status.textContent).toContain(copy.chart.wholeSession);
+  });
+
+  it('shows the whole failed session, never the paused phrase', () => {
+    appState.applyScenario('failed');
+    render(CollectPage);
+    const status = screen.getByTestId('chart-point-count');
+    expect(status.textContent).toContain(copy.chart.wholeSession);
+    expect(status.textContent).not.toContain(copy.chart.paused);
   });
 
   it('preserves the mounted plot when the theme changes', async () => {

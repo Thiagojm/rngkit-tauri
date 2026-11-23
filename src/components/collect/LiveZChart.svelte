@@ -1,12 +1,16 @@
 <script lang="ts">
   import 'uplot/dist/uPlot.min.css';
-  import { createChartAdapter } from '../../chart/uplot-adapter';
+  import {
+    createChartAdapter,
+    type ViewportMode,
+  } from '../../chart/uplot-adapter';
   import { copy } from '../../copy';
   import { appState } from '../../state/app-state.svelte';
   import Button from '../ui/Button.svelte';
 
   let host: HTMLDivElement | undefined = $state();
   let following = $state(false);
+  let mode = $state<ViewportMode>('full');
 
   const collection = $derived(appState.snapshot.collection);
   const collectionActive = $derived(
@@ -22,8 +26,9 @@
       refPlus: copy.chart.refPlus,
       refMinus: copy.chart.refMinus,
     },
-    onViewportStateChange: (nextFollowing) => {
+    onViewportStateChange: (nextFollowing, nextMode) => {
       following = nextFollowing;
+      mode = nextMode;
     },
   });
 
@@ -33,6 +38,15 @@
   });
   const pointCount = $derived(chartSnapshot.pointCount);
   const empty = $derived(pointCount === 0);
+  const viewportPhrase = $derived(
+    collectionActive
+      ? following
+        ? copy.chart.following
+        : copy.chart.paused
+      : mode === 'full'
+        ? copy.chart.wholeSession
+        : copy.chart.zoomed,
+  );
 
   $effect(() => {
     const target = host;
@@ -123,10 +137,11 @@
       {copy.chart.refMinus}
     </li>
   </ul>
-  <p class="text-sm text-text-muted" data-testid="chart-point-count">
-    {copy.chart.retainedPoints}: {pointCount}
-    · {following ? copy.chart.following : copy.chart.paused}
-  </p>
+  {#if !empty}
+    <p class="text-sm text-text-muted" data-testid="chart-point-count">
+      {copy.chart.retainedPoints}: {pointCount} · {viewportPhrase}
+    </p>
+  {/if}
 </section>
 
 <style>

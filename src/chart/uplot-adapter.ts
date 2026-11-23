@@ -14,12 +14,15 @@ export interface ChartLabels {
 
 export type ChartPlotCtor = typeof uPlot;
 
+/** `full` shows every retained point; `zoomed` is a user pan or zoom. */
+export type ViewportMode = 'full' | 'zoomed';
+
 export interface ChartAdapterOptions {
   labels: ChartLabels;
   uPlot?: ChartPlotCtor;
   raf?: (callback: FrameRequestCallback) => number;
   caf?: (handle: number) => void;
-  onViewportStateChange?: (following: boolean) => void;
+  onViewportStateChange?: (following: boolean, mode: ViewportMode) => void;
 }
 
 export interface ChartAdapter {
@@ -61,6 +64,7 @@ function referenceLinesPlugin(
           }
           const zero = cssColor(target, '--color-chart-zero', '#4a5a70');
           const ref = cssColor(target, '--color-chart-ref', '#b54708');
+          const surface = cssColor(target, '--color-surface', '#ffffff');
           const px = uPlot.pxRatio;
           ctx.save();
           ctx.beginPath();
@@ -84,14 +88,26 @@ function referenceLinesPlugin(
             ctx.lineTo(bbox.left + bbox.width, y);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.fillStyle = color;
             // uPlot's canvas is sized in physical pixels, and uPlot leaves
             // textAlign as 'right' after drawing y-axis values, so set both
             // explicitly or the label ends at the left edge and is clipped.
             ctx.font = `${12 * px}px sans-serif`;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'bottom';
-            ctx.fillText(label, bbox.left + 6 * px, y - 2 * px);
+            const x = bbox.left + 6 * px;
+            const textY = y - 2 * px;
+            const pad = 2 * px;
+            const width = ctx.measureText(label).width;
+            // Backdrop keeps the label legible over the data line and grid.
+            ctx.fillStyle = surface;
+            ctx.fillRect(
+              x - pad,
+              textY - 12 * px - pad,
+              width + 2 * pad,
+              12 * px + 2 * pad,
+            );
+            ctx.fillStyle = color;
+            ctx.fillText(label, x, textY);
           };
           drawLine(0, zero, false, labels.zero);
           drawLine(REFERENCE_Z, ref, true, labels.refPlus);
@@ -138,16 +154,23 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
   let lastData: AlignedChartData = emptyData();
   let lastCollectionActive = false;
   let following = false;
+  let mode: ViewportMode = 'full';
   let frameVersion = 0;
   let rafHandle = 0;
   let detachPointer: (() => void) | null = null;
   let resizeObserver: ResizeObserver | null = null;
 
-  function notifyUserViewport(): void {
-    if (following) {
-      following = false;
-      options.onViewportStateChange?.(false);
+  function report(nextFollowing: boolean, nextMode: ViewportMode): void {
+    if (nextFollowing === following && nextMode === mode) {
+      return;
     }
+    following = nextFollowing;
+    mode = nextMode;
+    options.onViewportStateChange?.(following, mode);
+  }
+
+  function notifyUserViewport(): void {
+    report(false, 'zoomed');
     if (pending) {
       pending.resetScales = false;
     }
@@ -321,7 +344,12 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
     over.addEventListener('wheel', onWheel, { passive: false });
+    // uPlot's own double-click resets to autoscale without telling us; route
+    // it through Fit all so the viewport mode and following stay truthful.
+    const onDblClick = () => adapter.fitAll(lastData, lastCollectionActive);
+    over.addEventListener('dblclick', onDblClick);
     return () => {
+      over.removeEventListener('dblclick', onDblClick);
       over.removeEventListener('mousedown', onDown, true);
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
@@ -340,6 +368,7 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       padding: [null, 12, null, null],
       cursor: {
         drag: { x: true, y: true, setScale: true },
+        bind: { dblclick: () => null },
       },
       scales: {
         x: { time: false },
@@ -414,13 +443,11 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       const endedFollowingCollection =
         lastCollectionActive && !collectionActive;
       lastCollectionActive = collectionActive;
-      if (startedCollection && !following) {
-        following = true;
-        options.onViewportStateChange?.(true);
+      if (startedCollection || data[0].length === 0) {
+        report(collectionActive, 'full');
       }
-      if (endedFollowingCollection && following) {
-        following = false;
-        options.onViewportStateChange?.(false);
+      if (endedFollowingCollection) {
+        report(false, 'full');
       }
       schedule(
         data,
@@ -429,9 +456,8 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
     },
     fitAll(data, collectionActive) {
       cancelPendingFrame();
-      following = collectionActive;
       lastCollectionActive = collectionActive;
-      options.onViewportStateChange?.(following);
+      report(collectionActive, 'full');
       remember(data);
       if (!plot) {
         schedule(data, true);

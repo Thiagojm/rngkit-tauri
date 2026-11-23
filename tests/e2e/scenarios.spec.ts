@@ -74,3 +74,25 @@ for (const [size, stacked] of [
     expect(overflow).toBeLessThanOrEqual(0);
   });
 }
+
+test('drag-zoom pauses following and double-click resumes it', async ({
+  page,
+}) => {
+  await installIpcMock(page, 'ready', { start_collection: started });
+  await page.setViewportSize(VIEWPORTS.wide);
+  await page.goto('/');
+  await page.getByRole('button', { name: copy.start }).click();
+  await emit(page, sampleEvents(40));
+  const status = page.getByTestId('chart-point-count');
+  await expect(status).toContainText(copy.chart.following);
+
+  const over = await box(page, '.live-z-chart .u-over');
+  await page.mouse.move(over.x + 60, over.y + 40);
+  await page.mouse.down();
+  await page.mouse.move(over.x + 200, over.y + 120, { steps: 5 });
+  await page.mouse.up();
+  await expect(status).toContainText(copy.chart.paused);
+
+  await page.mouse.dblclick(over.x + 100, over.y + 60);
+  await expect(status).toContainText(copy.chart.following);
+});

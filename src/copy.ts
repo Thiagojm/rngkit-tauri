@@ -82,6 +82,8 @@ export const copy = {
     retainedPoints: 'Retained points',
     following: 'Following new samples',
     paused: 'View paused; new samples still append',
+    wholeSession: 'Showing the whole session',
+    zoomed: 'Zoomed view — use Fit all to see the whole session',
   },
   close: {
     title: 'Stop collection before closing?',

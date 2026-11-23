@@ -16,7 +16,10 @@ Execution state:
   stacked at 800x600); stacked chart drops its nested card chrome; main uses
   `px-4 lg:px-6`; Y axis 40+20 px, ticks 4 px, right padding 12 px. Measured
   stacked plot 484 px at 800x600, wide plot 570 px at 1280x800 (two columns).
-- Next action: Phase 3, then Phases 4–7 in order.
+- Phase 3 implemented: adapter reports `(following, mode)`; uPlot dblclick
+  routed to Fit all; inactive phrases whole/zoomed; count hidden when empty;
+  guide labels on `--color-surface` backdrops. Unit 143/143, e2e 11/11.
+- Next action: Phase 4, then Phases 5–7 in order.
 
 ## Goal and scope
 
