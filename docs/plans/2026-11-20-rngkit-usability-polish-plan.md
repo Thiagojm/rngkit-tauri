@@ -8,7 +8,10 @@ Execution state:
 - Phase 1 implemented; frontend suite, e2e, build, and Rust suite passed.
   `ActionGroup` deferred to Phase 4 (first user); `reasonPlacement` collapsed
   into a single `describedBy` prop.
-- Next action: Phase 0 harness, then Phases 2–7 in order.
+- Phase 0 implemented: `tests/e2e/ipc-mock.ts` (init-script IPC mock,
+  event emitter, viewport/box helpers) and `tests/e2e/scenarios.spec.ts`;
+  e2e 8/8. Before-screenshots kept in the session scratchpad only.
+- Next action: Phase 2, then Phases 3–7 in order.
 
 ## Goal and scope
 
