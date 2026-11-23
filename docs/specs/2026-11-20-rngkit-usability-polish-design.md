@@ -1,8 +1,8 @@
 # RngKit Usability and Visual Polish Design
 
-**Status:** Approved 2026-11-20 with the recommended answers to section 8.
-Implementation follows `docs/plans/2026-11-20-rngkit-usability-polish-plan.md`
-and still requires separate authorization to start.
+**Status:** Implemented 2026-11-23 (approved 2026-11-20 with the recommended
+answers to section 8). Execution state lives in
+`docs/plans/2026-11-20-rngkit-usability-polish-plan.md`; native smoke pending.
 
 **Date:** 2026-11-20
 

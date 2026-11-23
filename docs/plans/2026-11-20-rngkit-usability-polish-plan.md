@@ -35,7 +35,16 @@ Execution state:
   tokens unchanged. Help updated; technical terms only under File formats.
   New tests: copy audit, Help placement, Rust `combine_messages_say_combined_file`.
   Rust suite, unit 150/150, e2e 13/13.
-- Next action: Phase 7 (browser checks, full AGENTS suite, docs).
+- Phase 7 implemented: `tests/e2e/polish.spec.ts` covers Collect source-action
+  positions across Ready/Collecting/Stopping/Completed, Monitoring within
+  1280x800, Reports names and Cancel/Replace, Combine incompatible/empty, at
+  both sizes in light and dark (e2e 26/26). Full AGENTS locked suite passed
+  (unit 150/150 confirmed from a clean `npm ci` checkout of `4112a6a`; in
+  this nested worktree, Vitest fails at startup with a Vite dependency-optimizer
+  `node:module` resolve error after `npm ci`, a local environment anomaly); NSIS bundle not rebuilt. DECISIONS, PROJECT_CONTEXT, TODO,
+  and the spec updated. Status: Implemented.
+- Next action: user native `npm run tauri dev` smoke at the minimum window;
+  record the result only as reported.
 
 ## Goal and scope
 

@@ -140,6 +140,26 @@ All decisions are accepted. Material changes return to design review.
 - Fit Monitoring at the default 1280x800 viewport by compacting surrounding UI,
   preserving chart dimensions and readable metric labels. Source/session details
   belong in Session. Smaller windows and expanded errors retain normal scrolling.
+- Amended 2026-11-23: Collect stacks below 52rem of its own container
+  (`@container/collect`); Monitoring, Session, and the chart size from their own
+  named containers, not the viewport. Stacked chart drops nested card chrome.
+
+## Usability polish (2026-11-23)
+
+- Stop is a neutral `stop` button variant. One lock note under Refresh sources
+  explains locked settings while collecting or stopping; locked controls
+  reference it with `aria-describedby`.
+- Button width depends only on its label; `ActionGroup` renders distinct
+  disabled reasons once below the row.
+- Chart phrases follow the real viewport (following, paused, whole session,
+  zoomed); double-click means Fit all. Reference labels draw on a backdrop.
+- Reports preview shows the selected input basename (`manifest.json` for a
+  bundle directory) and the predicted XLSX basename, never a path.
+- Combine runs Add/Clear → inputs → Create combined file → result card; inputs
+  render as cards below 56rem of measured width, as a table at or above it.
+- User-facing text says "combined file"; `kindLabel` values, error codes,
+  manifest kinds, file tokens, and Help's File formats section keep
+  "derived bundle". The chart heading keeps "Descriptive".
 
 ## Help presentation (2026-09-06)
 

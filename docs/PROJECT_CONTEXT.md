@@ -85,6 +85,11 @@ Published app HEAD `a505141` pins reachable `rngkit-core`
   launching and working as expected. The user also reported that the app
   works on Linux; distro, install method, version, and hardware coverage
   were not specified. No separate logs or fold matrix.
+- **Usability polish (2026-11-23, branch
+  `claude/revisar-plano-proposto-bee7f7`):** Edge browser coverage through a
+  test-only IPC mock at 800x600 and 1280x800, light and dark (Collect states,
+  Reports names/replace, Combine cards/table), plus the locked Rust/MSRV and
+  no-bundle suite. Native `tauri dev` smoke of these changes is pending.
 - **Remaining:** other artifact open/folder actions, additional hardware,
   native 100k/1M chart interaction, scaling/screen-reader sampling, NSIS
   uninstall/session-data preservation, signing, and publishing a GitHub
