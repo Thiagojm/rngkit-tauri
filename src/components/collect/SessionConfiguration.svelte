@@ -70,7 +70,7 @@
 </script>
 
 <section
-  class="flex min-w-0 flex-col gap-3 rounded-md border border-border p-4"
+  class="@container/session flex min-w-0 flex-col gap-3 rounded-md border border-border p-4"
   aria-labelledby="collect-config"
 >
   <h2 id="collect-config" class="text-lg font-medium">Session</h2>
@@ -78,38 +78,40 @@
   {#if preferencesWarning}
     <p class="text-sm text-text-muted" role="note">{preferencesWarning}</p>
   {/if}
-  <Field id="sample-bits" label={copy.sampleBits}>
-    <input
-      id="sample-bits"
-      class="w-full rounded-md border border-border bg-surface px-2 py-1"
-      type="number"
-      min="8"
-      step="8"
-      value={bits}
-      disabled={!controls.configure.enabled || submitting}
-      aria-describedby={lockNote}
-      oninput={(event) => {
-        bitsEdited = true;
-        bits = event.currentTarget.value;
-      }}
-    />
-  </Field>
-  <Field id="sample-interval" label={copy.sampleInterval}>
-    <input
-      id="sample-interval"
-      class="w-full rounded-md border border-border bg-surface px-2 py-1"
-      type="number"
-      min="1"
-      step="1"
-      value={interval}
-      disabled={!controls.configure.enabled || submitting}
-      aria-describedby={lockNote}
-      oninput={(event) => {
-        intervalEdited = true;
-        interval = event.currentTarget.value;
-      }}
-    />
-  </Field>
+  <div class="grid gap-3 @[32rem]/session:grid-cols-2">
+    <Field id="sample-bits" label={copy.sampleBits}>
+      <input
+        id="sample-bits"
+        class="w-full rounded-md border border-border bg-surface px-2 py-1"
+        type="number"
+        min="8"
+        step="8"
+        value={bits}
+        disabled={!controls.configure.enabled || submitting}
+        aria-describedby={lockNote}
+        oninput={(event) => {
+          bitsEdited = true;
+          bits = event.currentTarget.value;
+        }}
+      />
+    </Field>
+    <Field id="sample-interval" label={copy.sampleInterval}>
+      <input
+        id="sample-interval"
+        class="w-full rounded-md border border-border bg-surface px-2 py-1"
+        type="number"
+        min="1"
+        step="1"
+        value={interval}
+        disabled={!controls.configure.enabled || submitting}
+        aria-describedby={lockNote}
+        oninput={(event) => {
+          intervalEdited = true;
+          interval = event.currentTarget.value;
+        }}
+      />
+    </Field>
+  </div>
   {#if controls.showFold}
     <Field id="fold" label={copy.fold.label}>
       <select

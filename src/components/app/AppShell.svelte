@@ -67,7 +67,7 @@
     <Navigation />
     <main
       id="main-content"
-      class="min-w-0 flex-1 overflow-auto px-4 py-4 narrow:px-6"
+      class="min-w-0 flex-1 overflow-auto px-4 py-4 lg:px-6"
       tabindex="-1"
     >
       {#if appState.destination === 'collect'}

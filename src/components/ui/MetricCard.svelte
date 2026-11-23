@@ -12,7 +12,11 @@
     : 'py-3'}"
 >
   <p class="text-sm text-text-muted">{label}</p>
-  <p class="break-words font-mono text-lg text-text {compact ? '' : 'mt-1'}">
+  <p
+    class="whitespace-nowrap font-mono text-lg tabular-nums text-text {compact
+      ? ''
+      : 'mt-1'}"
+  >
     {value}
   </p>
 </div>

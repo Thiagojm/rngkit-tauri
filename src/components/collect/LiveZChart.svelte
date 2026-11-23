@@ -65,7 +65,7 @@
 </script>
 
 <section
-  class="flex min-w-0 flex-col gap-2 rounded-md border border-border bg-surface-muted p-3"
+  class="flex min-w-0 flex-col gap-2 @[52rem]/collect:rounded-md @[52rem]/collect:border @[52rem]/collect:border-border @[52rem]/collect:bg-surface-muted @[52rem]/collect:p-3"
   aria-labelledby="live-z-heading"
 >
   <div class="flex flex-wrap items-start gap-3">
@@ -78,11 +78,11 @@
   </div>
 
   <div
-    class="relative min-h-[18rem] min-w-0 rounded-sm border border-border bg-surface p-2 @[36rem]:min-h-[20rem] @[36rem]:h-[min(42vh,30rem)]"
+    class="relative min-h-[18rem] min-w-0 rounded-sm border border-border bg-surface p-1 @[32rem]/monitor:min-h-[20rem] @[32rem]/monitor:h-[min(42vh,30rem)] @[52rem]/collect:p-2"
   >
     <div
       bind:this={host}
-      class="live-z-chart h-full min-h-[17rem] w-full min-w-0 @[36rem]:min-h-[19rem]"
+      class="live-z-chart h-full min-h-[17rem] w-full min-w-0 @[32rem]/monitor:min-h-[19rem]"
       data-testid="live-z-chart"
       role="img"
       aria-label={copy.chart.caption}

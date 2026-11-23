@@ -21,7 +21,7 @@
     data-testid="error-panel"
   >
     <h2 id="error-panel-title" class="font-medium">
-      {collection.statusLabel}
+      {copy.errorPanelHeading}
     </h2>
     {#if collection.errorMessage}
       <p class="text-sm">{collection.errorMessage}</p>

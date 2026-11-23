@@ -21,6 +21,9 @@ describe('ErrorPanel', () => {
 
     expect(screen.getByTestId('error-panel')).toBeTruthy();
     expect(
+      screen.getByRole('heading', { name: copy.errorPanelHeading }),
+    ).toBeTruthy();
+    expect(
       screen.getByText('The selected source became unavailable.'),
     ).toBeTruthy();
     expect(

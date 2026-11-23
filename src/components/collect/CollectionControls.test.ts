@@ -88,6 +88,22 @@ describe('Session configuration validation', () => {
     },
   );
 
+  it('shows a failed message exactly once', () => {
+    appState.applyScenario('failed');
+    render(CollectPage);
+    expect(
+      screen.getAllByText('The selected source became unavailable.'),
+    ).toHaveLength(1);
+  });
+
+  it('keeps metric values on one line', () => {
+    appState.applyScenario('collecting');
+    render(CollectPage);
+    expect(screen.getByText('00:00:12').className).toContain(
+      'whitespace-nowrap',
+    );
+  });
+
   it('places terminal actions in Session', () => {
     appState.applyScenario('completed');
     render(CollectPage);

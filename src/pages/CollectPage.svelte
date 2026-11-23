@@ -12,14 +12,14 @@
 
 <div class="flex flex-col gap-2">
   <h1 class="text-2xl font-semibold">{copy.destinations.collect}</h1>
-  <div class="@container">
+  <div class="@container/collect">
     <div
-      class="grid grid-cols-1 gap-4 @[36rem]:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]"
+      class="grid grid-cols-1 gap-4 @[52rem]/collect:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]"
     >
       <SessionConfiguration />
 
       <section
-        class="flex min-w-0 flex-col gap-2 self-start rounded-md border border-border p-4"
+        class="@container/monitor flex min-w-0 flex-col gap-2 self-start rounded-md border border-border p-3 @[52rem]/collect:p-4"
         aria-labelledby="collect-monitor"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -28,11 +28,10 @@
             compact
             state={collection.state}
             label={collection.statusLabel}
-            detail={collection.errorMessage}
           />
         </div>
         <ErrorPanel />
-        <div class="grid grid-cols-2 gap-2 @min-[28rem]:grid-cols-3">
+        <div class="grid grid-cols-2 gap-2 @min-[28rem]/monitor:grid-cols-3">
           <MetricCard
             compact
             label="Samples"

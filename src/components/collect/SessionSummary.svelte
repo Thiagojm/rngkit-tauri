@@ -21,7 +21,8 @@
   </p>
 {/if}
 {#if collection.sessionStem}
-  <p class="break-all font-mono text-sm text-text-muted">
-    {collection.sessionStem}
-  </p>
+  <dl class="text-sm">
+    <dt class="text-text-muted">{copy.sessionName}</dt>
+    <dd class="break-all font-mono">{collection.sessionStem}</dd>
+  </dl>
 {/if}

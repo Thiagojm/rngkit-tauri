@@ -24,6 +24,8 @@ export const copy = {
   noOutputFolder: 'No output folder selected. Choose a folder to continue.',
   entropySource: 'Entropy source',
   refreshSources: 'Refresh sources',
+  errorPanelHeading: 'What happened',
+  sessionName: 'Session name',
   sessionLocked: {
     collecting: 'Settings are locked while a session is collecting.',
     stopping: 'Settings are locked while a session is stopping.',

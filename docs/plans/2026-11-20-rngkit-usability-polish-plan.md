@@ -11,7 +11,12 @@ Execution state:
 - Phase 0 implemented: `tests/e2e/ipc-mock.ts` (init-script IPC mock,
   event emitter, viewport/box helpers) and `tests/e2e/scenarios.spec.ts`;
   e2e 8/8. Before-screenshots kept in the session scratchpad only.
-- Next action: Phase 2, then Phases 3–7 in order.
+- Phase 2 implemented: named `collect`/`monitor`/`session` containers;
+  chart sizing keyed `@[32rem]/monitor` (Monitoring content box is ~34rem
+  stacked at 800x600); stacked chart drops its nested card chrome; main uses
+  `px-4 lg:px-6`; Y axis 40+20 px, ticks 4 px, right padding 12 px. Measured
+  stacked plot 484 px at 800x600, wide plot 570 px at 1280x800 (two columns).
+- Next action: Phase 3, then Phases 4–7 in order.
 
 ## Goal and scope
 

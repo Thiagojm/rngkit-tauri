@@ -335,6 +335,9 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
       height: Math.max(host.clientHeight, 288),
       class: 'live-z-uplot',
       legend: { show: false },
+      // Right inset leaves room for the last X tick label; Y axis is kept
+      // compact so the stacked 800x600 layout keeps a >= 480 px plot.
+      padding: [null, 12, null, null],
       cursor: {
         drag: { x: true, y: true, setScale: true },
       },
@@ -358,11 +361,14 @@ export function createChartAdapter(options: ChartAdapterOptions): ChartAdapter {
         },
         {
           label: options.labels.yAxis,
+          size: 40,
+          labelSize: 20,
           stroke: () => cssColor(host, '--color-chart-axis', '#4a5a70'),
           grid: {
             stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
           ticks: {
+            size: 4,
             stroke: () => cssColor(host, '--color-chart-grid', '#c5d0de'),
           },
         },

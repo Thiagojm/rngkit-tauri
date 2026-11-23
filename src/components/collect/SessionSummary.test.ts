@@ -9,7 +9,9 @@ describe('SessionSummary', () => {
     appState.applyScenario('completed');
     render(CollectPage);
 
-    expect(screen.getByText('20260822T101500_bitb_s8_i1_f0')).toBeTruthy();
+    const stem = screen.getByText('20260822T101500_bitb_s8_i1_f0');
+    expect(stem.tagName).toBe('DD');
+    expect(stem.previousElementSibling?.textContent).toBe(copy.sessionName);
     await fireEvent.click(
       screen.getByRole('button', { name: copy.startAnother }),
     );
