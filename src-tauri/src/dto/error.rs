@@ -117,7 +117,7 @@ impl SafeError {
     pub fn derived_exists() -> Self {
         Self::new(
             ErrorCode::OutputExists,
-            "A derived bundle with that name already exists.",
+            "A combined file with that name already exists.",
         )
     }
 

@@ -136,6 +136,27 @@ fn ready_combine(root: &Path, paths: &[PathBuf]) -> AppCoordinator {
 }
 
 #[test]
+fn combine_messages_say_combined_file() {
+    let _lock = combine_test_lock();
+    let root = temp_root();
+    let mut no_root = AppCoordinator::new();
+    let mut empty = AppCoordinator::new();
+    empty.set_output_root(&root).expect("root");
+    for error in [
+        create_previewed(&mut no_root).expect_err("no root"),
+        create_previewed(&mut empty).expect_err("empty"),
+        generate_derived_report(&mut empty, false).expect_err("no result"),
+    ] {
+        assert!(
+            error.message().contains("combined file"),
+            "{}",
+            error.message()
+        );
+        assert!(!error.message().to_lowercase().contains("derived bundle"));
+    }
+}
+
+#[test]
 fn compatible_csvs_create_bundle_without_mutation() {
     let _lock = combine_test_lock();
     let root = temp_root();
@@ -161,7 +182,7 @@ fn compatible_csvs_create_bundle_without_mutation() {
     assert_eq!(result.total_rows, 4);
     let directory = coordinator.combine_directory().expect("dir").to_path_buf();
     let outcome = coordinator.pending_outcome().expect("combine outcome");
-    assert_eq!(outcome.title, "Derived bundle created");
+    assert_eq!(outcome.title, "Combined file created");
     assert_eq!(
         outcome.operation,
         rngkit_lib::dto::OutcomeOperation::Combine
@@ -452,7 +473,7 @@ fn changed_after_preview_and_write_failure_leave_inputs_and_no_bundle() {
             .pending_outcome()
             .expect("failure outcome")
             .title,
-        "Derived bundle not created"
+        "Combined file not created"
     );
     assert!(coordinator.snapshot().combine.result.is_none());
     assert_ne!(hash(&a), before_a);
@@ -467,7 +488,7 @@ fn changed_after_preview_and_write_failure_leave_inputs_and_no_bundle() {
     assert_eq!(error.code, ErrorCode::UnexpectedFailure);
     assert_eq!(
         coordinator.pending_outcome().expect("write outcome").title,
-        "Derived bundle not created"
+        "Combined file not created"
     );
     let created: Vec<_> = fs::read_dir(&root)
         .expect("list")

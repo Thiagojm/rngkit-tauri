@@ -34,23 +34,27 @@
         <div class="grid grid-cols-2 gap-2 @min-[28rem]/monitor:grid-cols-3">
           <MetricCard
             compact
-            label="Samples"
+            label={copy.metrics.samples}
             value={String(collection.sampleCount)}
           />
-          <MetricCard compact label="Elapsed" value={collection.elapsedLabel} />
           <MetricCard
             compact
-            label="Observed one proportion"
+            label={copy.metrics.elapsed}
+            value={collection.elapsedLabel}
+          />
+          <MetricCard
+            compact
+            label={copy.metrics.onesShare}
             value={collection.onesProportionLabel}
           />
           <MetricCard
             compact
-            label="Descriptive cumulative Z"
+            label={copy.metrics.cumulativeZ}
             value={collection.cumulativeZLabel}
           />
           <MetricCard
             compact
-            label="Overruns"
+            label={copy.metrics.overruns}
             value={String(collection.overrunCount)}
           />
         </div>

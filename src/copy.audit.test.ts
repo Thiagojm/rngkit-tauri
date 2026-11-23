@@ -32,4 +32,13 @@ describe('user-facing copy', () => {
     expect(text).not.toMatch(/[A-Za-z]:\\/);
     expect(text).not.toMatch(/\/dev\//);
   });
+
+  it('keeps the chart heading descriptive and drops technical jargon', () => {
+    expect(copy.chart.title).toMatch(/Descriptive/);
+    expect(copy.chart.caption).toMatch(/descriptive/i);
+    const text = flatten(copy).join('\n');
+    expect(text).not.toMatch(/provenance-bearing/i);
+    expect(text).not.toMatch(/same-stem/i);
+    expect(text).not.toMatch(/derived bundle/i);
+  });
 });

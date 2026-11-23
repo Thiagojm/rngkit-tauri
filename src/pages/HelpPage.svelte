@@ -349,8 +349,13 @@
           </p>
         </div>
         <p>
-          When collection finishes, use <strong>Open session folder</strong> or
-          <strong>Start another session</strong> in Session.
+          While a session is collecting or stopping, a note under
+          <strong>Refresh sources</strong> explains that settings are locked.
+          When collection finishes, Session shows the
+          <strong>Session name</strong>; use
+          <strong>Open session folder</strong>
+          or
+          <strong>Start another session</strong> there.
         </p>
       </section>
 
@@ -368,12 +373,14 @@
         <ol class="list-decimal space-y-2 ps-5">
           <li>
             In Reports, select <strong>Choose input</strong> once. You can choose
-            a native session artifact, a derived bundle artifact, a current CSV or
-            BIN, or a legacy v3 CSV or BIN.
+            a session, a combined file, a current CSV or BIN, or a legacy v3 CSV or
+            BIN.
           </li>
           <li>
-            Review the preview and its timestamp note, then select Generate
-            report. Inputs are read-only.
+            Review the preview: <strong>Input file</strong> is the file you
+            chose and <strong>Report file</strong> is the XLSX name it will
+            save. Check the timestamp note, then select
+            <strong>Generate report</strong>. Inputs are read-only.
           </li>
           <li>
             If an XLSX already exists, Cancel keeps it. Replace is a separate,
@@ -388,8 +395,8 @@
           from its filename and contents. BIN-only reports use sample numbers on
           the chart's horizontal axis; CSV-based reports use recorded
           timestamps. A BIN with a valid sibling CSV can use the recorded
-          timestamps from that bundle. Derived reports copy timestamps from
-          their combined inputs.
+          timestamps from that bundle. Reports for combined files copy
+          timestamps from their inputs.
         </p>
         <p>
           After generation, an outcome dialog appears once with the saved file
@@ -417,9 +424,11 @@
             <strong>Clear all</strong> resets the selection.
           </li>
           <li>
-            Select <strong>Create derived bundle</strong> only when the complete
-            selection is compatible. Then use <strong>Generate XLSX</strong> for its
-            report.
+            Below the list, select <strong>Create combined file</strong> only
+            when the complete selection is compatible. A result card then shows
+            the <strong>Combined file name</strong> with
+            <strong>Generate XLSX</strong> and
+            <strong>Open combined folder</strong>.
           </li>
         </ol>
         <p>
@@ -432,7 +441,7 @@
         </p>
         <p>
           The result dialog lists the saved CSV, manifest, and folder paths. Use
-          its folder button to find the new bundle. Your input files are
+          its folder button to find the new combined file. Your input files are
           unchanged.
         </p>
       </section>
@@ -455,9 +464,10 @@
         <p>
           The chart keeps every committed point for the current session. Zooming
           or panning pauses automatic following. <strong>Fit all</strong> frames
-          the complete retained range. During collection it follows new points
-          after <strong>Fit all</strong>; after collection ends, it frames the
-          data without automatically following.
+          the complete retained range; double-clicking the chart does the same.
+          During collection it follows new points after
+          <strong>Fit all</strong>; after collection ends, it frames the data
+          without automatically following.
         </p>
       </section>
 

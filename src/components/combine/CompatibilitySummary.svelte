@@ -25,7 +25,7 @@
       class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]"
     >
       <div>
-        <dt class="text-sm text-text-muted">Bundle stem</dt>
+        <dt class="text-sm text-text-muted">{copy.combinedFileName}</dt>
         <dd class="break-all font-mono text-sm">{combine.result.stem}</dd>
       </div>
       <div>
@@ -42,7 +42,7 @@
         >{copy.generateXlsx}</Button
       >
       <Button onclick={() => appState.openDerivedFolder()}
-        >{copy.openFolder}</Button
+        >{copy.openCombinedFolder}</Button
       >
     </div>
   </div>

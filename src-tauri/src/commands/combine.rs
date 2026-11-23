@@ -161,13 +161,13 @@ pub async fn create_derived(
     let Some(root) = root else {
         finish_job(&coordinator);
         return Err(SafeError::invalid_configuration(
-            "Choose an output folder before creating a derived bundle.",
+            "Choose an output folder before creating a combined file.",
         ));
     };
     if paths.is_empty() {
         finish_job(&coordinator);
         return Err(SafeError::invalid_configuration(
-            "Select compatible CSV files before creating a bundle.",
+            "Select compatible CSV files before creating a combined file.",
         ));
     }
     let created = tauri::async_runtime::spawn_blocking(move || {
@@ -209,13 +209,13 @@ pub async fn generate_derived(
             None => {
                 let _ = coordinator.finish_file_job();
                 return Err(SafeError::invalid_configuration(
-                    "Create a derived bundle before generating XLSX.",
+                    "Create a combined file before generating XLSX.",
                 ));
             }
         };
         let options = coordinator.report_options().cloned().ok_or_else(|| {
             let _ = coordinator.finish_file_job();
-            SafeError::invalid_configuration("Inspect the derived bundle before generating XLSX.")
+            SafeError::invalid_configuration("Inspect the combined file before generating XLSX.")
         })?;
         (directory, options)
     };
@@ -262,7 +262,7 @@ pub fn open_derived_folder(
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     ensure_artifact_open_allowed(&coordinator)?;
     let path = coordinator.combine_directory().ok_or_else(|| {
-        SafeError::invalid_transition("Create a derived bundle before opening its folder.")
+        SafeError::invalid_transition("Create a combined file before opening its folder.")
     })?;
     reports.open_existing_folder(path)?;
     Ok(coordinator.snapshot())

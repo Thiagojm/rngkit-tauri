@@ -442,20 +442,20 @@ impl AppCoordinator {
             .map(|result| result.stem.as_str())
             .unwrap_or("derived");
         let mut paths = Vec::new();
-        if let Some(path) = outcome_path("Derived folder", directory) {
+        if let Some(path) = outcome_path("Combined folder", directory) {
             paths.push(path);
         }
-        if let Some(path) = outcome_path("Derived CSV", &directory.join(format!("{stem}.csv"))) {
+        if let Some(path) = outcome_path("Combined CSV", &directory.join(format!("{stem}.csv"))) {
             paths.push(path);
         }
-        if let Some(path) = outcome_path("Derived manifest", &directory.join("manifest.json")) {
+        if let Some(path) = outcome_path("Combined manifest", &directory.join("manifest.json")) {
             paths.push(path);
         }
         self.replace_outcome(
             OutcomeSeverity::Success,
             OutcomeOperation::Combine,
-            "Derived bundle created",
-            "The derived bundle was created successfully.".into(),
+            "Combined file created",
+            "The combined file was created successfully.".into(),
             paths,
             vec![OutcomeActionId::OpenDerivedFolder],
         );
@@ -472,7 +472,7 @@ impl AppCoordinator {
         self.replace_outcome(
             OutcomeSeverity::Error,
             OutcomeOperation::Combine,
-            "Derived bundle not created",
+            "Combined file not created",
             message.to_owned(),
             paths,
             Vec::new(),

@@ -63,7 +63,7 @@ describe('CombinePage', () => {
     );
     expect(at(copy.removeCombineInput)).toBeLessThan(at(copy.createDerived));
     expect(at(copy.createDerived)).toBeLessThan(at(copy.generateXlsx));
-    expect(at(copy.generateXlsx)).toBeLessThan(at(copy.openFolder));
+    expect(at(copy.generateXlsx)).toBeLessThan(at(copy.openCombinedFolder));
   });
 
   it('renders inputs as cards in a narrow container', () => {
@@ -82,6 +82,8 @@ describe('CombinePage', () => {
     expect(
       screen.queryByRole('button', { name: copy.generateXlsx }),
     ).toBeNull();
-    expect(screen.queryByRole('button', { name: copy.openFolder })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: copy.openCombinedFolder }),
+    ).toBeNull();
   });
 });

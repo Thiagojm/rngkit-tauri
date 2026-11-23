@@ -47,13 +47,15 @@ export const copy = {
   openContainingFolder: 'Open containing folder',
   replaceTitle: 'Replace existing report?',
   replaceBody:
-    'An XLSX file already exists for this input. Cancel keeps it. Replace is an explicit second request.',
+    'A report for this file already exists. Cancel keeps it; Replace overwrites it.',
   cancel: 'Cancel',
   replace: 'Replace',
   chooseCsvInputs: 'Add files',
   clearCombineInputs: 'Clear all',
   removeCombineInput: 'Remove',
-  createDerived: 'Create derived bundle',
+  createDerived: 'Create combined file',
+  combinedFileName: 'Combined file name',
+  openCombinedFolder: 'Open combined folder',
   generateXlsx: 'Generate XLSX',
   openFolder: 'Open folder',
   outcome: {
@@ -62,7 +64,7 @@ export const copy = {
     openSessionFolder: 'Open session folder',
     openReport: 'Open report',
     openReportFolder: 'Open report folder',
-    openDerivedFolder: 'Open derived folder',
+    openDerivedFolder: 'Open combined folder',
     openCollectionWorkingFolder: 'Open Collect working folder',
     openReportWorkingFolder: 'Open Reports working folder',
     openCombineWorkingFolder: 'Open Combine working folder',
@@ -71,14 +73,13 @@ export const copy = {
     title: 'Descriptive cumulative Z',
     boundary: 'Z shows balance over time; it does not certify randomness.',
     xAxis: 'Sample index',
-    yAxis: 'Descriptive cumulative Z',
-    series: 'Descriptive cumulative Z',
+    yAxis: 'Z',
+    series: 'Cumulative Z',
     zero: 'Zero',
     refPlus: 'Reference +1.96',
     refMinus: 'Reference -1.96',
     fitAll: 'Fit all',
-    empty:
-      'No committed samples yet. Every committed point is retained for this session.',
+    empty: 'No samples yet. The chart starts with the first sample.',
     caption:
       'Sample index versus descriptive cumulative Z. The zero line and ±1.96 lines are visual guides only.',
     retainedPoints: 'Retained points',
@@ -108,6 +109,19 @@ export const copy = {
   noReportInput: 'No report input selected.',
   noCombineInputs: 'No CSV files selected.',
   status: 'Status',
+  intro: {
+    reports:
+      'Choose a session, combined file, or CSV/BIN file. RngKit saves an Excel (XLSX) report next to it.',
+    combine:
+      'Add CSV files that share the same sample size and interval. RngKit joins them into a new file and never changes the originals.',
+  },
+  metrics: {
+    samples: 'Samples',
+    elapsed: 'Elapsed',
+    onesShare: 'Share of 1 bits',
+    cumulativeZ: 'Cumulative Z',
+    overruns: 'Overruns',
+  },
 } as const;
 
 export const FOLD_OPTIONS = [

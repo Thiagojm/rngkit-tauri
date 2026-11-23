@@ -112,6 +112,20 @@ describe('HelpPage', () => {
       screen.getByRole('button', { name: copy.openDeviceSetupFolder }),
     ).toBeTruthy();
   });
+  it('keeps technical terms inside File formats and version details', () => {
+    const { container } = render(HelpPage);
+    const formats = container.querySelector(
+      'section[aria-labelledby="help-file-formats"]',
+    )!;
+    expect(formats.textContent).toMatch(/derived bundle/i);
+    const outside = [...container.querySelectorAll('section')]
+      .filter((section) => section !== formats && !formats.contains(section))
+      .map((section) => section.textContent)
+      .join('\n');
+    expect(outside).not.toMatch(/provenance-bearing|same-stem|derived bundle/i);
+    expect(outside).toMatch(/Create combined file/);
+  });
+
   it('provides topic links and current collection guidance', async () => {
     render(HelpPage);
     const links = screen

@@ -143,7 +143,7 @@ impl ReportsHandle {
     pub fn open_existing_folder(&self, path: &Path) -> Result<(), SafeError> {
         if !path.is_dir() {
             return Err(SafeError::invalid_transition(
-                "The derived folder is no longer available.",
+                "The combined folder is no longer available.",
             ));
         }
         self.opener.open_folder(path)?;
@@ -211,7 +211,7 @@ pub fn generate_inspected(
     ) else {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
-            "Inspect a session, file, or derived bundle before generating a report.",
+            "Choose a session, combined file, or CSV/BIN file before generating a report.",
         ));
     };
     let result = write_inspected_report(&input, kind, replace, &options);

@@ -8,8 +8,7 @@
 <div class="flex max-w-3xl flex-col gap-4">
   <h1 class="text-2xl font-semibold">{copy.destinations.reports}</h1>
   <p class="text-text-muted">
-    Inspect a native or derived bundle, current CSV/BIN, or legacy v3 CSV, then
-    generate a same-stem XLSX report.
+    {copy.intro.reports}
   </p>
   <ReportInput />
   <ReportPreview />

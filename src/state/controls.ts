@@ -115,7 +115,7 @@ export function deriveControls(snapshot: AppSnapshot): DerivedControls {
         ? disabled(
             fileBusy
               ? fileJobReason
-              : 'Inspect a session, file, or derived bundle before generating a report.',
+              : 'Choose a session, combined file, or CSV/BIN file before generating a report.',
           )
         : enabled(),
     openReport: fileBusy

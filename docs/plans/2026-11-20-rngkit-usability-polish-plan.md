@@ -28,7 +28,14 @@ Execution state:
   only with a result). Inputs switch card/table at 56rem of measured width
   (`bind:clientWidth`, one tree in the a11y DOM; jsdom gets a no-op
   ResizeObserver). Unit 148/148, e2e 13/13.
-- Next action: Phase 6, then Phase 7.
+- Phase 6 implemented: spec section 5 wording applied through `copy`
+  (intros, metric labels, chart axis/series/empty, replace body, Combine
+  button/summary/folder); backend outcome, outcome-path labels, and SafeError
+  messages say "combined file"; `kindLabel`, codes, manifest kinds, and file
+  tokens unchanged. Help updated; technical terms only under File formats.
+  New tests: copy audit, Help placement, Rust `combine_messages_say_combined_file`.
+  Rust suite, unit 150/150, e2e 13/13.
+- Next action: Phase 7 (browser checks, full AGENTS suite, docs).
 
 ## Goal and scope
 

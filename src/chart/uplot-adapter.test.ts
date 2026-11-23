@@ -7,9 +7,9 @@ import {
 } from './uplot-adapter';
 
 const labels: ChartLabels = {
-  series: 'Descriptive cumulative Z',
+  series: 'Cumulative Z',
   xAxis: 'Sample index',
-  yAxis: 'Descriptive cumulative Z',
+  yAxis: 'Z',
   zero: 'Zero',
   refPlus: 'Reference +1.96',
   refMinus: 'Reference -1.96',

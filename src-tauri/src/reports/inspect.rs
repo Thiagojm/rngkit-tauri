@@ -450,19 +450,21 @@ pub(super) fn map_derived(error: RecordingError) -> SafeError {
         | RecordingError::Csv(_)
         | RecordingError::InconsistentConcatenationRange
         | RecordingError::InvalidConcatenationHash => {
-            SafeError::corrupt_input("The selected derived bundle is corrupt.")
+            SafeError::corrupt_input("The selected combined file is corrupt.")
         }
         RecordingError::Io(io) if io.kind() == ErrorKind::PermissionDenied => {
-            SafeError::permission_denied("The selected derived bundle could not be read.")
+            SafeError::permission_denied("The selected combined file could not be read.")
         }
         RecordingError::UnsupportedConcatenationKind { .. }
         | RecordingError::UnsupportedSchema { .. }
         | RecordingError::UnsupportedVersion { .. }
         | RecordingError::InvalidName { .. }
         | RecordingError::Io(_) => {
-            SafeError::unsupported_input("That folder is not a supported derived bundle.")
+            SafeError::unsupported_input("That folder does not contain a supported combined file.")
         }
-        _ => SafeError::unsupported_input("That folder is not a supported derived bundle."),
+        _ => {
+            SafeError::unsupported_input("That folder does not contain a supported combined file.")
+        }
     }
 }
 

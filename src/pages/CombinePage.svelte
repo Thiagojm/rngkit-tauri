@@ -21,8 +21,7 @@
     >
   </div>
   <p class="text-text-muted">
-    Add compatible current or legacy CSV files from one or more folders and
-    create a provenance-bearing derived bundle without modifying the inputs.
+    {copy.intro.combine}
   </p>
   <CombineActions />
   <InputTable />

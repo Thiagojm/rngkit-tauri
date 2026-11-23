@@ -31,13 +31,13 @@ pub fn create_previewed(coordinator: &mut AppCoordinator) -> Result<AppStateDto,
     let Some(root) = coordinator.output_root().map(Path::to_path_buf) else {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
-            "Choose an output folder before creating a derived bundle.",
+            "Choose an output folder before creating a combined file.",
         ));
     };
     if paths.is_empty() {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
-            "Select compatible CSV files before creating a bundle.",
+            "Select compatible CSV files before creating a combined file.",
         ));
     }
     let result = create_csv_concatenation(&paths, &root);
@@ -61,7 +61,7 @@ pub fn generate_derived_report(
     let Some(directory) = coordinator.combine_directory().map(Path::to_path_buf) else {
         let _ = coordinator.finish_file_job();
         return Err(SafeError::invalid_configuration(
-            "Create a derived bundle before generating XLSX.",
+            "Create a combined file before generating XLSX.",
         ));
     };
     let written = match inspect_derived(&directory) {
@@ -76,7 +76,7 @@ pub fn generate_derived_report(
             );
             let options = coordinator.report_options().cloned().ok_or_else(|| {
                 SafeError::invalid_configuration(
-                    "Inspect the derived bundle before generating XLSX.",
+                    "Inspect the combined file before generating XLSX.",
                 )
             });
             options.and_then(|options| {
@@ -227,7 +227,7 @@ fn map_combine_ref(error: &RecordingError) -> String {
         RecordingError::ConcatenationInputChanged { .. } => {
             "An input file changed after preview. Choose the files again."
         }
-        RecordingError::AlreadyExists { .. } => "A derived bundle with that name already exists.",
+        RecordingError::AlreadyExists { .. } => "A combined file with that name already exists.",
         RecordingError::OnesExceedSampleBits { .. } => "A one-count exceeds the sample size.",
         RecordingError::UnsupportedVersion { .. } | RecordingError::InvalidName { .. } => {
             "That file is not a supported RngKitPSG v3 input."
