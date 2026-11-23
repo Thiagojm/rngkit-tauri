@@ -9,6 +9,11 @@
   --color-focus: #1d6fd8;
   --color-action: #1d6fd8;
   --color-action-hover: #1557ab;
+  /* Stop saves the session, so it is neutral, not a danger color. The
+     aliases follow the inverse tokens in every theme. */
+  --color-action-stop: var(--color-surface-inverse);
+  --color-action-stop-text: var(--color-text-inverse);
+  --color-action-stop-hover: #2a3a54;
   --color-status-idle: #4a5a70;
   --color-status-ready: #1b7f46;
   --color-status-collecting: #1d6fd8;
@@ -37,6 +42,7 @@
   --color-focus: #6ea8f0;
   --color-action: #6ea8f0;
   --color-action-hover: #8cbcf5;
+  --color-action-stop-hover: #c5d0de;
   --color-status-idle: #9aabc0;
   --color-status-ready: #3dd68c;
   --color-status-collecting: #6ea8f0;
@@ -60,6 +66,7 @@
     --color-focus: #6ea8f0;
     --color-action: #6ea8f0;
     --color-action-hover: #8cbcf5;
+    --color-action-stop-hover: #c5d0de;
     --color-status-idle: #9aabc0;
     --color-status-ready: #3dd68c;
     --color-status-collecting: #6ea8f0;

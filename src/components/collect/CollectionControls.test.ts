@@ -100,3 +100,49 @@ describe('Session configuration validation', () => {
     ).toBeTruthy();
   });
 });
+
+describe('Session lock note', () => {
+  it.each([
+    ['collecting', copy.sessionLocked.collecting],
+    ['stopping', copy.sessionLocked.stopping],
+  ] as const)('describes every locked control while %s', (scenario, text) => {
+    appState.applyScenario(scenario);
+    render(CollectPage);
+
+    const notes = screen.getAllByText(text);
+    expect(notes).toHaveLength(1);
+    const noteId = notes[0].id;
+    expect(noteId).toBe('session-lock-note');
+    for (const name of [
+      copy.refreshSources,
+      copy.chooseFolder,
+      copy.openWorkingFolder,
+    ]) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveProperty('disabled', true);
+      expect(button.getAttribute('aria-describedby')).toBe(noteId);
+    }
+    expect(
+      screen.getByLabelText(copy.sampleBits).getAttribute('aria-describedby'),
+    ).toBe(noteId);
+    expect(
+      screen
+        .getByRole('group', { name: copy.entropySource })
+        .getAttribute('aria-describedby'),
+    ).toBe(noteId);
+  });
+
+  it('shows no lock note when ready', () => {
+    appState.applyScenario('ready');
+    render(CollectPage);
+    expect(screen.queryByText(copy.sessionLocked.collecting)).toBeNull();
+  });
+
+  it('uses the neutral stop variant for Stop', () => {
+    appState.applyScenario('collecting');
+    render(CollectPage);
+    expect(screen.getByRole('button', { name: copy.stop }).className).toContain(
+      'bg-action-stop',
+    );
+  });
+});

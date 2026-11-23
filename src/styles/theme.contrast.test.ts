@@ -1,4 +1,9 @@
+/// <reference types="node" />
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+
+// Vitest stubs CSS imports and runs from the project root, so read the file.
+const themeCss = readFileSync('src/styles/theme.css', 'utf8');
 
 function channel(value: number): number {
   const scaled = value / 255;
@@ -35,5 +40,32 @@ describe('theme contrast', () => {
     expect(contrast('#3dd68c', '#101826')).toBeGreaterThanOrEqual(4.5);
     expect(contrast('#6ea8f0', '#101826')).toBeGreaterThanOrEqual(4.5);
     expect(contrast('#f97066', '#101826')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('keeps Stop text readable on its normal and hover backgrounds', () => {
+    // Light: inverse surface #152033 / hover #2a3a54 with #f4f7fb text.
+    expect(contrast('#f4f7fb', '#152033')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#f4f7fb', '#2a3a54')).toBeGreaterThanOrEqual(4.5);
+    // Dark: inverse surface #e8eef5 / hover #c5d0de with #101826 text.
+    expect(contrast('#101826', '#e8eef5')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#101826', '#c5d0de')).toBeGreaterThanOrEqual(4.5);
+
+    // Guard the literals above against drift in theme.css.
+    expect(themeCss).toContain(
+      '--color-action-stop: var(--color-surface-inverse);',
+    );
+    expect(themeCss).toContain(
+      '--color-action-stop-text: var(--color-text-inverse);',
+    );
+    expect(themeCss).toContain('--color-action-stop-hover: #2a3a54;');
+    expect(themeCss.match(/--color-action-stop-hover: #c5d0de;/g)).toHaveLength(
+      2,
+    );
+    expect(themeCss.match(/--color-surface-inverse: #152033;/g)).toHaveLength(
+      1,
+    );
+    expect(themeCss.match(/--color-surface-inverse: #e8eef5;/g)).toHaveLength(
+      2,
+    );
   });
 });

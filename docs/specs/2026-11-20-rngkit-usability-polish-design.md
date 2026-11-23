@@ -302,6 +302,9 @@ formats and version details" section and in documentation.
    `<stem>.xlsx` report name.
 4. **Combine at narrow widths (UX-2):** stacked cards below the breakpoint;
    the table remains at wider sizes.
-5. **Backend wording (UX-11, 2026-11-22):** user-facing backend messages
-   follow the section 5 vocabulary, so the UI never mixes "combined file" and
-   "derived bundle" outside Help's technical section.
+5. **Backend wording (UX-11, approved 2026-11-23):** user-facing backend
+   messages follow the section 5 vocabulary, so the UI never mixes "combined
+   file" and "derived bundle" outside Help's technical section. Condition: no
+   app behavior may change. Only display text changes; any string that code
+   compares (today only `kindLabel === 'Derived bundle'` in
+   `src/state/app-state.svelte.ts`) stays as is.

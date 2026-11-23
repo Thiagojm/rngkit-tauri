@@ -21,10 +21,11 @@
 {/if}
 {#if controls.showStop}
   <Button
-    variant="primary"
+    variant="stop"
     disabled={!controls.stop.enabled}
     disabledReason={controls.stop.reason}
-    onclick={() => appState.stopCollection()}>{copy.stop}</Button
+    onclick={() => appState.stopCollection()}
+    ><span aria-hidden="true">■</span> {copy.stop}</Button
   >
 {/if}
 

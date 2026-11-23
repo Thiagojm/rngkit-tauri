@@ -12,6 +12,10 @@
   const collection = $derived(appState.snapshot.collection);
   const controls = $derived(appState.controls);
   const preferencesWarning = $derived(appState.snapshot.preferencesWarning);
+  // The note itself is rendered by SourceDiscovery while settings are locked.
+  const lockNote = $derived(
+    controls.configure.enabled ? undefined : 'session-lock-note',
+  );
 
   let bits = $state('');
   let bitsEdited = $state(false);
@@ -83,6 +87,7 @@
       step="8"
       value={bits}
       disabled={!controls.configure.enabled || submitting}
+      aria-describedby={lockNote}
       oninput={(event) => {
         bitsEdited = true;
         bits = event.currentTarget.value;
@@ -98,6 +103,7 @@
       step="1"
       value={interval}
       disabled={!controls.configure.enabled || submitting}
+      aria-describedby={lockNote}
       oninput={(event) => {
         intervalEdited = true;
         interval = event.currentTarget.value;
@@ -111,6 +117,7 @@
         class="w-full rounded-md border border-border bg-surface px-2 py-1"
         value={collection.fold ?? 0}
         disabled={!controls.configure.enabled || submitting}
+        aria-describedby={lockNote}
         onchange={onFoldChange}
       >
         {#each FOLD_OPTIONS as option (option.value)}
@@ -128,11 +135,13 @@
     <Button
       disabled={!controls.chooseFolder.enabled}
       disabledReason={controls.chooseFolder.reason}
+      describedBy={lockNote}
       onclick={() => appState.chooseOutputFolder()}>{copy.chooseFolder}</Button
     >
     <Button
       disabled={!controls.openCollectionWorkingFolder.enabled}
       disabledReason={controls.openCollectionWorkingFolder.reason}
+      describedBy={lockNote}
       onclick={() => appState.openCollectionWorkingFolder()}
       >{copy.openWorkingFolder}</Button
     >

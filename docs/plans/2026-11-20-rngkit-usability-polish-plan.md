@@ -1,7 +1,14 @@
 # Usability and visual polish implementation plan
 
-Status: Ready — awaiting authorization to implement. Nothing below has started.
 Revised 2026-11-22 after a code review against `b12fd89`.
+
+Execution state:
+- Design approved (backend wording approved 2026-11-23); user authorized
+  implementing all phases with a commit and push per phase (2026-11-23).
+- Phase 1 implemented; frontend suite, e2e, build, and Rust suite passed.
+  `ActionGroup` deferred to Phase 4 (first user); `reasonPlacement` collapsed
+  into a single `describedBy` prop.
+- Next action: Phase 0 harness, then Phases 2–7 in order.
 
 ## Goal and scope
 
@@ -291,6 +298,10 @@ referencing changed strings, `tests/e2e/*.spec.ts`.
    and disabled reasons say "combined file" instead of "derived bundle".
    `openDerivedFolder` becomes "Open combined folder". Do not change
    `kindLabel` values, error codes, manifest kinds, or file-name tokens.
+   Before editing, grep frontend and backend for logic that compares message
+   text (`===`, `includes`, `contains`); only display strings change, and the
+   full Rust and frontend suites must pass unchanged apart from the expected
+   message literals (approved condition, spec section 8 item 5).
 4. Update Help steps and control names (Create combined file, result card
    placement, Session name, Input/Report file, lock note); technical terms stay
    in "File formats and version details".

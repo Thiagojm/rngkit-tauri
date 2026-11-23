@@ -6,12 +6,14 @@
 
   const collection = $derived(appState.snapshot.collection);
   const controls = $derived(appState.controls);
+  // configure is disabled exactly while a session is collecting or stopping.
+  const locked = $derived(!controls.configure.enabled);
 </script>
 
 <div class="flex flex-wrap items-center gap-2">
   <Button
     disabled={!controls.refresh.enabled}
-    disabledReason={controls.refresh.reason}
+    describedBy={locked ? 'session-lock-note' : 'refresh-reason'}
     onclick={() => void appState.refreshSources()}>{copy.refreshSources}</Button
   >
   <button
@@ -20,7 +22,23 @@
     onclick={() => appState.openDeviceSetup()}>{copy.deviceSetup}</button
   >
 </div>
-<fieldset class="flex flex-col gap-2" disabled={!controls.configure.enabled}>
+<!-- Reasons sit below the row so Refresh sources and Device setup never move. -->
+{#if locked}
+  <p id="session-lock-note" class="text-sm text-text-muted" role="note">
+    {collection.state === 'stopping'
+      ? copy.sessionLocked.stopping
+      : copy.sessionLocked.collecting}
+  </p>
+{:else if !controls.refresh.enabled}
+  <p id="refresh-reason" class="text-sm text-text-muted">
+    {controls.refresh.reason}
+  </p>
+{/if}
+<fieldset
+  class="flex flex-col gap-2"
+  disabled={locked}
+  aria-describedby={locked ? 'session-lock-note' : undefined}
+>
   <legend class="text-sm font-medium">{copy.entropySource}</legend>
   {#if collection.candidates.length === 0}
     <p class="text-sm text-text-muted">{copy.noSources}</p>
