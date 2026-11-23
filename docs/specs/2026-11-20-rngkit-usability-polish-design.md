@@ -256,7 +256,16 @@ labels are updated; e2e and unit tests use `copy` constants, not literals.
 | Combine summary | Bundle stem | Combined file name |
 | Replace dialog | An XLSX file already exists for this input. Cancel keeps it. Replace is an explicit second request. | A report for this file already exists. Cancel keeps it; Replace overwrites it. |
 | Session lock note | *(new)* | Settings are locked while a session is collecting. |
+| Session lock note (stopping) | *(new)* | Settings are locked while a session is stopping. |
 | Error panel heading | Failed | What happened |
+| Combine result folder | Open derived folder | Open combined folder |
+| Messages (outcome titles/bodies, errors, disabled reasons) | … derived bundle … | … combined file … |
+| Reports input reason | Inspect a session, file, or derived bundle before generating a report. | Choose a session, combined file, or CSV/BIN file before generating a report. |
+
+The "Messages" row (added 2026-11-22, plan review) covers user-visible text
+from both the frontend and the backend, such as "Derived bundle created".
+Internal identifiers keep their names: `kindLabel` values, error codes,
+manifest kinds, and file-name tokens.
 
 Technical names (derived bundle, schema, `_concat_`) remain in Help's "File
 formats and version details" section and in documentation.
@@ -293,3 +302,6 @@ formats and version details" section and in documentation.
    `<stem>.xlsx` report name.
 4. **Combine at narrow widths (UX-2):** stacked cards below the breakpoint;
    the table remains at wider sizes.
+5. **Backend wording (UX-11, 2026-11-22):** user-facing backend messages
+   follow the section 5 vocabulary, so the UI never mixes "combined file" and
+   "derived bundle" outside Help's technical section.
